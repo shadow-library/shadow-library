@@ -24,7 +24,10 @@
     "baseUrl": "./",
     "module": "ES2020",
     "moduleResolution": "node",
-    "paths": {},
+    "paths": {
+      "@lib/*": ["packages/*"],
+      "@shadow-library/errors": ["packages/errors/index.ts"]
+    },
     "resolveJsonModule": true,
 
     /** Emit */

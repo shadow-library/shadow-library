@@ -53,6 +53,22 @@ Must be one of the following:
 - **test**: Adding missing tests or correcting existing tests
 - **sample**: A change to the samples
 
+### Scope
+
+The scope should have the name of the npm package affected (as perceived by person reading changelog generated from commit messages).
+
+The following is the list of supported scopes:
+
+- **errors**: for changes made on `packages/errors` directory
+
+If your change affect more than one package, separate the scopes with a comma (e.g. `common,errors`).
+
+There are currently a few exceptions to the "use package name" rule:
+
+- **packaging**: used for changes that change the npm package layout in all of our packages, e.g. public path changes, package.json changes done to all packages, d.ts file/format changes, changes to bundles, etc.
+- **changelog**: used for updating the release notes in CHANGELOG.md
+- none/empty string: useful for `style`, `test` and `refactor` changes that are done across all packages (e.g. `style: add missing semicolons`)
+
 ### Subject
 
 The subject contains succinct description of the change:
