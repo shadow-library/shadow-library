@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# IDE
+/.vscode
+/.project
+/.settings 
+
+# bundle
+packages/**/*.d.ts
+packages/**/*.js
+
+# misc
+.DS_Store
+lerna-debug.log
+npm-debug.log
+/**/npm-debug.log
+/packages/**/.npmignore
+/packages/**/LICENSE
+*.tsbuildinfo
+
+# tests
+/tests
+/coverage
+/.nyc_output
+
+.npmrc
