@@ -1,0 +1,13 @@
+{
+  "name": "types",
+  "version": "1.0.0",
+  "description": "A TypeScript package offering a collection of common types to ensure consistency and type safety across the Shadow Apps ecosystem.",
+  "author": "Leander Paul",
+  "license": "MIT",
+  "main": "index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shadow-library/shadow-library.git",
+    "directory": "packages/types"
+  }
+}

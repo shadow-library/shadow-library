@@ -60,6 +60,7 @@ The scope should have the name of the npm package affected (as perceived by pers
 The following is the list of supported scopes:
 
 - **errors**: for changes made on `packages/errors` directory
+- **types**: for changes made on `package/types` directory
 
 If your change affect more than one package, separate the scopes with a comma (e.g. `common,errors`).
 
