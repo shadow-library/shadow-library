@@ -1,6 +1,6 @@
 {
   "name": "@shadow-library/errors",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A TypeScript package offering a comprehensive set of standardized error classes for consistent and robust error handling across your applications.",
   "author": "Leander Paul",
   "homepage": "https://github.com/shadow-library/shadow-library#readme",
