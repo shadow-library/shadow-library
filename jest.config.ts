@@ -1,18 +1,14 @@
 /**
  * Importing npm packages.
  */
-
-/**
- * Importing user defined packages.
- */
+import type { Config } from 'jest';
 
 /**
  * Declaring the constants.
  */
-const transform = { '^.+\\.(t|j)s$': 'ts-jest' };
+const transform: Config['transform'] = { '^.+\\.(t|j)s$': 'ts-jest' };
 
-/** @type {import('jest').Config} */
-const config = {
+const config: Config = {
   testEnvironment: 'node',
   testRegex: '.spec.ts$',
   detectOpenHandles: true,
@@ -20,4 +16,4 @@ const config = {
   projects: [{ displayName: '@shadow-library/errors', transform }],
 };
 
-module.exports = config;
+export default config;
