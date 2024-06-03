@@ -21,16 +21,18 @@
     "strictPropertyInitialization": false,
 
     /** Modules */
-    "baseUrl": ".",
     "module": "ES2020",
     "moduleResolution": "node",
-    "paths": {
-      "@shadow-library/errors": ["packages/errors"],
-      "@shadow-library/errors/*": ["packages/errors/*"],
-      "@shadow-library/types": ["packages/types"],
-      "@shadow-library/types/*": ["packages/types/*"]
-    },
     "resolveJsonModule": true,
+    "types": ["node"],
+
+    /** Emit */
+    "declaration": true,
+    "importHelpers": true,
+    "removeComments": true,
+
+    /** Editor Support */
+    "plugins": [{ "transform": "typescript-transform-paths" }, { "transform": "typescript-transform-paths", "afterDeclarations": true }],
 
     /** Interop Constraints */
     "allowSyntheticDefaultImports": true,
@@ -38,8 +40,8 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
 
-    /** Completeness */
+    /** Completeness and Projects */
+    "composite": true,
     "skipLibCheck": true
-  },
-  "include": ["packages/**/*.ts"]
+  }
 }

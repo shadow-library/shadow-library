@@ -12,8 +12,7 @@ const config: Config = {
   testEnvironment: 'node',
   testRegex: '.spec.ts$',
   detectOpenHandles: true,
-  rootDir: '.',
-  projects: [{ displayName: '@shadow-library/errors', transform }],
+  projects: [{ displayName: '@shadow-library/errors', transform, rootDir: 'packages/errors' }],
 };
 
 export default config;

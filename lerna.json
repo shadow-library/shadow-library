@@ -1,5 +1,18 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "independent",
-  "npmClient": "pnpm"
+  "npmClient": "pnpm",
+  "command": {
+    "version": {
+      "message": "chore: publish release packages",
+      "conventionalCommits": true,
+      "createRelease": "github",
+      "npmClient": "pnpm"
+    },
+    "publish": {
+      "registry": "https://npm.pkg.github.com",
+      "directory": "{workspaceRoot}/dist/{projectRoot}",
+      "npmClient": "pnpm"
+    }
+  }
 }

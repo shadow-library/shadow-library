@@ -6,9 +6,8 @@ node_modules/
 /.project
 /.settings 
 
-# bundle
-packages/**/*.d.ts
-packages/**/*.js
+# build output
+dist
 
 # misc
 .DS_Store
@@ -18,10 +17,9 @@ npm-debug.log
 /packages/**/.npmignore
 /packages/**/LICENSE
 *.tsbuildinfo
+.npmrc
 
 # tests
 /tests
 /coverage
 /.nyc_output
-
-.npmrc
