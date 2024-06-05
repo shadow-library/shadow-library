@@ -15,6 +15,10 @@ This GitHub repository is a comprehensive monorepo containing a suite of TypeScr
 
 ## Packages
 
+- **[Common Services][shadow-common-docs]:** A TypeScript package offering a comprehensive set of common utilities and services used across your applications.
+- **[Errors][shadow-errors-docs]:** A TypeScript package offering a comprehensive set of standardized error classes for consistent and robust error handling across your applications.
+- **[Types][shadow-types-docs]:** A TypeScript package offering a collection of common types to ensure consistency and type safety across the Shadow Apps ecosystem.
+
 ## Getting Started
 
 To start using the libraries in your microservices, follow the detailed setup instructions in the `README.md` file of each package. Installation and integration guidelines are provided to help you quickly get up and running.
@@ -28,3 +32,6 @@ We welcome contributions from the community. Please refer to our [contributing g
 This repository is licensed under the MIT License. See the `LICENSE` file for more information.
 
 [contribution-guide]: https://github.com/leanderpaul/shadow-library/blob/master/CONTRIBUTING.md
+[shadow-common-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/common
+[shadow-errors-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/errors
+[shadow-types-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/types
