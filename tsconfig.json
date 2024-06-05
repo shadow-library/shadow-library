@@ -26,9 +26,11 @@
     "moduleResolution": "node",
     "paths": {
       "@shadow-library/errors": ["packages/errors"],
-      "@shadow-library/errors/*": ["packages/errors/*"],
+      "@shadow-library/errors/*": ["packages/errors/src/*"],
       "@shadow-library/types": ["packages/types"],
-      "@shadow-library/types/*": ["packages/types/*"]
+      "@shadow-library/types/*": ["packages/types/src/*"],
+      "@shadow-library/common": ["packages/common"],
+      "@shadow-library/common/*": ["packages/common/src/*"]
     },
     "resolveJsonModule": true,
 
