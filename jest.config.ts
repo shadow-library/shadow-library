@@ -24,6 +24,12 @@ const config: Config = {
       rootDir: 'packages/common',
       moduleNameMapper: { '@shadow-library/common/(.*)': '<rootDir>/src/$1' },
     },
+    {
+      displayName: '@shadow-library/database',
+      transform,
+      rootDir: 'packages/database',
+      moduleNameMapper: { '@shadow-library/database/(.*)': '<rootDir>/src/$1' },
+    },
   ],
 };
 

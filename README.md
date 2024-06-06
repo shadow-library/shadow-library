@@ -16,6 +16,7 @@ This GitHub repository is a comprehensive monorepo containing a suite of TypeScr
 ## Packages
 
 - **[Common Services][shadow-common-docs]:** A TypeScript package offering a comprehensive set of common utilities and services used across your applications.
+- **[Database][shadow-database-docs]:** A TypeScript package that connects to MongoDB, auto-generates CRUD modules from JSON schema, enforces schema validation, and provides REST API access.
 - **[Errors][shadow-errors-docs]:** A TypeScript package offering a comprehensive set of standardized error classes for consistent and robust error handling across your applications.
 - **[Types][shadow-types-docs]:** A TypeScript package offering a collection of common types to ensure consistency and type safety across the Shadow Apps ecosystem.
 
@@ -33,5 +34,6 @@ This repository is licensed under the MIT License. See the `LICENSE` file for mo
 
 [contribution-guide]: https://github.com/leanderpaul/shadow-library/blob/master/CONTRIBUTING.md
 [shadow-common-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/common
+[shadow-database-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/database
 [shadow-errors-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/errors
 [shadow-types-docs]: https://github.com/shadow-library/shadow-library/tree/main/packages/types
