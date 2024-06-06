@@ -30,7 +30,9 @@
       "@shadow-library/types": ["packages/types"],
       "@shadow-library/types/*": ["packages/types/src/*"],
       "@shadow-library/common": ["packages/common"],
-      "@shadow-library/common/*": ["packages/common/src/*"]
+      "@shadow-library/common/*": ["packages/common/src/*"],
+      "@shadow-library/database": ["packages/database"],
+      "@shadow-library/database/*": ["packages/database/src/*"]
     },
     "resolveJsonModule": true,
 

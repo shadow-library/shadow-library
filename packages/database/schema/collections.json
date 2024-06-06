@@ -1,0 +1,41 @@
+{
+  "$id": "urn:shadow-library:database:collections",
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "MongoDB database collections",
+  "type": "object",
+  "definitions": {
+    "collection": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    }
+  },
+  "required": ["collections"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "collections": {
+      "type": "array",
+      "$ref": "#/definitions/collection"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@shadow-library/database",
+  "version": "0.0.1",
+  "description": "A TypeScript package that connects to MongoDB, auto-generates CRUD modules from JSON schema, enforces schema validation, and provides REST API access.",
+  "author": "Leander Paul",
+  "homepage": "https://github.com/shadow-library/shadow-library#readme",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shadow-library/shadow-library.git",
+    "directory": "packages/database"
+  },
+  "dependencies": {
+    "mongodb": "^6.7.0",
+    "@shadow-library/common": "workspace:*"
+  }
+}
