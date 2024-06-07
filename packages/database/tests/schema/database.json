@@ -1,0 +1,166 @@
+{
+  "$schema": "../../schema/collections.json",
+  "name": "test-database-collections",
+  "description": "Test database collections",
+  "definitions": {
+    "address": {
+      "line1": {
+        "type": "string",
+        "required": true
+      },
+      "line2": {
+        "type": "string"
+      },
+      "city": {
+        "type": "string",
+        "required": true
+      },
+      "state": {
+        "type": "string",
+        "required": true
+      },
+      "zip": {
+        "type": "string",
+        "required": true
+      },
+      "country": {
+        "type": "string",
+        "required": true,
+        "transform": "capitalize"
+      }
+    }
+  },
+  "collections": [
+    {
+      "name": "TestUsers",
+      "alias": "users",
+      "description": "User collection",
+      "createdAt": true,
+      "updatedAt": true,
+      "fields": {
+        "_id": {
+          "type": "uniqueId",
+          "alias": "uid"
+        },
+        "name": {
+          "type": "string",
+          "required": true,
+          "format": "person-name",
+          "transform": "capitalize",
+          "trim": true
+        },
+        "email": {
+          "type": "string",
+          "required": true,
+          "format": "email",
+          "transform": "lowercase"
+        },
+        "password": {
+          "type": "string",
+          "required": true
+        },
+        "admin": {
+          "type": "boolean",
+          "default": false
+        },
+        "address": {
+          "type": "object",
+          "subType": "address"
+        }
+      },
+      "primaryKey": "email"
+    },
+    {
+      "name": "books",
+      "description": "Book collection",
+      "createdAt": true,
+      "updatedAt": true,
+      "fields": {
+        "_id": {
+          "type": "uniqueId",
+          "alias": "bid"
+        },
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "author": {
+          "type": "uniqueId",
+          "required": true
+        },
+        "views": {
+          "type": "int",
+          "default": 0,
+          "minimum": 0
+        },
+        "publishers": {
+          "type": "array",
+          "subType": {
+            "name": {
+              "type": "string",
+              "required": true
+            },
+            "address": {
+              "type": "object",
+              "subType": "address"
+            }
+          }
+        },
+        "rating": {
+          "type": "double",
+          "required": true
+        },
+        "publishDate": {
+          "type": "date",
+          "required": true
+        }
+      },
+      "primaryKey": "bid"
+    },
+    {
+      "name": "user_comments",
+      "alias": "comments",
+      "createdAt": true,
+      "fields": {
+        "_id": {
+          "type": "uniqueId",
+          "alias": "cid"
+        },
+        "uid": {
+          "type": "uniqueId",
+          "required": true
+        },
+        "bid": {
+          "type": "uniqueId",
+          "required": true
+        },
+        "comment": {
+          "type": "string",
+          "required": true
+        },
+        "rating": {
+          "type": "double",
+          "required": true
+        }
+      },
+      "primaryKey": ["bid", "uid"],
+      "indexes": [{ "name": "USER_ID_INDEX", "fields": { "uid": 1 } }],
+      "foreignKeys": [
+        {
+          "fields": "uid",
+          "reference": {
+            "collection": "users",
+            "fields": "uid"
+          }
+        },
+        {
+          "fields": "bid",
+          "reference": {
+            "collection": "books",
+            "fields": "_id"
+          }
+        }
+      ]
+    }
+  ]
+}

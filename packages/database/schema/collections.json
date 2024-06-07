@@ -1,22 +1,249 @@
 {
   "$id": "urn:shadow-library:database:collections",
   "$schema": "https://json-schema.org/draft-07/schema",
-  "title": "MongoDB database collections",
+  "title": "MongoDB database schema for collections",
   "type": "object",
   "definitions": {
-    "collection": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9-_]{3,32}$",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "datatype": {
+      "type": "string",
+      "enum": ["uniqueId", "string", "int", "long", "double", "boolean", "date", "object", "array", "objectId", "timestamp"]
+    },
+    "field": {
       "type": "object",
-      "required": ["name"],
+      "required": ["type"],
       "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 255
+        "type": {
+          "$ref": "#/definitions/datatype"
         },
         "description": {
           "type": "string",
           "minLength": 1,
           "maxLength": 255
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "validator": {
+          "type": "string",
+          "description": "validator function to apply to the field"
+        },
+        "transformer": {
+          "type": "string",
+          "description": "transformer function to apply to the field"
+        },
+        "defaultFn": {
+          "type": "string",
+          "description": "Default function to apply to the field"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "string" }
+            }
+          },
+          "then": {
+            "properties": {
+              "transform": {
+                "type": "string",
+                "description": "Transform function to apply to the field",
+                "enum": ["lowercase", "uppercase", "capitalize"]
+              },
+              "trim": {
+                "type": "boolean",
+                "description": "Whether to trim the field value"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "anyOf": [{ "const": "int" }, { "const": "long" }, { "const": "double" }]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "default": { "type": "number" },
+              "minimum": {
+                "type": "integer",
+                "description": "Minimum value for the field"
+              },
+              "maximum": {
+                "type": "integer",
+                "description": "Maximum value for the field"
+              },
+              "enum": {
+                "type": "array",
+                "items": { "type": "number" },
+                "description": "List of allowed values for the field"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "object" }
+            }
+          },
+          "then": {
+            "required": ["subType"],
+            "properties": {
+              "subType": {
+                "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/document" }],
+                "description": "Sub-type of the object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "array" }
+            }
+          },
+          "then": {
+            "required": ["subType"],
+            "properties": {
+              "subType": {
+                "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/document" }],
+                "description": "Sub-type of the object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "document": {
+      "type": "object",
+      "description": "Fields in the document",
+      "minProperties": 2,
+      "properties": {
+        "_id": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["uniqueId", "objectId"]
+            },
+            "alias": {
+              "type": "string",
+              "pattern": "^[a-zA-Z]{2,32}$",
+              "description": "Alias for the '_id' field in the collection"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]{3,32}$": {
+          "$ref": "#/definitions/field"
+        }
+      }
+    },
+    "index": {
+      "type": "object",
+      "required": ["fields"],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/name",
+          "description": "Name of the index"
+        },
+        "fields": {
+          "type": "object",
+          "description": "Fields in the index",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]{3,32}$": {
+              "type": "number",
+              "enum": [-1, 1]
+            }
+          }
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "Whether the index is unique"
+        },
+        "expireAfterSeconds": {
+          "type": "number",
+          "description": "Seconds to expire documents in the collection"
+        }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "required": ["collection", "fields"],
+      "properties": {
+        "collection": {
+          "$ref": "#/definitions/name",
+          "description": "Name of the collection to relate to"
+        },
+        "localField": {
+          "$ref": "#/definitions/name",
+          "description": "Field in the current collection to relate to"
+        },
+        "foreignField": {
+          "$ref": "#/definitions/name",
+          "description": "Field in the reference collection to relate to"
+        }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "required": ["name", "fields"],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/name",
+          "description": "Name of the collection in the database (e.g. 'users', 'accounts', 'UserComments')"
+        },
+        "alias": {
+          "$ref": "#/definitions/name",
+          "description": "Name of the collection in the API (e.g. 'users', 'accounts', 'user-comments'). If not provided, the 'name' field is used."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the collection",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "createdAt": {
+          "type": "boolean",
+          "description": "Whether to include a 'createdAt' field in the collection"
+        },
+        "updatedAt": {
+          "type": "boolean",
+          "description": "Whether to include an 'updatedAt' field in the collection"
+        },
+        "fields": {
+          "$ref": "#/definitions/document"
+        },
+        "primaryKey": {
+          "oneOf": [{ "$ref": "#/definitions/name" }, { "type": "array", "items": { "$ref": "#/definitions/name" } }],
+          "description": "Primary key field in the collection"
+        },
+        "indexes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/index" }
+        },
+        "relations": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/relation" }
         }
       }
     }
@@ -33,9 +260,21 @@
       "minLength": 1,
       "maxLength": 255
     },
+    "definitions": {
+      "type": "object",
+      "description": "Definitions for the documents or sub-documents in the collection",
+      "minProperties": 1,
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]{3,32}$": {
+          "$ref": "#/definitions/document"
+        }
+      }
+    },
     "collections": {
       "type": "array",
-      "$ref": "#/definitions/collection"
+      "items": {
+        "$ref": "#/definitions/collection"
+      }
     }
   }
 }
