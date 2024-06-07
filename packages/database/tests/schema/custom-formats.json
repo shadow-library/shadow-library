@@ -1,0 +1,11 @@
+{
+  "$schema": "../../schema/formats.json",
+  "email": {
+    "description": "Email address",
+    "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+  },
+  "person-name": {
+    "description": "Person name",
+    "pattern": "^[a-zA-Z ]{2,32}$"
+  }
+}
