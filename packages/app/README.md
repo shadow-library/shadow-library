@@ -10,14 +10,6 @@ This TypeScript package is a framework for building efficient, scalable Node.js 
 - **Lifecycle Methods:** Robust lifecycle management to handle initialization, running, and shutdown processes seamlessly.
 - **Robust Foundation:** A strong, well-structured base for developing all types of server-side applications.
 
-## Getting Started
-
-To use this framework, install the package and create your first module, controller, and provider.
-
-```ts
-import {} from '@shadow-library/app';
-```
-
 ## Installation
 
 ```bash
@@ -29,6 +21,12 @@ yarn add @shadow-library/app
 
 # pnpm
 pnpm add @shadow-library/app
+```
+
+## Usage
+
+```ts
+import {} from '@shadow-library/app';
 ```
 
 ## License
