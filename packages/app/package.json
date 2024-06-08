@@ -1,0 +1,17 @@
+{
+  "name": "@shadow-library/app",
+  "version": "0.0.1",
+  "description": "A progressive Node.js framework for building efficient, scalable, and enterprise-grade applications using SOLID principles",
+  "author": "Leander Paul",
+  "homepage": "https://github.com/shadow-library/shadow-library#readme",
+  "license": "MIT",
+  "main": "index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shadow-library/shadow-library.git",
+    "directory": "packages/app"
+  }
+}

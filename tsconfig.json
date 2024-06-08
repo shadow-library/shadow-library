@@ -25,14 +25,16 @@
     "module": "ES2020",
     "moduleResolution": "node",
     "paths": {
-      "@shadow-library/errors": ["packages/errors"],
-      "@shadow-library/errors/*": ["packages/errors/src/*"],
-      "@shadow-library/types": ["packages/types"],
-      "@shadow-library/types/*": ["packages/types/src/*"],
+      "@shadow-library/app": ["packages/app"],
+      "@shadow-library/app/*": ["packages/app/src/*"],
       "@shadow-library/common": ["packages/common"],
       "@shadow-library/common/*": ["packages/common/src/*"],
       "@shadow-library/database": ["packages/database"],
-      "@shadow-library/database/*": ["packages/database/src/*"]
+      "@shadow-library/database/*": ["packages/database/src/*"],
+      "@shadow-library/errors": ["packages/errors"],
+      "@shadow-library/errors/*": ["packages/errors/src/*"],
+      "@shadow-library/types": ["packages/types"],
+      "@shadow-library/types/*": ["packages/types/src/*"]
     },
     "resolveJsonModule": true,
 

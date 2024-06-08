@@ -14,9 +14,10 @@ const config: Config = {
   detectOpenHandles: true,
   projects: [
     {
-      displayName: '@shadow-library/errors',
+      displayName: '@shadow-library/app',
       transform,
-      rootDir: 'packages/errors',
+      rootDir: 'packages/app',
+      moduleNameMapper: { '@shadow-library/app/(.*)': '<rootDir>/src/$1' },
     },
     {
       displayName: '@shadow-library/common',
@@ -29,6 +30,11 @@ const config: Config = {
       transform,
       rootDir: 'packages/database',
       moduleNameMapper: { '@shadow-library/database/(.*)': '<rootDir>/src/$1' },
+    },
+    {
+      displayName: '@shadow-library/errors',
+      transform,
+      rootDir: 'packages/errors',
     },
   ],
 };

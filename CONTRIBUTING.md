@@ -59,6 +59,7 @@ The scope should have the name of the npm package affected (as perceived by pers
 
 The following is the list of supported scopes:
 
+- **app**: for changes made on `packages/app` directory
 - **common**: for changes made on `packages/common` directory
 - **database**: for changes made on `packages/database` directory
 - **errors**: for changes made on `packages/errors` directory
