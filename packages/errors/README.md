@@ -17,20 +17,6 @@ This TypeScript package provides a comprehensive collection of error classes des
 - **NeverError:** Represents error that should never occur.
 - **ValidationError:** Represents validation errors for user input and data.
 
-## Getting Started
-
-To use the error classes in your project, install the package and import the necessary classes:
-
-```ts
-import { AppError, ErrorCode, ValidationError } from '@shadow-library/errors';
-
-// Example 1
-throw new AppError(ErrorCode.S001);
-
-// Example 2
-throw new ValidationError('field', 'value');
-```
-
 ## Installation
 
 ```bash
@@ -42,6 +28,20 @@ yarn add @shadow-library/errors
 
 # pnpm
 pnpm add @shadow-library/errors
+```
+
+## Usage
+
+```ts
+import { AppError, ErrorCode, ValidationError } from '@shadow-library/errors';
+
+// Example: App Error
+throw new AppError(ErrorCode.S001);
+
+// Example: ValidationError
+const validationError = new ValidationError('fieldOne', 'value');
+validationError.addFieldError('fieldTwo', 'value');
+throw validationError;
 ```
 
 ## License

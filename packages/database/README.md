@@ -10,14 +10,6 @@ This TypeScript package offers a streamlined and powerful way to connect to a Mo
 - **Schema Enforcement:** Automatically validates and enforces schema constraints for collections.
 - **REST API Integration:** Provides methods to read data from MongoDB using REST API URL patterns.
 
-## Getting Started
-
-To use this in your project, install the package and import the necessary modules:
-
-```ts
-import {} from '@shadow-library/database';
-```
-
 ## Installation
 
 ```bash
@@ -29,6 +21,12 @@ yarn add @shadow-library/database
 
 # pnpm
 pnpm add @shadow-library/database
+```
+
+## Usage
+
+```ts
+import {} from '@shadow-library/database';
 ```
 
 ## License
