@@ -1,1 +1,1 @@
-export * from './src/shadow-application';
+export * from './src';

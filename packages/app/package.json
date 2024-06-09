@@ -13,5 +13,10 @@
     "type": "git",
     "url": "git+https://github.com/shadow-library/shadow-library.git",
     "directory": "packages/app"
+  },
+  "dependencies": {
+    "@shadow-library/errors": "workspace:*",
+    "@shadow-library/types": "workspace:*",
+    "reflect-metadata": "^0.2.2"
   }
 }
