@@ -7,6 +7,7 @@ import { type Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
+import { MODULE_METADATA } from '../constants';
 
 /**
  * Defining types
@@ -38,7 +39,7 @@ export interface ModuleMetadata {
 /**
  * Declaring the constants
  */
-const validMetadataKeys = ['imports', 'providers', 'controllers', 'exports'];
+const validMetadataKeys = Object.values(MODULE_METADATA) as string[];
 
 export function Module(metadata: ModuleMetadata): ClassDecorator {
   const properties = Object.keys(metadata);
