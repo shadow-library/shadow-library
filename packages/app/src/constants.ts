@@ -20,3 +20,6 @@ export const PATH_METADATA = 'path';
 export const VERSION_METADATA = 'version';
 
 export const CONTROLLER_WATERMARK = Symbol('controller');
+export const INJECTABLE_WATERMARK = Symbol('injectable');
+
+export const TRANSIENT_METADATA = Symbol('transient');
