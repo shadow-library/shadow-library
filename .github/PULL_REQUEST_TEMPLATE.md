@@ -3,6 +3,8 @@
 Please check if your PR fulfills the following requirements:
 
 - [ ] The commit message follows the guidelines described [here](../CONTRIBUTING.md)
+- [ ] Tests for the changes have been added (for bug fixes / features)
+- [ ] Docs have been added / updated (for bug fixes / features)
 
 ## PR Type
 
@@ -10,12 +12,9 @@ What kind of change does this PR introduce?
 
 - [ ] Bugfix
 - [ ] Feature
-- [ ] Code style update (formatting, local variables)
-- [ ] Refactoring (no functional changes, no api changes)
-- [ ] Build related changes
-- [ ] CI related changes
+- [ ] Refactoring and Code style update
+- [ ] Build and CI related changes
 - [ ] Documentation and Examples
-- [ ] Tests
 - [ ] Other...
 
 If Other Please describe:
