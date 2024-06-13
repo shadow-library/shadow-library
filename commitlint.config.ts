@@ -10,7 +10,7 @@ import { UserConfig } from '@commitlint/types';
 const config: UserConfig = {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'scope-enum': [2, 'always', ['app', 'common', 'database', 'errors', 'types']],
+    'scope-enum': [2, 'always', ['app', 'common', 'database', 'errors', 'server', 'types']],
   },
 };
 

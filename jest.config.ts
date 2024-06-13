@@ -36,6 +36,11 @@ const config: Config = {
       transform,
       rootDir: 'packages/errors',
     },
+    {
+      displayName: '@shadow-library/server',
+      transform,
+      rootDir: 'packages/server',
+    },
   ],
 };
 

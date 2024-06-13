@@ -107,6 +107,18 @@ importers:
 
   packages/errors: {}
 
+  packages/server:
+    dependencies:
+      '@shadow-library/app':
+        specifier: workspace:*
+        version: link:../app
+      '@shadow-library/common':
+        specifier: workspace:*
+        version: link:../common
+      '@shadow-library/errors':
+        specifier: workspace:*
+        version: link:../errors
+
   packages/types: {}
 
 packages:
