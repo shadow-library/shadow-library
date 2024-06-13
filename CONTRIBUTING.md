@@ -63,6 +63,7 @@ The following is the list of supported scopes:
 - **common**: for changes made on `packages/common` directory
 - **database**: for changes made on `packages/database` directory
 - **errors**: for changes made on `packages/errors` directory
+- **server**: for changes made on `packages/server` directory
 - **types**: for changes made on `package/types` directory
 
 If your change affect more than one package, separate the scopes with a comma (e.g. `common,errors`).
