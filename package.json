@@ -5,8 +5,7 @@
   "scripts": {
     "prepare": "husky",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"{packages,scripts}/**/*.ts\"",
-    "lint": "prettier -c --log-level error {packages,scripts}/**/*.ts && eslint {packages,scripts}/**/*.ts",
+    "lint": "node scripts/lint.js",
     "build": "node scripts/build.js",
     "test": "jest",
     "prepublishOnly": "pnpm run build"
