@@ -6,7 +6,7 @@ import os from 'os';
 /**
  * Importing user defined packages
  */
-import { Utils } from '@shadow-library/common/internal.utils';
+import { Utils } from '../internal.utils';
 
 /**
  * Defining types

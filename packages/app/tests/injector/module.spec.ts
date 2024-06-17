@@ -100,7 +100,7 @@ describe('Module', () => {
   });
 
   it('should initialize the module', async () => {
-    await expect(module.init()).resolves.toBeUndefined();
+    await expect(module.init()).resolves.toBe(module);
     expect(module.getState()).toBe(ModuleState.INITIALIZED);
   });
 

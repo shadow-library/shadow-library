@@ -15,6 +15,7 @@
     "directory": "packages/app"
   },
   "dependencies": {
+    "@shadow-library/common": "workspace:*",
     "@shadow-library/errors": "workspace:*",
     "@shadow-library/types": "workspace:*",
     "reflect-metadata": "^0.2.2"

@@ -41,6 +41,11 @@ const config: Config = {
       transform,
       rootDir: 'packages/server',
     },
+    // {
+    //   displayName: 'Integration',
+    //   transform,
+    //   rootDir: 'integration',
+    // },
   ],
 };
 

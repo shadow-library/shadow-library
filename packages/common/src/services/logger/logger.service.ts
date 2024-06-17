@@ -3,7 +3,7 @@
  */
 import fs from 'fs';
 
-import { type Logger as WinstonLogger, createLogger as createWinstonLogger, format, transports } from 'winston';
+import { Logger as WinstonLogger, createLogger as createWinstonLogger, format, transports } from 'winston';
 
 /**
  * Importing user defined packages
@@ -17,7 +17,7 @@ import { Config } from '../config.service';
  * Defining types
  */
 
-export type Logger = WinstonLogger;
+export interface ShadowLogger extends Pick<WinstonLogger, 'debug' | 'info' | 'http' | 'warn' | 'error'> {}
 
 /**
  * Declaring the constants
@@ -35,8 +35,12 @@ function getFileIndex(filename: string): number {
   return parseInt(num);
 }
 
-export class LoggerService {
+export class Logger {
   private static instance: WinstonLogger;
+
+  static getLogger(label: string): ShadowLogger {
+    return this.getInstance().child({ label });
+  }
 
   static getInstance(fn: () => Record<string, any> = () => ({})): WinstonLogger {
     if (this.instance) return this.instance;
