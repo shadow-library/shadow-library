@@ -1,6 +1,7 @@
 /**
  * Importing npm packages
  */
+import { Logger } from '@shadow-library/common';
 import { InternalError } from '@shadow-library/errors';
 import { Type } from '@shadow-library/types';
 
@@ -39,6 +40,7 @@ interface ParsedProvider {
 /**
  * Declaring the constants
  */
+const logger = Logger.getLogger('ShadowModule');
 const isInjectable = (provider: Type): boolean => Reflect.getMetadata(INJECTABLE_WATERMARK, provider) ?? false;
 const isController = (provider: Type): boolean => Reflect.hasMetadata(CONTROLLER_WATERMARK, provider);
 const isFactoryProvider = (provider: Provider): provider is FactoryProvider => 'useFactory' in provider;
@@ -89,6 +91,7 @@ export class Module {
 
     const exports = InjectorUtils.getMetadata<InjectionName>(MODULE_METADATA.EXPORTS, metatype);
     this.exports = new Set(exports);
+    logger.debug(`Module '${metatype.name}' created`);
   }
 
   private getProvider(name: InjectionName): object;
@@ -102,10 +105,7 @@ export class Module {
       if (provider) return provider;
     }
 
-    if (!optional) {
-      const provider = typeof name === 'function' ? name.name : name.toString();
-      throw new InternalError(`Provider '${provider}' not found in module '${this.metatype.name}'`);
-    }
+    if (!optional) throw new InternalError(`Provider '${InjectorUtils.getProviderName(name)}' not found in module '${this.metatype.name}'`);
     return null;
   }
 
@@ -113,14 +113,15 @@ export class Module {
     return this.status;
   }
 
-  getExportedProvider(name: InjectionName): object | null {
+  getExportedProvider<T = object>(name: InjectionName): T | null {
     const isExported = this.exports.has(name);
     if (!isExported) return null;
-    return this.getProvider(name) ?? null;
+    return this.getProvider(name, true) as T | null;
   }
 
-  async init(): Promise<void> {
+  async init(): Promise<this> {
     this.status = ModuleState.INITIALIZING;
+    logger.debug(`Initializing module '${this.metatype.name}'`);
 
     /** Determining the order to initiate the providers */
     const providers = InjectorUtils.getMetadata<Provider>(MODULE_METADATA.PROVIDERS, this.metatype);
@@ -136,10 +137,12 @@ export class Module {
     const initOrder = dependencyGraph.getSortedNodes();
 
     /** Initializing the providers */
+    logger.debug(`Initializing providers in module '${this.metatype.name}'`);
     for (const providerName of initOrder) {
       const provider = parsedProviders.find(p => p.name === providerName);
       if (!provider) continue;
 
+      logger.debug(`Initializing provider '${InjectorUtils.getProviderName(providerName)}'`);
       const instances = [];
       for (const injection of provider.inject) {
         const instance = this.getProvider(injection.name, injection.optional);
@@ -148,19 +151,27 @@ export class Module {
 
       const providerInstance = await provider.useFactory(...instances);
       this.providers.set(provider.name, providerInstance);
+      logger.debug(`Provider '${InjectorUtils.getProviderName(providerName)}' initialized`);
     }
+    logger.debug(`Providers initialized in module '${this.metatype.name}'`);
 
     /** Initializing the controllers */
+    logger.debug(`Initializing controllers in module '${this.metatype.name}'`);
     const controllers = InjectorUtils.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
     for (const controller of controllers) {
       const valid = isController(controller);
       if (!valid) throw new InternalError(`Class '${controller.name}' is not a controller`);
+      logger.debug(`Initializing controller '${controller.name}'`);
       const dependencyNames = InjectorUtils.getMetadata<Type>(PARAMTYPES_METADATA, controller);
       const dependencies = dependencyNames.map(name => this.getProvider(name));
       const controllerInstance = new controller(...dependencies);
       this.controllers.set(controller, controllerInstance);
+      logger.debug(`Controller '${controller.name}' initialized`);
     }
+    logger.debug(`Controllers initialized in module '${this.metatype.name}'`);
 
     this.status = ModuleState.INITIALIZED;
+    logger.debug(`Module '${this.metatype.name}' initialized`);
+    return this;
   }
 }

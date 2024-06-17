@@ -7,7 +7,7 @@ import { type Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { MODULE_METADATA } from '../constants';
+import { MODULE_METADATA, MODULE_WATERMARK } from '../constants';
 import { InjectionName, Provider } from '../interfaces';
 
 /**
@@ -50,8 +50,7 @@ export function Module(metadata: ModuleMetadata): ClassDecorator {
   }
 
   return target => {
-    for (const property in metadata) {
-      Reflect.defineMetadata(property, metadata[property as keyof ModuleMetadata], target);
-    }
+    Reflect.defineMetadata(MODULE_WATERMARK, true, target);
+    for (const property in metadata) Reflect.defineMetadata(property, metadata[property as keyof ModuleMetadata], target);
   };
 }

@@ -7,6 +7,7 @@ import { describe, expect, it } from '@jest/globals';
  * Importing user defined packages
  */
 import { Module } from '@shadow-library/app';
+import { MODULE_METADATA, MODULE_WATERMARK } from '@shadow-library/app/constants';
 
 /**
  * Defining types
@@ -23,11 +24,13 @@ describe('@Module', () => {
   class TestModule {}
 
   it('should enhance class with expected module metadata', () => {
-    const imports = Reflect.getMetadata('imports', TestModule);
-    const providers = Reflect.getMetadata('providers', TestModule);
-    const exports = Reflect.getMetadata('exports', TestModule);
-    const controllers = Reflect.getMetadata('controllers', TestModule);
+    const isModule = Reflect.getMetadata(MODULE_WATERMARK, TestModule);
+    const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, TestModule);
+    const providers = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, TestModule);
+    const exports = Reflect.getMetadata(MODULE_METADATA.EXPORTS, TestModule);
+    const controllers = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, TestModule);
 
+    expect(isModule).toBe(true);
     expect(imports).toStrictEqual(moduleProps.imports);
     expect(providers).toStrictEqual(moduleProps.providers);
     expect(controllers).toStrictEqual(moduleProps.controllers);

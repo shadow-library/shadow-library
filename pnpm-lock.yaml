@@ -65,6 +65,9 @@ importers:
 
   packages/app:
     dependencies:
+      '@shadow-library/common':
+        specifier: workspace:*
+        version: link:../common
       '@shadow-library/errors':
         specifier: workspace:*
         version: link:../errors
