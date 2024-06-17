@@ -8,6 +8,7 @@ import { type Type } from '@shadow-library/types';
  * Importing user defined packages
  */
 import { MODULE_METADATA } from '../constants';
+import { InjectionName, Provider } from '../interfaces';
 
 /**
  * Defining types
@@ -16,24 +17,24 @@ export interface ModuleMetadata {
   /**
    * List of imported modules that export the providers which are required in this module.
    */
-  imports?: Type<any>[];
+  imports?: Type[];
 
   /**
    * List of controllers defined in this module which have to be instantiated.
    */
-  controllers?: Type<any>[];
+  controllers?: Type[];
 
   /**
    * List of providers that will be instantiated by the Shadow injector and that may be shared
    * at least across this module.
    */
-  providers?: Type<any>[];
+  providers?: Provider[];
 
   /**
    * List of the subset of providers that are provided by this module and should be available
    * in other modules which import this module.
    */
-  exports?: Type<any>[];
+  exports?: InjectionName[];
 }
 
 /**
