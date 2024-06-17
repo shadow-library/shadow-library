@@ -11,10 +11,10 @@ import { Type } from '@shadow-library/types';
  * Defining types
  */
 
-export type InjectionToken = string | symbol | Type;
+export type InjectionName = string | symbol | Type;
 
 export interface ClassProvider {
-  name: InjectionToken;
+  name: InjectionName;
   useClass: Type;
   useValue?: never;
   inject?: never;
@@ -22,17 +22,19 @@ export interface ClassProvider {
 }
 
 export interface ValueProvider {
-  name: InjectionToken;
+  name: InjectionName;
   useValue: any;
   useClass?: never;
   inject?: never;
   useFactory?: never;
 }
 
+export type FactoryProviderInject = InjectionName | { name: InjectionName; optional?: boolean };
+
 export interface FactoryProvider {
-  name: InjectionToken;
-  inject?: (Type | { name: string; optional?: boolean })[];
-  useFactory: (...args: any[]) => any;
+  name: InjectionName;
+  inject?: FactoryProviderInject[];
+  useFactory: (...args: any[]) => any | Promise<any>;
   useClass?: never;
   useValue?: never;
 }
