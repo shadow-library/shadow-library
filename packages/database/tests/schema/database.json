@@ -3,163 +3,243 @@
   "name": "test-database-collections",
   "description": "Test database collections",
   "definitions": {
-    "address": {
-      "line1": {
-        "type": "string",
-        "required": true
-      },
-      "line2": {
-        "type": "string"
-      },
-      "city": {
-        "type": "string",
-        "required": true
-      },
-      "state": {
-        "type": "string",
-        "required": true
-      },
-      "zip": {
-        "type": "string",
-        "required": true
-      },
-      "country": {
+    "user-email": {
+      "email": {
         "type": "string",
         "required": true,
-        "transform": "capitalize"
+        "format": "email",
+        "transform": "lowercase"
+      },
+      "primary": {
+        "type": "boolean"
+      },
+      "verified": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "user-auth": {
+      "$type": [
+        { "name": "password", "type": "user-password-auth" },
+        { "name": "oauth", "type": "user-oauth" }
+      ],
+      "$key": "type"
+    },
+    "user-password-auth": {
+      "password": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "user-oauth": {
+      "provider": {
+        "type": "string",
+        "required": true,
+        "enum": ["google", "facebook"]
+      },
+      "spuid": {
+        "type": "string",
+        "required": true
+      },
+      "refreshToken": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "user-session": {
+      "usid": {
+        "type": "int",
+        "required": true
+      },
+      "token": {
+        "type": "string",
+        "required": true
+      },
+      "ipAddr": {
+        "type": "string"
+      },
+      "userAgent": {
+        "type": "string"
+      },
+      "accessedAt": {
+        "type": "date",
+        "required": true
+      },
+      "createdAt": {
+        "type": "date",
+        "defaultFn": "getCurrentDate"
+      }
+    },
+    "user-profile": {
+      "firstName": {
+        "type": "string",
+        "required": true,
+        "trim": true,
+        "format": "person-name"
+      },
+      "lastName": {
+        "type": "string",
+        "trim": true,
+        "format": "person-name"
+      },
+      "gender": {
+        "type": "int",
+        "enum": [0, 1, 2],
+        "description": "0 - Not specified, 1 - Male, 2 - Female"
+      },
+      "imageURL": {
+        "type": "string",
+        "format": "uri"
+      },
+      "dob": {
+        "type": "string",
+        "format": "date"
+      },
+      "createdAt": {
+        "type": "date",
+        "defaultFn": "getCurrentDate"
       }
     }
   },
   "collections": [
     {
-      "name": "TestUsers",
-      "alias": "users",
-      "description": "User collection",
-      "createdAt": true,
-      "updatedAt": true,
-      "fields": {
+      "name": "Accounts",
+      "schema": {
         "_id": {
           "type": "uniqueId",
-          "alias": "uid"
+          "alias": "aid"
         },
         "name": {
           "type": "string",
           "required": true,
-          "format": "person-name",
-          "transform": "capitalize",
           "trim": true
         },
-        "email": {
-          "type": "string",
-          "required": true,
-          "format": "email",
-          "transform": "lowercase"
-        },
-        "password": {
-          "type": "string",
-          "required": true
-        },
-        "admin": {
+        "enabled": {
           "type": "boolean",
-          "default": false
+          "default": true
         },
-        "address": {
-          "type": "object",
-          "subType": "address"
+        "type": {
+          "type": "int",
+          "enum": [0, 1],
+          "description": "0 - Personal, 1 - Organization"
         }
       },
-      "primaryKey": "email"
+      "indexes": [{ "keys": { "name": 1 }, "unique": true }]
     },
     {
-      "name": "books",
-      "description": "Book collection",
+      "name": "Users",
+      "schema": {
+        "_id": {
+          "type": "uniqueId",
+          "alias": "uid"
+        },
+        "aid": {
+          "type": "uniqueId",
+          "required": true
+        },
+        "status": {
+          "required": true,
+          "type": "int",
+          "enum": [0, 1, 2],
+          "description": "0 - Inactive, 1 - Active, 2 - Closed"
+        },
+        "role": {
+          "type": "int",
+          "required": true,
+          "enum": [0, 1, 2],
+          "description": "0 - User, 1 - Admin, 2 - Super Admin"
+        },
+        "emails": {
+          "type": "array",
+          "subType": "user-email",
+          "required": true
+        },
+        "profile": {
+          "type": "object",
+          "subType": "user-profile",
+          "required": true
+        },
+        "auth": {
+          "type": "array",
+          "subType": "user-auth",
+          "required": true
+        },
+        "sessions": {
+          "type": "array",
+          "subType": "user-session",
+          "required": true
+        }
+      },
+      "indexes": [{ "name": "UNIQUE_EMAIL_IDS", "keys": { "emails.email": 1 }, "unique": true }],
+      "relations": [{ "collection": "Accounts", "localField": "aid", "foreignField": "aid" }],
+      "projections": {
+        "profile-auth": { "aid": true, "uid": true, "status": true, "role": true, "profile": true, "auth": true }
+      }
+    },
+    {
+      "name": "Blogs",
       "createdAt": true,
       "updatedAt": true,
-      "fields": {
+      "schema": {
         "_id": {
           "type": "uniqueId",
           "alias": "bid"
         },
-        "title": {
-          "type": "string",
-          "required": true
-        },
-        "author": {
+        "aid": {
           "type": "uniqueId",
-          "required": true
-        },
-        "views": {
-          "type": "int",
-          "default": 0,
-          "minimum": 0
-        },
-        "publishers": {
-          "type": "array",
-          "subType": {
-            "name": {
-              "type": "string",
-              "required": true
-            },
-            "address": {
-              "type": "object",
-              "subType": "address"
-            }
-          }
-        },
-        "rating": {
-          "type": "double",
-          "required": true
-        },
-        "publishDate": {
-          "type": "date",
-          "required": true
-        }
-      },
-      "primaryKey": "bid"
-    },
-    {
-      "name": "user_comments",
-      "alias": "comments",
-      "createdAt": true,
-      "fields": {
-        "_id": {
-          "type": "uniqueId",
-          "alias": "cid"
+          "description": "Account ID, If provided blog is only visible to the users in this account"
         },
         "uid": {
           "type": "uniqueId",
           "required": true
         },
+        "title": {
+          "type": "string",
+          "required": true,
+          "trim": true,
+          "validator": "^.{3,100}$"
+        },
+        "content": {
+          "type": "string",
+          "required": true,
+          "trim": true,
+          "validator": "^.{20,}$"
+        },
+        "tags": {
+          "type": "array",
+          "subType": "string",
+          "required": true
+        }
+      },
+      "indexes": [{ "keys": { "aid": 1, "createdAt": -1, "uid": 1 } }],
+      "relations": [
+        { "collection": "Users", "localField": "uid", "foreignField": "uid" },
+        { "collection": "Accounts", "localField": "aid", "foreignField": "aid" }
+      ]
+    },
+    {
+      "name": "Comments",
+      "createdAt": true,
+      "schema": {
         "bid": {
           "type": "uniqueId",
           "required": true
         },
-        "comment": {
-          "type": "string",
+        "uid": {
+          "type": "uniqueId",
           "required": true
         },
-        "rating": {
-          "type": "double",
-          "required": true
+        "content": {
+          "type": "string",
+          "required": true,
+          "trim": true,
+          "validator": "^.{1,}$"
         }
       },
-      "primaryKey": ["bid", "uid"],
-      "indexes": [{ "name": "USER_ID_INDEX", "fields": { "uid": 1 } }],
-      "foreignKeys": [
-        {
-          "fields": "uid",
-          "reference": {
-            "collection": "users",
-            "fields": "uid"
-          }
-        },
-        {
-          "fields": "bid",
-          "reference": {
-            "collection": "books",
-            "fields": "_id"
-          }
-        }
+      "indexes": [{ "keys": { "bid": 1, "createdAt": -1 } }, { "keys": { "uid": 1, "createdAt": -1 } }],
+      "relations": [
+        { "collection": "Blogs", "localField": "bid", "foreignField": "bid" },
+        { "collection": "Users", "localField": "uid", "foreignField": "uid" }
       ]
     }
   ]
