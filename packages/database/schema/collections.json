@@ -12,7 +12,7 @@
     },
     "datatype": {
       "type": "string",
-      "enum": ["uniqueId", "string", "int", "long", "double", "boolean", "date", "object", "array", "objectId", "timestamp"]
+      "enum": ["uniqueId", "string", "int", "long", "double", "boolean", "date", "object", "array", "objectId"]
     },
     "field": {
       "type": "object",
@@ -27,8 +27,7 @@
           "maxLength": 255
         },
         "required": {
-          "type": "boolean",
-          "default": false
+          "anyOf": [{ "type": "boolean" }, { "type": "string", "description": "Function to determine if this field is required" }]
         },
         "format": {
           "type": "string",
@@ -52,11 +51,30 @@
         {
           "if": {
             "properties": {
+              "type": { "const": "boolean" }
+            }
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "type": "boolean",
+                "description": "Default value for the field"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
               "type": { "const": "string" }
             }
           },
           "then": {
             "properties": {
+              "default": {
+                "type": "string",
+                "description": "Default value for the field"
+              },
               "transform": {
                 "type": "string",
                 "description": "Transform function to apply to the field",
@@ -64,7 +82,8 @@
               },
               "trim": {
                 "type": "boolean",
-                "description": "Whether to trim the field value"
+                "description": "Whether to trim the field value",
+                "default": false
               }
             }
           }
@@ -79,7 +98,10 @@
           },
           "then": {
             "properties": {
-              "default": { "type": "number" },
+              "default": {
+                "type": "number",
+                "description": "Default value for the field"
+              },
               "minimum": {
                 "type": "integer",
                 "description": "Minimum value for the field"
@@ -92,6 +114,32 @@
                 "type": "array",
                 "items": { "type": "number" },
                 "description": "List of allowed values for the field"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "const": "date" }
+            }
+          },
+          "then": {
+            "properties": {
+              "default": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Default value for the field"
+              },
+              "minimum": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Minimum value for the field"
+              },
+              "maximum": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Maximum value for the field"
               }
             }
           }
@@ -133,39 +181,43 @@
     "document": {
       "type": "object",
       "description": "Fields in the document",
-      "minProperties": 2,
+      "minProperties": 1,
       "properties": {
-        "_id": {
-          "type": "object",
-          "required": ["type"],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": ["uniqueId", "objectId"]
-            },
-            "alias": {
-              "type": "string",
-              "pattern": "^[a-zA-Z]{2,32}$",
-              "description": "Alias for the '_id' field in the collection"
+        "$type": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "$ref": "#/definitions/name" },
+              "type": { "type": "string" }
             }
           }
+        },
+        "$key": {
+          "type": "string"
         }
       },
+      "dependencies": {
+        "$type": ["$key"],
+        "$key": ["$type"]
+      },
       "patternProperties": {
-        "^[a-zA-Z0-9_-]{3,32}$": {
+        "^(?!_id$)[a-zA-Z0-9_-]{3,32}$": {
           "$ref": "#/definitions/field"
         }
       }
     },
     "index": {
       "type": "object",
-      "required": ["fields"],
+      "required": ["keys"],
       "properties": {
         "name": {
           "$ref": "#/definitions/name",
           "description": "Name of the index"
         },
-        "fields": {
+        "keys": {
           "type": "object",
           "description": "Fields in the index",
           "minProperties": 1,
@@ -188,7 +240,7 @@
     },
     "relation": {
       "type": "object",
-      "required": ["collection", "fields"],
+      "required": ["collection", "localField", "foreignField"],
       "properties": {
         "collection": {
           "$ref": "#/definitions/name",
@@ -204,9 +256,18 @@
         }
       }
     },
+    "projection": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]{3,32}$": {
+          "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/projection" }]
+        }
+      }
+    },
     "collection": {
       "type": "object",
-      "required": ["name", "fields"],
+      "required": ["name", "schema"],
       "properties": {
         "name": {
           "$ref": "#/definitions/name",
@@ -230,12 +291,25 @@
           "type": "boolean",
           "description": "Whether to include an 'updatedAt' field in the collection"
         },
-        "fields": {
-          "$ref": "#/definitions/document"
-        },
-        "primaryKey": {
-          "oneOf": [{ "$ref": "#/definitions/name" }, { "type": "array", "items": { "$ref": "#/definitions/name" } }],
-          "description": "Primary key field in the collection"
+        "schema": {
+          "type": "object",
+          "description": "Document schema for the collection",
+          "minProperties": 2,
+          "allOf": [
+            {
+              "properties": {
+                "_id": {
+                  "type": "object",
+                  "required": ["type"],
+                  "properties": {
+                    "type": { "type": "string", "enum": ["uniqueId", "objectId"] },
+                    "alias": { "type": "string", "pattern": "^[a-zA-Z]{2,32}$", "description": "Alias for the '_id' field in the collection" }
+                  }
+                }
+              }
+            },
+            { "$ref": "#/definitions/document" }
+          ]
         },
         "indexes": {
           "type": "array",
@@ -244,6 +318,13 @@
         "relations": {
           "type": "array",
           "items": { "$ref": "#/definitions/relation" }
+        },
+        "projections": {
+          "type": "object",
+          "description": "Custom projections for the collection, the key is the projection name and the value is the projection",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]{3,32}$": { "$ref": "#/definitions/projection" }
+          }
         }
       }
     }
@@ -262,8 +343,7 @@
     },
     "definitions": {
       "type": "object",
-      "description": "Definitions for the documents or sub-documents in the collection",
-      "minProperties": 1,
+      "description": "Definitions for the sub-documents in the collection",
       "patternProperties": {
         "^[a-zA-Z0-9_-]{3,32}$": {
           "$ref": "#/definitions/document"
