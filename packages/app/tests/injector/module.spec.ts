@@ -1,13 +1,14 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
+import { NeverError } from '@shadow-library/errors';
 
 /**
  * Importing user defined packages
  */
-import { Inject, Injectable, Module, Optional } from '@shadow-library/app';
-import { ModuleState, Module as ModuleWrapper } from '@shadow-library/app/injector';
+import { Inject, Injectable, Module, type OnApplicationReady, OnModuleDestroy, OnModuleInit, Optional } from '@shadow-library/app';
+import { LifecycleMethods, Module as ModuleWrapper } from '@shadow-library/app/injector';
 
 /**
  * Defining types
@@ -19,20 +20,26 @@ import { ModuleState, Module as ModuleWrapper } from '@shadow-library/app/inject
 
 describe('Module', () => {
   const testConfig = Symbol('CONFIG');
+  const onModuleInitMock = jest.fn(() => {});
+  const onAppReadyMock = jest.fn(() => {});
+  const onModuleDestroyMock = jest.fn(() => {});
 
   @Injectable()
-  class CatSubService {
+  class CatSubService implements OnModuleInit {
     constructor(@Inject('CONFIG') public config: any) {}
+    onModuleInit = onModuleInitMock;
   }
 
   @Injectable()
-  class CatService {
+  class CatService implements OnApplicationReady {
     constructor(public catSubService: CatSubService) {}
+    onApplicationReady = onAppReadyMock;
   }
 
   @Injectable()
-  class MockCatService {
+  class MockCatService implements OnModuleInit {
     constructor(@Optional() @Inject(testConfig) public optionalData: any) {}
+    onModuleInit = onModuleInitMock;
   }
 
   @Module({
@@ -45,7 +52,9 @@ describe('Module', () => {
     ],
     exports: [CatService, 'MOCK_CAT'],
   })
-  class CatModule {}
+  class CatModule implements OnModuleDestroy {
+    onModuleDestroy = onModuleDestroyMock;
+  }
 
   const module = new ModuleWrapper(CatModule, []);
 
@@ -101,7 +110,9 @@ describe('Module', () => {
 
   it('should initialize the module', async () => {
     await expect(module.init()).resolves.toBe(module);
-    expect(module.getState()).toBe(ModuleState.INITIALIZED);
+    expect(onModuleInitMock).toBeCalledTimes(2);
+    expect(module.isInited()).toBe(true);
+    expect(module.getInstance()).toBeInstanceOf(CatModule);
   });
 
   it('should export the exported providers', () => {
@@ -111,5 +122,19 @@ describe('Module', () => {
 
   it('should return null if the provider is not exported', () => {
     expect(module.getExportedProvider(CatSubService)).toBeNull();
+  });
+
+  it('should run lifecycle methods', async () => {
+    await module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY);
+    expect(onAppReadyMock).toBeCalledTimes(1);
+  });
+
+  it('should destroy the module', async () => {
+    await module.destroy();
+    const error = new NeverError(`Module '${CatModule.name}' not yet initialized`);
+    expect(module.isInited()).toBe(false);
+    expect(onModuleDestroyMock).toBeCalledTimes(1);
+    expect(() => module.getInstance()).toThrowError(error);
+    expect(() => module.getExportedProvider('MOCK_CAT')).toThrowError(error);
   });
 });

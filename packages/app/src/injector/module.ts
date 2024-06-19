@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { Logger } from '@shadow-library/common';
-import { InternalError } from '@shadow-library/errors';
+import { InternalError, NeverError } from '@shadow-library/errors';
 import { Type } from '@shadow-library/types';
 
 /**
@@ -18,12 +18,11 @@ import { FactoryProvider, FactoryProviderInject, InjectionName, Provider } from 
  * Defining types
  */
 
-export enum ModuleState {
-  CREATED,
-  INITIALIZING,
-  INITIALIZED,
-  DESTROYING,
-  DESTROYED,
+export enum LifecycleMethods {
+  ON_MODULE_INIT = 'onModuleInit',
+  ON_MODULE_DESTROY = 'onModuleDestroy',
+  ON_APPLICATION_READY = 'onApplicationReady',
+  ON_APPLICATION_STOP = 'onApplicationStop',
 }
 
 interface ParsedInjection {
@@ -83,7 +82,7 @@ export class Module {
   private readonly providers = new Map<InjectionName, object>();
   private readonly exports = new Set<InjectionName>();
 
-  private status = ModuleState.CREATED;
+  private instance?: object;
 
   constructor(metatype: Type, imports: Module[]) {
     this.metatype = metatype;
@@ -109,21 +108,51 @@ export class Module {
     return null;
   }
 
-  getState(): ModuleState {
-    return this.status;
+  async runLifecycleMethod(method: LifecycleMethods): Promise<this> {
+    if (!this.instance) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
+    logger.debug(`Executing lifecycle method '${method}' in module '${this.metatype.name}'`);
+
+    const instances = [...this.providers.values(), ...this.controllers.values(), this.instance];
+    if (method === LifecycleMethods.ON_MODULE_DESTROY) instances.reverse();
+    for (const instance of instances) {
+      const hasMethod = typeof instance === 'object' && method in instance && typeof (instance as any)[method] === 'function';
+      if (hasMethod) {
+        await (instance as any)[method]();
+        logger.debug(`Executed lifecycle method '${instance.constructor.name}.${method}()'`);
+      }
+    }
+
+    return this;
+  }
+
+  isInited(): boolean {
+    return typeof this.instance === 'object';
+  }
+
+  getInstance(): object {
+    if (!this.instance) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
+    return this.instance;
   }
 
   getExportedProvider<T = object>(name: InjectionName): T | null {
+    if (!this.isInited()) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
     const isExported = this.exports.has(name);
     if (!isExported) return null;
     return this.getProvider(name, true) as T | null;
   }
 
-  async init(): Promise<this> {
-    this.status = ModuleState.INITIALIZING;
-    logger.debug(`Initializing module '${this.metatype.name}'`);
+  async destroy(): Promise<this> {
+    if (!this.isInited()) return this;
+    await this.runLifecycleMethod(LifecycleMethods.ON_MODULE_DESTROY);
+    this.instance = undefined;
+    this.providers.clear();
+    this.controllers.clear();
+    return this;
+  }
 
+  async init(): Promise<this> {
     /** Determining the order to initiate the providers */
+    logger.debug(`Determining the order to initialize providers for module '${this.metatype.name}'`);
     const providers = InjectorUtils.getMetadata<Provider>(MODULE_METADATA.PROVIDERS, this.metatype);
     const parsedProviders = providers.map(parseProvider);
     const dependencyGraph = new DependencyGraph<InjectionName>();
@@ -137,7 +166,6 @@ export class Module {
     const initOrder = dependencyGraph.getSortedNodes();
 
     /** Initializing the providers */
-    logger.debug(`Initializing providers in module '${this.metatype.name}'`);
     for (const providerName of initOrder) {
       const provider = parsedProviders.find(p => p.name === providerName);
       if (!provider) continue;
@@ -153,10 +181,8 @@ export class Module {
       this.providers.set(provider.name, providerInstance);
       logger.debug(`Provider '${InjectorUtils.getProviderName(providerName)}' initialized`);
     }
-    logger.debug(`Providers initialized in module '${this.metatype.name}'`);
 
     /** Initializing the controllers */
-    logger.debug(`Initializing controllers in module '${this.metatype.name}'`);
     const controllers = InjectorUtils.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
     for (const controller of controllers) {
       const valid = isController(controller);
@@ -168,10 +194,14 @@ export class Module {
       this.controllers.set(controller, controllerInstance);
       logger.debug(`Controller '${controller.name}' initialized`);
     }
-    logger.debug(`Controllers initialized in module '${this.metatype.name}'`);
 
-    this.status = ModuleState.INITIALIZED;
+    /** Initializing the module instance */
+    logger.debug(`Initializing Module '${this.metatype.name}'`);
+    const dependencyNames = InjectorUtils.getMetadata<Type>(PARAMTYPES_METADATA, this.metatype);
+    const dependencies = dependencyNames.map(name => this.getProvider(name));
+    this.instance = new this.metatype(...dependencies);
     logger.debug(`Module '${this.metatype.name}' initialized`);
-    return this;
+
+    return await this.runLifecycleMethod(LifecycleMethods.ON_MODULE_INIT);
   }
 }

@@ -9,7 +9,7 @@ import { Type } from '@shadow-library/types';
  * Importing user defined packages
  */
 import { MODULE_METADATA, MODULE_WATERMARK } from './constants';
-import { DependencyGraph, InjectorUtils, Module } from './injector';
+import { DependencyGraph, InjectorUtils, LifecycleMethods, Module } from './injector';
 
 /**
  * Defining types
@@ -22,11 +22,10 @@ const logger = Logger.getLogger('ShadowApplication');
 
 export class ShadowApplication {
   private readonly modules = new Map<Type, Module>();
-
-  private inited = false;
+  private readonly main: Module;
 
   constructor(module: Type) {
-    this.scanForModules(module);
+    this.main = this.scanForModules(module);
     logger.debug('Modules scanned successfully');
   }
 
@@ -42,7 +41,7 @@ export class ShadowApplication {
   }
 
   isInited(): boolean {
-    return this.inited;
+    return this.main.isInited();
   }
 
   getModules(): Type[] {
@@ -50,7 +49,7 @@ export class ShadowApplication {
   }
 
   async init(): Promise<this> {
-    if (this.inited) return this;
+    if (this.isInited()) return this;
 
     logger.debug('Initializing application');
     const dependencyGraph = new DependencyGraph<Type>();
@@ -66,8 +65,27 @@ export class ShadowApplication {
       await moduleInstance.init();
     }
 
-    this.inited = true;
     logger.debug('Application initialized');
+    for (const module of this.modules.values()) await module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY);
+    return this;
+  }
+
+  async start(): Promise<this> {
+    if (!this.isInited()) await this.init();
+    const instance = this.main.getInstance();
+    const isExecutable = 'execute' in instance && typeof (instance as any).execute === 'function';
+    if (isExecutable) await (this.main as any).execute();
+    return this;
+  }
+
+  async stop(): Promise<this> {
+    if (!this.isInited()) return this;
+    logger.debug('Stopping application');
+    for (const module of this.modules.values()) await module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_STOP);
+    const modules = Array.from(this.modules.values()).reverse();
+    for (const module of modules) await module.destroy();
+    this.modules.clear();
+    logger.debug('Application stopped');
     return this;
   }
 
