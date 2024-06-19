@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "mongodb": "^6.7.0",
+    "@shadow-library/app": "workspace:*",
     "@shadow-library/common": "workspace:*"
   }
 }

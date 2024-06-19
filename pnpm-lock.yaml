@@ -101,6 +101,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@shadow-library/app':
+        specifier: workspace:*
+        version: link:../app
       '@shadow-library/common':
         specifier: workspace:*
         version: link:../common

@@ -84,6 +84,11 @@
                 "type": "boolean",
                 "description": "Whether to trim the field value",
                 "default": false
+              },
+              "enum": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of allowed values for the field"
               }
             }
           }
@@ -147,31 +152,17 @@
         {
           "if": {
             "properties": {
-              "type": { "const": "object" }
-            }
-          },
-          "then": {
-            "required": ["subType"],
-            "properties": {
-              "subType": {
-                "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/document" }],
-                "description": "Sub-type of the object"
+              "type": {
+                "anyOf": [{ "const": "object" }, { "const": "array" }]
               }
             }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": { "const": "array" }
-            }
           },
           "then": {
             "required": ["subType"],
             "properties": {
               "subType": {
                 "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/document" }],
-                "description": "Sub-type of the object"
+                "description": "Sub-type of the object or array"
               }
             }
           }
