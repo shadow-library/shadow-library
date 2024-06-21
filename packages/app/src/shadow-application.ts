@@ -44,10 +44,6 @@ export class ShadowApplication {
     return this.main.isInited();
   }
 
-  getModules(): Type[] {
-    return Array.from(this.modules.keys());
-  }
-
   async init(): Promise<this> {
     if (this.isInited()) return this;
 
@@ -55,6 +51,7 @@ export class ShadowApplication {
     const dependencyGraph = new DependencyGraph<Type>();
     const modules = Array.from(this.modules.keys());
     for (const module of modules) {
+      dependencyGraph.addNode(module);
       const dependencies = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
       for (const dependency of dependencies) dependencyGraph.addDependency(module, dependency);
     }
@@ -74,7 +71,7 @@ export class ShadowApplication {
     if (!this.isInited()) await this.init();
     const instance = this.main.getInstance();
     const isExecutable = 'execute' in instance && typeof (instance as any).execute === 'function';
-    if (isExecutable) await (this.main as any).execute();
+    if (isExecutable) await (instance as any).execute();
     return this;
   }
 
@@ -90,9 +87,12 @@ export class ShadowApplication {
   }
 
   get<TInput = any, TResult = TInput>(provider: Type<TInput> | string | symbol): TResult {
+    if (!this.isInited()) throw new InternalError(`Application not yet initialized`);
     for (const module of this.modules.values()) {
-      const providerInstance = module.getExportedProvider<TResult>(provider);
-      if (providerInstance) return providerInstance;
+      try {
+        const providerInstance = module.getExportedProvider<TResult>(provider);
+        if (providerInstance) return providerInstance;
+      } catch {} // eslint-disable-line no-empty
     }
 
     const providerName = typeof provider === 'function' ? provider.name : provider.toString();
