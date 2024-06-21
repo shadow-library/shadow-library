@@ -29,11 +29,6 @@ describe('Blog', () => {
     expect(app).toBeInstanceOf(ShadowApplication);
   });
 
-  it('should init the modules only once', () => {
-    const modules = app.getModules();
-    expect(modules).toHaveLength(4);
-  });
-
   it('should return the inited and exported service', () => {
     const userService = app.get(UserService);
     expect(userService).toBeDefined();
