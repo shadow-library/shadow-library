@@ -1,0 +1,46 @@
+{
+  "$id": "urn:shadow-library:database:config",
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "required": ["collections", "output"],
+  "properties": {
+    "collections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "formats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "output": {
+      "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/output" }]
+    }
+  },
+  "definitions": {
+    "output": {
+      "type": "object",
+      "properties": {
+        "dirPath": {
+          "type": "string"
+        },
+        "filePath": {
+          "type": "string"
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["dirPath"],
+          "properties": { "filePath": { "not": {} }, "dirPath": {} }
+        },
+        {
+          "required": ["filePath"],
+          "properties": { "dirPath": { "not": {} }, "filePath": {} }
+        }
+      ]
+    }
+  }
+}

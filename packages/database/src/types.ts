@@ -104,3 +104,11 @@ export interface Format {
 }
 
 export type Formats = Record<string, Format>;
+
+export type OutputConfig = { dirPath: string } | { filePath: string };
+
+export interface Config {
+  collections: string[];
+  formats?: string[];
+  output: string | OutputConfig;
+}
