@@ -1,6 +1,7 @@
 /**
  * Importing npm packages
  */
+import { MongoClient } from 'mongodb';
 
 /**
  * Importing user defined packages
@@ -24,6 +25,7 @@ export interface SchemaField {
   validator?: string;
   transformer?: string;
   defaultFn?: string;
+  immutable?: boolean;
 }
 
 export interface BooleanSchemaField extends SchemaField {
@@ -36,6 +38,7 @@ export interface StringSchemaField extends SchemaField {
   default?: string;
   transform?: 'lowercase' | 'uppercase' | 'capitalize';
   trim?: boolean;
+  enum?: string[] | Record<string, string>;
 }
 
 export interface NumberSchemaField extends SchemaField {
@@ -43,12 +46,12 @@ export interface NumberSchemaField extends SchemaField {
   default?: number;
   minimum?: number;
   maximum?: number;
-  enum?: number[];
+  enum?: number[] | Record<string, number>;
 }
 
 export interface DateSchemaField extends SchemaField {
   type: 'date';
-  default?: Date;
+  default?: string;
   minimum?: Date;
   maximum?: Date;
 }
@@ -111,4 +114,8 @@ export interface Config {
   collections: string[];
   formats?: string[];
   output: string | OutputConfig;
+}
+
+export interface DatabaseService {
+  getMongoClient(): MongoClient | Promise<MongoClient>;
 }

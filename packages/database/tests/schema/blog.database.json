@@ -15,6 +15,7 @@
       },
       "verified": {
         "type": "boolean",
+        "required": true,
         "default": false
       }
     },
@@ -29,6 +30,9 @@
       "password": {
         "type": "string",
         "required": true
+      },
+      "passwordResetToken": {
+        "type": "string"
       }
     },
     "user-oauth": {
@@ -56,18 +60,21 @@
         "required": true
       },
       "ipAddr": {
-        "type": "string"
+        "type": "string",
+        "format": "ipv4"
       },
       "userAgent": {
         "type": "string"
       },
       "accessedAt": {
         "type": "date",
-        "required": true
+        "required": true,
+        "default": "now"
       },
       "createdAt": {
         "type": "date",
-        "defaultFn": "getCurrentDate"
+        "immutable": true,
+        "default": "now"
       }
     },
     "user-profile": {
@@ -84,8 +91,7 @@
       },
       "gender": {
         "type": "int",
-        "enum": [0, 1, 2],
-        "description": "0 - Not specified, 1 - Male, 2 - Female"
+        "enum": { "Male": 1, "Female": 2 }
       },
       "imageURL": {
         "type": "string",
@@ -97,7 +103,8 @@
       },
       "createdAt": {
         "type": "date",
-        "defaultFn": "getCurrentDate"
+        "immutable": true,
+        "default": "now"
       }
     }
   },
@@ -120,8 +127,7 @@
         },
         "type": {
           "type": "int",
-          "enum": [0, 1],
-          "description": "0 - Personal, 1 - Organization"
+          "enum": { "Personal": 0, "Organization": 1 }
         }
       },
       "indexes": [{ "keys": { "name": 1 }, "unique": true }]
@@ -140,14 +146,12 @@
         "status": {
           "required": true,
           "type": "int",
-          "enum": [0, 1, 2],
-          "description": "0 - Inactive, 1 - Active, 2 - Closed"
+          "enum": { "Inactive": 0, "Active": 1, "Closed": 2 }
         },
         "role": {
           "type": "int",
           "required": true,
-          "enum": [0, 1, 2],
-          "description": "0 - User, 1 - Admin, 2 - Super Admin"
+          "enum": { "User": 0, "Admin": 1, "SuperAdmin": 2 }
         },
         "emails": {
           "type": "array",
@@ -170,7 +174,10 @@
           "required": true
         }
       },
-      "indexes": [{ "name": "UNIQUE_EMAIL_IDS", "keys": { "emails.email": 1 }, "unique": true }],
+      "indexes": [
+        { "name": "UNIQUE_EMAIL_IDS", "keys": { "emails.email": 1 }, "unique": true },
+        { "name": "INDEX_AID", "keys": { "aid": 1 } }
+      ],
       "relations": [{ "collection": "Accounts", "localField": "aid", "foreignField": "aid" }],
       "projections": {
         "profile-auth": { "aid": true, "uid": true, "status": true, "role": true, "profile": true, "auth": true }
