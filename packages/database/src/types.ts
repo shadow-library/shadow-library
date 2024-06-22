@@ -116,6 +116,11 @@ export interface Config {
   output: string | OutputConfig;
 }
 
+export interface DatabaseConfig {
+  collections: Collections[];
+  formats: Formats;
+}
+
 export interface DatabaseService {
   getMongoClient(): MongoClient | Promise<MongoClient>;
 }

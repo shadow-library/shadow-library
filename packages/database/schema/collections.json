@@ -159,7 +159,8 @@
             "properties": {
               "default": {
                 "type": "string",
-                "description": "Default value for the field, can be a date-time string or 'now[+-]?[0-9]+[s|m|h|d|w|M|y]?', where now denotes the current date-time, and the optional suffix can be used to add or subtract time from the current date-time"
+                "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z|now([+-][0-9]+[smhdwMy])?)$",
+                "description": "Default value for the field, can be a date-time string or relative time from current time"
               },
               "minimum": {
                 "type": "string",

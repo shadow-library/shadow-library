@@ -24,13 +24,32 @@ describe('ConfigModule', () => {
   let module: ShadowApplication;
   beforeAll(async () => (module = await ShadowFactory.create(ConfigModule)));
 
+  it('should throw error if config file not found', async () => {
+    const configService = module.get(ConfigService);
+    const error = new Error('Config file not found');
+    await expect(configService.loadConfig()).rejects.toThrowError(error);
+  });
+
   it('should return config', async () => {
     const configService = module.get(ConfigService);
     const config = await configService.loadConfig(configPath);
-    expect(config).toStrictEqual({
+    expect(config).toMatchObject({
       collections: ['scchema/**/*.database.json'],
       formats: ['schema/custom-formats.json'],
       output: 'database.ts',
+    });
+  });
+
+  it('should load the database config and validate it', async () => {
+    const configService = module.get(ConfigService);
+    const collections = join(__dirname, '..', '**', '*.database.json');
+    const formats = join(__dirname, '..', '**', 'custom-formats.json');
+    const config = await configService.loadDatabaseConfig([collections], [formats]);
+    expect(config.collections).toHaveLength(1);
+    expect(config.collections[0]?.name).toBe('test-database-collections');
+    expect(config.formats).toStrictEqual({
+      email: { description: 'Email address', pattern: expect.any(String) },
+      'person-name': { description: 'Person name', pattern: expect.any(String) },
     });
   });
 });
