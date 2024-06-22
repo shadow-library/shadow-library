@@ -18,15 +18,16 @@ import { DependencyGraph, InjectorUtils, LifecycleMethods, Module } from './inje
 /**
  * Declaring the constants
  */
-const logger = Logger.getLogger('ShadowApplication');
 
 export class ShadowApplication {
   private readonly modules = new Map<Type, Module>();
   private readonly main: Module;
+  private readonly logger: Logger;
 
   constructor(module: Type) {
+    this.logger = Logger.getLogger('shadow-app');
     this.main = this.scanForModules(module);
-    logger.debug('Modules scanned successfully');
+    this.logger.debug('Modules scanned successfully');
   }
 
   private scanForModules(module: Type): Module {
@@ -47,7 +48,7 @@ export class ShadowApplication {
   async init(): Promise<this> {
     if (this.isInited()) return this;
 
-    logger.debug('Initializing application');
+    this.logger.debug('Initializing application');
     const dependencyGraph = new DependencyGraph<Type>();
     const modules = Array.from(this.modules.keys());
     for (const module of modules) {
@@ -62,7 +63,7 @@ export class ShadowApplication {
       await moduleInstance.init();
     }
 
-    logger.debug('Application initialized');
+    this.logger.debug('Application initialized');
     for (const module of this.modules.values()) await module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY);
     return this;
   }
@@ -77,12 +78,12 @@ export class ShadowApplication {
 
   async stop(): Promise<this> {
     if (!this.isInited()) return this;
-    logger.debug('Stopping application');
+    this.logger.debug('Stopping application');
     for (const module of this.modules.values()) await module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_STOP);
     const modules = Array.from(this.modules.values()).reverse();
     for (const module of modules) await module.destroy();
     this.modules.clear();
-    logger.debug('Application stopped');
+    this.logger.debug('Application stopped');
     return this;
   }
 
