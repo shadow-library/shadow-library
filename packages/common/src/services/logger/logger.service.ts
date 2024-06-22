@@ -3,6 +3,7 @@
  */
 import fs from 'fs';
 
+import { InternalError } from '@shadow-library/errors';
 import { Logger as WinstonLogger, createLogger as createWinstonLogger, format, transports } from 'winston';
 
 /**
@@ -17,7 +18,16 @@ import { Config } from '../config.service';
  * Defining types
  */
 
-export interface ShadowLogger extends Pick<WinstonLogger, 'debug' | 'info' | 'http' | 'warn' | 'error'> {}
+export enum LogTransport {
+  Console,
+  File,
+  CloudWatch,
+}
+
+export interface LoggerOptions {
+  transports?: LogTransport[];
+  getContext?: () => Record<string, any>;
+}
 
 /**
  * Declaring the constants
@@ -38,29 +48,40 @@ function getFileIndex(filename: string): number {
 export class Logger {
   private static instance: WinstonLogger;
 
-  static getLogger(label: string): ShadowLogger {
-    return this.getInstance().child({ label });
+  private constructor() {}
+
+  static getLogger(label: string): Logger {
+    if (this.instance) return this.instance.child({ label });
+    return new Logger();
   }
 
-  static getInstance(fn: () => Record<string, any> = () => ({})): WinstonLogger {
-    if (this.instance) return this.instance;
+  static initInstance(opts: LoggerOptions = {}): void {
+    if (this.instance) throw new InternalError('Logger instance already initialized');
 
-    const nodeEnv = Config.get('app.env');
-    const logDir = Config.get('log.dir');
-    const contextFormat = additionalDataFormat(fn);
+    if (!opts.getContext) opts.getContext = () => ({});
+    if (!opts.transports) {
+      opts.transports = [];
+      const enableFileLog = Config.get('log.dir') !== 'false' && Config.get('app.env') !== 'test';
+      const isTestDebug = Config.get('app.env') === 'test' && !!process.env.TEST_DEBUG;
+      if (Config.get('app.env') === 'development') opts.transports.push(LogTransport.Console);
+      if (Config.get('app.env') === 'production') opts.transports.push(LogTransport.CloudWatch);
+      if (enableFileLog || isTestDebug) opts.transports.push(LogTransport.File);
+    }
+
+    const contextFormat = additionalDataFormat(opts.getContext);
     const logFormat = format.combine(contextFormat(), format.errors({ stack: true }), format.json());
     this.instance = createWinstonLogger({ level: Config.get('log.level') });
 
-    /** Logger setup for development mode */
-    if (nodeEnv === 'development') {
+    /** Setting up the logger transports */
+    if (opts.transports.includes(LogTransport.Console)) {
       const consoleColor = format.colorize({ level: true, colors: logColorFormat, message: true });
       const uppercaseLevel = format(info => ({ ...info, level: info.level.toUpperCase() }));
       const consoleLogFormat = format.combine(format.errors({ stack: true }), uppercaseLevel(), consoleColor, consoleFormat);
       this.instance.add(new transports.Console({ format: consoleLogFormat }));
     }
-
-    if (nodeEnv === 'production') this.instance.add(new CloudWatchTransport({ format: logFormat }));
-    else if (logDir !== 'false') {
+    if (opts.transports.includes(LogTransport.CloudWatch)) this.instance.add(new CloudWatchTransport({ format: logFormat }));
+    if (opts.transports.includes(LogTransport.File)) {
+      const logDir = Config.get('log.dir');
       try {
         fs.accessSync(logDir);
       } catch (err) {
@@ -80,8 +101,6 @@ export class Logger {
 
       this.instance.add(new transports.File({ format: logFormat, filename: `${logDir}/${appName}-0.log` }));
     }
-
-    return this.instance;
   }
 
   /** Mutates the input object to remove the sensitive fields that are present in it */
@@ -92,5 +111,40 @@ export class Logger {
       else if (typeof value === 'object' && !Array.isArray(value)) this.removeSensitiveFields(value, sensitiveFields);
     }
     return data;
+  }
+
+  debug(message: string, ...meta: any[]): this;
+  debug(infoObject: object): this;
+  debug(message: any): this; // eslint-disable-line  @typescript-eslint/explicit-module-boundary-types
+  debug(): this {
+    return this;
+  }
+
+  info(message: string, ...meta: any[]): this;
+  info(infoObject: object): this;
+  info(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+  info(): this {
+    return this;
+  }
+
+  http(message: string, ...meta: any[]): this;
+  http(infoObject: object): this;
+  http(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+  http(): this {
+    return this;
+  }
+
+  warn(message: string, ...meta: any[]): this;
+  warn(infoObject: object): this;
+  warn(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+  warn(): this {
+    return this;
+  }
+
+  error(message: string, ...meta: any[]): this;
+  error(infoObject: object): this;
+  error(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+  error(): this {
+    return this;
   }
 }
