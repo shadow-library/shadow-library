@@ -1,7 +1,8 @@
 /**
  * Importing npm packages
  */
-import { Ajv } from 'ajv';
+import { Ajv, type Options as AjvOptions } from 'ajv';
+import addFormats from 'ajv-formats';
 
 /**
  * Importing user defined packages
@@ -14,12 +15,12 @@ import { Ajv } from 'ajv';
 /**
  * Declaring the constants
  */
-
-export const MODULE_NAME = 'shadow-database';
-
-export const ajv = new Ajv({
+const ajvOptions: AjvOptions = {
   allErrors: true,
   strict: true,
   strictRequired: true,
-  removeAdditional: 'all',
-});
+};
+
+export const MODULE_NAME = 'shadow-database';
+
+export const ajv = addFormats(new Ajv(ajvOptions));
