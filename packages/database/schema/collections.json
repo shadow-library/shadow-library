@@ -45,6 +45,10 @@
         "defaultFn": {
           "type": "string",
           "description": "Default function to apply to the field"
+        },
+        "immutable": {
+          "type": "boolean",
+          "description": "Whether the field is immutable. By default fields are mutable"
         }
       },
       "allOf": [
@@ -86,9 +90,20 @@
                 "default": false
               },
               "enum": {
-                "type": "array",
-                "items": { "type": "string" },
-                "description": "List of allowed values for the field"
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "List of allowed values for the field"
+                  },
+                  {
+                    "type": "object",
+                    "description": "Enum values for the field",
+                    "patternProperties": {
+                      "^[a-zA-Z0-9_]{3,32}$": { "type": "string" }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -116,9 +131,20 @@
                 "description": "Maximum value for the field"
               },
               "enum": {
-                "type": "array",
-                "items": { "type": "number" },
-                "description": "List of allowed values for the field"
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "description": "List of allowed values for the field"
+                  },
+                  {
+                    "type": "object",
+                    "description": "Enum values for the field",
+                    "patternProperties": {
+                      "^[a-zA-Z0-9_]{3,32}$": { "type": "number" }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -133,8 +159,7 @@
             "properties": {
               "default": {
                 "type": "string",
-                "format": "date-time",
-                "description": "Default value for the field"
+                "description": "Default value for the field, can be a date-time string or 'now[+-]?[0-9]+[s|m|h|d|w|M|y]?', where now denotes the current date-time, and the optional suffix can be used to add or subtract time from the current date-time"
               },
               "minimum": {
                 "type": "string",
