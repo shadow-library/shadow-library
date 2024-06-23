@@ -17,7 +17,7 @@ export type StringDataType = 'uniqueId' | 'string' | 'objectId';
 
 export type DataType = StringDataType | NumberDataType | 'boolean' | 'date' | 'object' | 'array';
 
-export interface SchemaField {
+interface BaseSchemaField {
   type: DataType;
   description?: string;
   required?: boolean | string;
@@ -28,12 +28,12 @@ export interface SchemaField {
   immutable?: boolean;
 }
 
-export interface BooleanSchemaField extends SchemaField {
+export interface BooleanSchemaField extends BaseSchemaField {
   type: 'boolean';
   default?: boolean;
 }
 
-export interface StringSchemaField extends SchemaField {
+export interface StringSchemaField extends BaseSchemaField {
   type: 'string';
   default?: string;
   transform?: 'lowercase' | 'uppercase' | 'capitalize';
@@ -41,7 +41,7 @@ export interface StringSchemaField extends SchemaField {
   enum?: string[] | Record<string, string>;
 }
 
-export interface NumberSchemaField extends SchemaField {
+export interface NumberSchemaField extends BaseSchemaField {
   type: NumberDataType;
   default?: number;
   minimum?: number;
@@ -49,19 +49,27 @@ export interface NumberSchemaField extends SchemaField {
   enum?: number[] | Record<string, number>;
 }
 
-export interface DateSchemaField extends SchemaField {
+export interface DateSchemaField extends BaseSchemaField {
   type: 'date';
   default?: string;
   minimum?: Date;
   maximum?: Date;
 }
 
-export interface ObjectSchemaField extends SchemaField {
+export interface ObjectSchemaField extends BaseSchemaField {
   type: 'object' | 'array';
-  subType: DataType | Document;
+  subType: string | Document;
 }
 
-export type MixedDocument = { $type: string; $key: string };
+export type SchemaField = BooleanSchemaField | StringSchemaField | NumberSchemaField | DateSchemaField | ObjectSchemaField;
+
+export interface MixedDocument {
+  $type: {
+    name: string;
+    type: string;
+  }[];
+  $key: string;
+}
 
 export type FixedDocument = Record<string, SchemaField>;
 
@@ -88,13 +96,17 @@ export interface Collection {
   description?: string;
   createdAt?: boolean;
   updatedAt?: boolean;
-  schema: { type: 'uniqueId' | 'objectId'; alias?: string } & Document;
+  schema: { _id?: { type: 'uniqueId' | 'objectId'; alias?: string } } & Document;
   indexes?: Index[];
   relations?: Relation[];
   projections?: Record<string, Projection>;
 }
 
-export interface Collections {
+export interface ParsedCollection extends Collection {
+  subDocuments: Record<string, Document>;
+}
+
+export interface CollectionGroup {
   name?: string;
   description?: string;
   definitions?: Record<string, Document>;
@@ -117,7 +129,7 @@ export interface Config {
 }
 
 export interface DatabaseConfig {
-  collections: Collections[];
+  collectionGroups: CollectionGroup[];
   formats: Formats;
 }
 

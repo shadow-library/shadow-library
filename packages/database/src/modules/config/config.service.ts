@@ -60,17 +60,17 @@ export class ConfigService implements OnModuleInit {
   }
 
   async loadDatabaseConfig(collections: string[], formats?: string[]): Promise<DatabaseConfig> {
-    const config: DatabaseConfig = { collections: [], formats: {} };
+    const config: DatabaseConfig = { collectionGroups: [], formats: {} };
     const collectionFiles = collections.map(collection => globSync(collection)).flat();
     if (!collectionFiles.length) throw new Error('No collection files found');
     const formatFiles = formats?.map(format => globSync(format)).flat() || [];
 
     for (const collectionFile of collectionFiles) {
-      const collection = JSON.parse(readFileSync(collectionFile, 'utf-8'));
-      delete collection.$schema;
-      const data = this.validate('collections', collection);
+      const collectionGroup = JSON.parse(readFileSync(collectionFile, 'utf-8'));
+      delete collectionGroup.$schema;
+      const data = this.validate('collections', collectionGroup);
       if (!data.valid) throw new Error(`Invalid collection: ${data.errors}`);
-      config.collections.push(collection);
+      config.collectionGroups.push(collectionGroup);
     }
 
     for (const formatFile of formatFiles) {
