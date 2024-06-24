@@ -76,4 +76,33 @@ describe('ConfigModule', () => {
     const subDocuments = parsedCollectionGroups.map(p => Object.keys(p.subDocuments));
     expect(subDocuments).toStrictEqual([['SchemaA', 'SchemaB']]);
   });
+
+  it('should throw error for unsupported discriminator subType', () => {
+    const parserService = module.get(ParserService);
+    const collectionGroup: CollectionGroup = {
+      definitions: {
+        Cart: {
+          item: { type: 'string', required: true },
+          qty: { type: 'int', required: true },
+        },
+      },
+      collections: [
+        {
+          name: 'discriminator',
+          schema: {
+            username: { type: 'string', required: true },
+            $discriminator: {
+              key: 'type',
+              values: {
+                admin: { role: { type: 'string' } },
+                user: { cart: { type: 'array', subType: 'Cart' } },
+              },
+            },
+          },
+        },
+      ],
+    };
+    const error = new Error('Discriminator subType not supported');
+    expect(() => parserService.parseCollectionGroup(collectionGroup)).toThrowError(error);
+  });
 });

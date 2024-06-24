@@ -26,9 +26,14 @@ export class ParserService {
     for (const key in schema) {
       const subDocs: string[] = [];
       switch (key) {
-        case '$descriminator': {
-          const values = Object.values((schema.$discriminator as Discriminator).values);
-          values.forEach(value => keys.push(...Object.keys(value)));
+        case '$discriminator': {
+          const discriminatorValues = Object.values((schema.$discriminator as Discriminator).values);
+          for (const discriminatorValue of discriminatorValues) {
+            const fields = Object.keys(discriminatorValue);
+            const hasSubType = fields.some(field => 'subType' in discriminatorValue[field]!);
+            if (hasSubType) throw new InternalError('Discriminator subType not supported');
+            keys.push(...fields);
+          }
           break;
         }
 
