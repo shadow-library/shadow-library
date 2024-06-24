@@ -3,7 +3,7 @@
   "name": "test-database-collections",
   "description": "Test database collections",
   "definitions": {
-    "user-email": {
+    "UserEmail": {
       "email": {
         "type": "string",
         "required": true,
@@ -19,38 +19,38 @@
         "default": false
       }
     },
-    "user-auth": {
-      "$type": [
-        { "name": "password", "type": "user-password-auth" },
-        { "name": "oauth", "type": "user-oauth" }
-      ],
-      "$key": "type"
-    },
-    "user-password-auth": {
-      "password": {
-        "type": "string",
-        "required": true
-      },
-      "passwordResetToken": {
-        "type": "string"
+    "UserAuth": {
+      "$discriminator": {
+        "key": "type",
+        "values": {
+          "user-password-auth": {
+            "password": {
+              "type": "string",
+              "required": true
+            },
+            "passwordResetToken": {
+              "type": "string"
+            }
+          },
+          "user-oauth": {
+            "provider": {
+              "type": "string",
+              "required": true,
+              "enum": ["google", "facebook"]
+            },
+            "spuid": {
+              "type": "string",
+              "required": true
+            },
+            "refreshToken": {
+              "type": "string",
+              "required": true
+            }
+          }
+        }
       }
     },
-    "user-oauth": {
-      "provider": {
-        "type": "string",
-        "required": true,
-        "enum": ["google", "facebook"]
-      },
-      "spuid": {
-        "type": "string",
-        "required": true
-      },
-      "refreshToken": {
-        "type": "string",
-        "required": true
-      }
-    },
-    "user-session": {
+    "UserSession": {
       "usid": {
         "type": "int",
         "required": true
@@ -77,7 +77,7 @@
         "default": "now"
       }
     },
-    "user-profile": {
+    "UserProfile": {
       "firstName": {
         "type": "string",
         "required": true,
@@ -110,7 +110,7 @@
   },
   "collections": [
     {
-      "name": "Accounts",
+      "name": "Account",
       "schema": {
         "_id": {
           "type": "uniqueId",
@@ -133,7 +133,7 @@
       "indexes": [{ "keys": { "name": 1 }, "unique": true }]
     },
     {
-      "name": "Users",
+      "name": "User",
       "schema": {
         "_id": {
           "type": "uniqueId",
@@ -155,22 +155,22 @@
         },
         "emails": {
           "type": "array",
-          "subType": "user-email",
+          "subType": "UserEmail",
           "required": true
         },
         "profile": {
           "type": "object",
-          "subType": "user-profile",
+          "subType": "UserProfile",
           "required": true
         },
         "auth": {
           "type": "array",
-          "subType": "user-auth",
+          "subType": "UserAuth",
           "required": true
         },
         "sessions": {
           "type": "array",
-          "subType": "user-session",
+          "subType": "UserSession",
           "required": true
         }
       },
@@ -184,7 +184,7 @@
       }
     },
     {
-      "name": "Blogs",
+      "name": "Blog",
       "createdAt": true,
       "updatedAt": true,
       "schema": {
@@ -225,7 +225,7 @@
       ]
     },
     {
-      "name": "Comments",
+      "name": "Comment",
       "createdAt": true,
       "schema": {
         "bid": {

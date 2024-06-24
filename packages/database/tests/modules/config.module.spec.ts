@@ -59,7 +59,7 @@ describe('ConfigModule', () => {
     const parserService = module.get(ParserService);
     const parsedCollectionGroups = parserService.parseCollectionGroup(config.collectionGroups[0]!);
     const subDocuments = parsedCollectionGroups.map(p => Object.keys(p.subDocuments));
-    const userSubDocuments = ['user-email', 'user-profile', 'user-auth', 'user-password-auth', 'user-oauth', 'user-session'];
+    const userSubDocuments = ['UserEmail', 'UserProfile', 'UserAuth', 'UserSession'];
     expect(subDocuments).toStrictEqual([[], userSubDocuments, [], []]);
   });
 
