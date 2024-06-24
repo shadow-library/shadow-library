@@ -2,12 +2,12 @@
  * Importing npm packages
  */
 import { Injectable } from '@shadow-library/app';
-import { InternalError, NeverError } from '@shadow-library/errors';
+import { InternalError } from '@shadow-library/errors';
 
 /**
  * Importing user defined packages
  */
-import { CollectionGroup, Document, ObjectSchemaField, ParsedCollection, SchemaField } from '@shadow-library/database/types';
+import { CollectionGroup, Discriminator, Document, ObjectSchemaField, ParsedCollection, SchemaField } from '@shadow-library/database/types';
 
 /**
  * Defining types
@@ -26,17 +26,9 @@ export class ParserService {
     for (const key in schema) {
       const subDocs: string[] = [];
       switch (key) {
-        case '$key':
-          continue;
-
-        case '$type': {
-          if (!Array.isArray(schema.$type)) throw new NeverError('Invalid mixed document schema type');
-          for (const mixedDocument of schema.$type) {
-            const subDocument = definitions[mixedDocument.type];
-            if (!subDocument) throw new InternalError(`Definition not found for: ${mixedDocument.type}`);
-            keys.push(...Object.keys(subDocument));
-            subDocs.push(mixedDocument.type);
-          }
+        case '$descriminator': {
+          const values = Object.values((schema.$discriminator as Discriminator).values);
+          values.forEach(value => keys.push(...Object.keys(value)));
           break;
         }
 

@@ -63,17 +63,15 @@ export interface ObjectSchemaField extends BaseSchemaField {
 
 export type SchemaField = BooleanSchemaField | StringSchemaField | NumberSchemaField | DateSchemaField | ObjectSchemaField;
 
-export interface MixedDocument {
-  $type: {
-    name: string;
-    type: string;
-  }[];
-  $key: string;
+export interface Discriminator {
+  key: string;
+  values: Record<string, Document>;
 }
 
-export type FixedDocument = Record<string, SchemaField>;
-
-export type Document = FixedDocument | MixedDocument;
+export interface Document {
+  $discriminator?: Discriminator;
+  [key: string]: SchemaField | Discriminator | undefined;
+}
 
 export interface Index {
   name?: string;

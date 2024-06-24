@@ -6,9 +6,7 @@
   "definitions": {
     "name": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9-_]{3,32}$",
-      "minLength": 1,
-      "maxLength": 255
+      "pattern": "^[a-zA-Z0-9_]{3,32}$"
     },
     "datatype": {
       "type": "string",
@@ -200,28 +198,26 @@
       "description": "Fields in the document",
       "minProperties": 1,
       "properties": {
-        "$type": {
-          "type": "array",
-          "minItems": 2,
-          "items": {
-            "type": "object",
-            "required": ["name", "type"],
-            "properties": {
-              "name": { "$ref": "#/definitions/name" },
-              "type": { "type": "string" }
+        "$discriminator": {
+          "type": "object",
+          "required": ["key", "values"],
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "Field to use as the discriminator key"
+            },
+            "values": {
+              "type": "object",
+              "description": "The possible values for the discriminator key mapped to the schema",
+              "patternProperties": {
+                "^[a-zA-Z0-9_]{3,32}$": { "$ref": "#/definitions/document" }
+              }
             }
           }
-        },
-        "$key": {
-          "type": "string"
         }
       },
-      "dependencies": {
-        "$type": ["$key"],
-        "$key": ["$type"]
-      },
       "patternProperties": {
-        "^(?!_id$)[a-zA-Z0-9_-]{3,32}$": {
+        "^(?!_id$)[a-zA-Z0-9_]{3,32}$": {
           "$ref": "#/definitions/field"
         }
       }
@@ -239,7 +235,7 @@
           "description": "Fields in the index",
           "minProperties": 1,
           "patternProperties": {
-            "^[a-zA-Z0-9_-]{3,32}$": {
+            "^[a-zA-Z0-9_]{3,32}$": {
               "type": "number",
               "enum": [-1, 1]
             }
@@ -277,7 +273,7 @@
       "type": "object",
       "minProperties": 1,
       "patternProperties": {
-        "^[a-zA-Z0-9_-]{3,32}$": {
+        "^[a-zA-Z0-9_]{3,32}$": {
           "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/projection" }]
         }
       }
@@ -290,8 +286,9 @@
           "$ref": "#/definitions/name",
           "description": "Name of the collection in the database (e.g. 'users', 'accounts', 'UserComments')"
         },
-        "alias": {
-          "$ref": "#/definitions/name",
+        "collectionName": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9-_]{3,32}$",
           "description": "Name of the collection in the API (e.g. 'users', 'accounts', 'user-comments'). If not provided, the 'name' field is used."
         },
         "description": {
@@ -362,10 +359,11 @@
       "type": "object",
       "description": "Definitions for the sub-documents in the collection",
       "patternProperties": {
-        "^[a-zA-Z0-9_-]{3,32}$": {
+        "^[a-zA-Z0-9_]{3,32}$": {
           "$ref": "#/definitions/document"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "collections": {
       "type": "array",
