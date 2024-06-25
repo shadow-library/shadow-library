@@ -1,0 +1,24 @@
+{
+  "$schema": "../../schema/collection.schema.json",
+  "name": "Account",
+  "schema": {
+    "_id": {
+      "type": "uniqueId",
+      "alias": "aid"
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "trim": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "type": {
+      "type": "int",
+      "enum": { "Personal": 0, "Organization": 1 }
+    }
+  },
+  "indexes": [{ "keys": { "name": 1 }, "unique": true }]
+}

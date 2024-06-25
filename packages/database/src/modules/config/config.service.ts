@@ -31,9 +31,9 @@ export class ConfigService implements OnModuleInit {
   private readonly validators = new Map<string, ValidateFunction>();
 
   onModuleInit(): void {
-    const filenames = ['config', 'collections', 'formats'];
+    const filenames = ['config', 'collection', 'database-metadata'];
     for (const filename of filenames) {
-      const configPath = join(__dirname, '..', '..', '..', 'schema', `${filename}.json`);
+      const configPath = join(__dirname, '..', '..', '..', 'schema', `${filename}.schema.json`);
       const configSchema = JSON.parse(readFileSync(configPath, 'utf-8'));
       delete configSchema.$schema;
       const validator = ajv.compile(configSchema);
@@ -59,28 +59,29 @@ export class ConfigService implements OnModuleInit {
     return result.config;
   }
 
-  async loadDatabaseConfig(collections: string[], formats?: string[]): Promise<DatabaseConfig> {
-    const config: DatabaseConfig = { collectionGroups: [], formats: {} };
-    const collectionFiles = collections.map(collection => globSync(collection)).flat();
+  async loadDatabaseConfig(config: Config): Promise<DatabaseConfig> {
+    const dbConfig: DatabaseConfig = { collections: [], formats: [] };
+    const collectionPaths = typeof config.collections === 'string' ? [config.collections] : config.collections;
+    const collectionFiles = collectionPaths.map(collection => globSync(collection)).flat();
     if (!collectionFiles.length) throw new Error('No collection files found');
-    const formatFiles = formats?.map(format => globSync(format)).flat() || [];
 
     for (const collectionFile of collectionFiles) {
-      const collectionGroup = JSON.parse(readFileSync(collectionFile, 'utf-8'));
-      delete collectionGroup.$schema;
-      const data = this.validate('collections', collectionGroup);
+      const collection = JSON.parse(readFileSync(collectionFile, 'utf-8'));
+      delete collection.$schema;
+      const data = this.validate('collection', collection);
       if (!data.valid) throw new Error(`Invalid collection: ${data.errors}`);
-      config.collectionGroups.push(collectionGroup);
+      dbConfig.collections.push(collection);
     }
 
-    for (const formatFile of formatFiles) {
-      const format = JSON.parse(readFileSync(formatFile, 'utf-8'));
-      delete format.$schema;
-      const data = this.validate('formats', format);
-      if (!data.valid) throw new Error(`Invalid format: ${data.errors}`);
-      config.formats = { ...config.formats, ...format };
+    if (config.metadata) {
+      const metadataFile = readFileSync(config.metadata, 'utf-8');
+      const metadata = JSON.parse(metadataFile);
+      delete metadata.$schema;
+      const data = this.validate('database-metadata', metadata);
+      if (!data.valid) throw new Error(`Invalid metadata: ${data.errors}`);
+      dbConfig.formats = metadata.formats;
     }
 
-    return config;
+    return dbConfig;
   }
 }

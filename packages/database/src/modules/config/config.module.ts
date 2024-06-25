@@ -7,7 +7,6 @@ import { Module } from '@shadow-library/app';
  * Importing user defined packages
  */
 import { ConfigService } from './config.service';
-import { ParserService } from './parser.service';
 
 /**
  * Defining types
@@ -18,7 +17,7 @@ import { ParserService } from './parser.service';
  */
 
 @Module({
-  providers: [ConfigService, ParserService],
-  exports: [ConfigService, ParserService],
+  providers: [ConfigService],
+  exports: [ConfigService],
 })
 export class ConfigModule {}

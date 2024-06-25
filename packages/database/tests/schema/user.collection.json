@@ -1,0 +1,173 @@
+{
+  "$schema": "../../schema/collection.schema.json",
+  "name": "User",
+  "schema": {
+    "_id": {
+      "type": "uniqueId",
+      "alias": "uid"
+    },
+    "aid": {
+      "type": "uniqueId",
+      "required": true
+    },
+    "status": {
+      "required": true,
+      "type": "int",
+      "enum": { "Inactive": 0, "Active": 1, "Closed": 2 }
+    },
+    "role": {
+      "type": "int",
+      "required": true,
+      "enum": { "User": 0, "Admin": 1, "SuperAdmin": 2 }
+    },
+    "emails": {
+      "type": "array",
+      "subType": "UserEmail",
+      "required": true
+    },
+    "profile": {
+      "type": "object",
+      "subType": "UserProfile",
+      "required": true
+    },
+    "auth": {
+      "type": "array",
+      "subType": "UserAuth",
+      "required": true
+    },
+    "sessions": {
+      "type": "array",
+      "subType": "UserSession",
+      "required": true
+    }
+  },
+  "subDocuments": [
+    {
+      "name": "UserEmail",
+      "schema": {
+        "email": {
+          "type": "string",
+          "required": true,
+          "format": "email",
+          "transform": "lowercase"
+        },
+        "primary": {
+          "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean",
+          "required": true,
+          "default": false
+        }
+      }
+    },
+    {
+      "name": "UserAuth",
+      "schema": {
+        "$discriminator": {
+          "key": "type",
+          "values": {
+            "user-password-auth": {
+              "password": {
+                "type": "string",
+                "required": true
+              },
+              "passwordResetToken": {
+                "type": "string"
+              }
+            },
+            "user-oauth": {
+              "provider": {
+                "type": "string",
+                "required": true,
+                "enum": ["google", "facebook"]
+              },
+              "spuid": {
+                "type": "string",
+                "required": true
+              },
+              "refreshToken": {
+                "type": "string",
+                "required": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UserSession",
+      "schema": {
+        "usid": {
+          "type": "int",
+          "required": true
+        },
+        "token": {
+          "type": "string",
+          "required": true
+        },
+        "ipAddr": {
+          "type": "string",
+          "format": "ipv4"
+        },
+        "userAgent": {
+          "type": "string"
+        },
+        "accessedAt": {
+          "type": "date",
+          "required": true,
+          "default": "now"
+        },
+        "createdAt": {
+          "type": "date",
+          "immutable": true,
+          "default": "now"
+        }
+      }
+    },
+    {
+      "name": "UserProfile",
+      "schema": {
+        "firstName": {
+          "type": "string",
+          "required": true,
+          "trim": true,
+          "format": "person-name"
+        },
+        "lastName": {
+          "type": "string",
+          "trim": true,
+          "format": "person-name"
+        },
+        "gender": {
+          "type": "int",
+          "enum": { "Male": 1, "Female": 2 }
+        },
+        "imageURL": {
+          "type": "string",
+          "format": "uri"
+        },
+        "dob": {
+          "type": "string",
+          "format": "date"
+        },
+        "createdAt": {
+          "type": "date",
+          "immutable": true,
+          "default": "now"
+        }
+      }
+    }
+  ],
+  "indexes": [
+    { "name": "UNIQUE_EMAIL_IDS", "keys": { "emails.email": 1 }, "unique": true },
+    { "name": "INDEX_AID", "keys": { "aid": 1 } }
+  ],
+  "relations": [{ "collection": "Accounts", "localField": "aid", "foreignField": "aid" }],
+  "projections": [
+    {
+      "name": "profile-auth",
+      "project": { "aid": true, "uid": true, "status": true, "role": true, "profile": true, "auth": true }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$id": "urn:shadow-library:database:metadata",
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Data Validation Format schema",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "format": {
+      "type": "object",
+      "description": "A format that can be used to validate the data",
+      "required": ["name", "pattern"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9-]{3,32}$",
+          "description": "The name of the format"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "A description of the format"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "The regular expression pattern to validate the data",
+          "format": "regex"
+        }
+      }
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "The URI of the schema"
+    },
+    "formats": {
+      "type": "array",
+      "description": "A list of formats that can be used to validate the data",
+      "items": { "$ref": "#/definitions/format" }
+    }
+  }
+}
