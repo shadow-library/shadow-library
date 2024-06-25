@@ -1,0 +1,13 @@
+{
+  "$id": "urn:shadow-library:database:config",
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "required": ["collections", "outDir"],
+  "properties": {
+    "collections": {
+      "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "metadata": { "type": "string" },
+    "outDir": { "type": "string" }
+  }
+}

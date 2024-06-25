@@ -1,6 +1,6 @@
 {
-  "$schema": "../schema/config.json",
-  "collections": ["scchema/**/*.database.json"],
-  "formats": ["schema/custom-formats.json"],
-  "output": "database.ts"
+  "$schema": "../schema/config.schema.json",
+  "collections": "schema/**/*.collection.json",
+  "metadata": "schema/metadata.json",
+  "outDir": "dist/output"
 }

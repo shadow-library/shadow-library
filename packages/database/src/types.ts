@@ -73,6 +73,12 @@ export interface Document {
   [key: string]: SchemaField | Discriminator | undefined;
 }
 
+export interface SubDocument {
+  name: string;
+  description?: string;
+  schema: Document;
+}
+
 export interface Index {
   name?: string;
   keys: Record<string, 1 | -1>;
@@ -86,49 +92,45 @@ export interface Relation {
   foreignField: string;
 }
 
-export interface Projection extends Record<string, boolean | Projection> {}
+export interface Project extends Record<string, boolean | Project> {}
+
+export interface Projection {
+  name: string;
+  projection: Project;
+}
 
 export interface Collection {
   name: string;
-  alias?: string;
+  collectionName?: string;
   description?: string;
-  createdAt?: boolean;
-  updatedAt?: boolean;
-  schema: { _id?: { type: 'uniqueId' | 'objectId'; alias?: string } } & Document;
+  schema: {
+    _id?: { type: 'uniqueId' | 'objectId'; alias?: string };
+  } & Document;
+  subDocuments?: SubDocument[];
   indexes?: Index[];
   relations?: Relation[];
-  projections?: Record<string, Projection>;
-}
-
-export interface ParsedCollection extends Collection {
-  subDocuments: Record<string, Document>;
-}
-
-export interface CollectionGroup {
-  name?: string;
-  description?: string;
-  definitions?: Record<string, Document>;
-  collections: Collection[];
+  projections?: Projection[];
 }
 
 export interface Format {
+  name: string;
   pattern: string;
   description?: string;
 }
 
-export type Formats = Record<string, Format>;
-
-export type OutputConfig = { dirPath: string } | { filePath: string };
+export interface DatabaseMetadata {
+  formats: Format[];
+}
 
 export interface Config {
-  collections: string[];
-  formats?: string[];
-  output: string | OutputConfig;
+  collections: string | string[];
+  metadata?: string;
+  outDir: string;
 }
 
 export interface DatabaseConfig {
-  collectionGroups: CollectionGroup[];
-  formats: Formats;
+  collections: Collection[];
+  formats: Format[];
 }
 
 export interface DatabaseService {

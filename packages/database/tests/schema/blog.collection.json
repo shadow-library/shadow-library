@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schema/collection.schema.json",
+  "name": "Blog",
+  "schema": {
+    "_id": {
+      "type": "uniqueId",
+      "alias": "bid"
+    },
+    "aid": {
+      "type": "uniqueId",
+      "description": "Account ID, If provided blog is only visible to the users in this account"
+    },
+    "uid": {
+      "type": "uniqueId",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "trim": true,
+      "validator": "^.{3,100}$"
+    },
+    "content": {
+      "type": "string",
+      "required": true,
+      "trim": true,
+      "validator": "^.{20,}$"
+    },
+    "tags": {
+      "type": "array",
+      "subType": "string",
+      "required": true
+    },
+    "createdAt": {
+      "type": "date",
+      "required": true,
+      "immutable": true,
+      "default": "now"
+    },
+    "updatedAt": {
+      "type": "date",
+      "required": true,
+      "immutable": true,
+      "default": "now"
+    }
+  },
+  "indexes": [{ "keys": { "aid": 1, "createdAt": -1, "uid": 1 } }],
+  "relations": [
+    { "collection": "Users", "localField": "uid", "foreignField": "uid" },
+    { "collection": "Accounts", "localField": "aid", "foreignField": "aid" }
+  ]
+}

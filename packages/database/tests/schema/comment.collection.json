@@ -1,0 +1,31 @@
+{
+  "$schema": "../../schema/collection.schema.json",
+  "name": "Comment",
+  "schema": {
+    "bid": {
+      "type": "uniqueId",
+      "required": true
+    },
+    "uid": {
+      "type": "uniqueId",
+      "required": true
+    },
+    "content": {
+      "type": "string",
+      "required": true,
+      "trim": true,
+      "validator": "^.{1,}$"
+    },
+    "createdAt": {
+      "type": "date",
+      "required": true,
+      "immutable": true,
+      "default": "now"
+    }
+  },
+  "indexes": [{ "keys": { "bid": 1, "createdAt": -1 } }, { "keys": { "uid": 1, "createdAt": -1 } }],
+  "relations": [
+    { "collection": "Blogs", "localField": "bid", "foreignField": "bid" },
+    { "collection": "Users", "localField": "uid", "foreignField": "uid" }
+  ]
+}
