@@ -46,7 +46,7 @@
   },
   "indexes": [{ "keys": { "aid": 1, "createdAt": -1, "uid": 1 } }],
   "relations": [
-    { "collection": "Users", "localField": "uid", "foreignField": "uid" },
-    { "collection": "Accounts", "localField": "aid", "foreignField": "aid" }
+    { "collection": "User", "localField": "uid", "foreignField": "uid" },
+    { "collection": "Account", "localField": "aid", "foreignField": "aid" }
   ]
 }
