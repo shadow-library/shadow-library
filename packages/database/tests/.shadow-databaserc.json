@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/config.schema.json",
-  "collections": "schema/**/*.collection.json",
-  "metadata": "schema/metadata.json",
+  "collections": "packages/database/tests/schema/**/*.collection.json",
+  "metadata": "packages/database/tests/schema/metadata.json",
   "outDir": "dist/output"
 }

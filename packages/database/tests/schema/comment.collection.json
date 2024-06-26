@@ -25,7 +25,7 @@
   },
   "indexes": [{ "keys": { "bid": 1, "createdAt": -1 } }, { "keys": { "uid": 1, "createdAt": -1 } }],
   "relations": [
-    { "collection": "Blogs", "localField": "bid", "foreignField": "bid" },
-    { "collection": "Users", "localField": "uid", "foreignField": "uid" }
+    { "collection": "Blog", "localField": "bid", "foreignField": "bid" },
+    { "collection": "User", "localField": "uid", "foreignField": "uid" }
   ]
 }

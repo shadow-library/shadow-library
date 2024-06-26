@@ -163,7 +163,7 @@
     { "name": "UNIQUE_EMAIL_IDS", "keys": { "emails.email": 1 }, "unique": true },
     { "name": "INDEX_AID", "keys": { "aid": 1 } }
   ],
-  "relations": [{ "collection": "Accounts", "localField": "aid", "foreignField": "aid" }],
+  "relations": [{ "collection": "Account", "localField": "aid", "foreignField": "aid" }],
   "projections": [
     {
       "name": "profile-auth",

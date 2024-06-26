@@ -61,7 +61,11 @@ export interface ObjectSchemaField extends BaseSchemaField {
   subType: string | Document;
 }
 
-export type SchemaField = BooleanSchemaField | StringSchemaField | NumberSchemaField | DateSchemaField | ObjectSchemaField;
+export interface IDSchemaField extends BaseSchemaField {
+  type: 'uniqueId' | 'objectId';
+}
+
+export type SchemaField = IDSchemaField | BooleanSchemaField | StringSchemaField | NumberSchemaField | DateSchemaField | ObjectSchemaField;
 
 export interface Discriminator {
   key: string;

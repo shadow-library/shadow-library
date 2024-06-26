@@ -16,6 +16,8 @@ import { globSync } from 'glob';
 import { MODULE_NAME, ajv } from '@shadow-library/database/constants';
 import { type Config, type DatabaseConfig } from '@shadow-library/database/types';
 
+import { ConfigValidator } from './config.validator';
+
 /**
  * Defining types
  */
@@ -29,6 +31,7 @@ type ValidationResult = { valid: true } | { valid: false; errors: string };
 @Injectable()
 export class ConfigService implements OnModuleInit {
   private readonly validators = new Map<string, ValidateFunction>();
+  private databaseConfig: DatabaseConfig | null = null;
 
   onModuleInit(): void {
     const filenames = ['config', 'collection', 'database-metadata'];
@@ -49,7 +52,7 @@ export class ConfigService implements OnModuleInit {
     return { valid: true };
   }
 
-  async loadConfig(rootDir?: string): Promise<Config> {
+  private async loadConfig(rootDir?: string): Promise<Config> {
     const explorer = cosmiconfig(MODULE_NAME, { loaders: { '.ts': TypeScriptLoader() } });
     const result = await explorer.search(rootDir);
     if (!result) throw new Error('Config file not found');
@@ -59,7 +62,7 @@ export class ConfigService implements OnModuleInit {
     return result.config;
   }
 
-  async loadDatabaseConfig(config: Config): Promise<DatabaseConfig> {
+  private async loadDatabaseSchemas(config: Config): Promise<DatabaseConfig> {
     const dbConfig: DatabaseConfig = { collections: [], formats: [] };
     const collectionPaths = typeof config.collections === 'string' ? [config.collections] : config.collections;
     const collectionFiles = collectionPaths.map(collection => globSync(collection)).flat();
@@ -83,5 +86,14 @@ export class ConfigService implements OnModuleInit {
     }
 
     return dbConfig;
+  }
+
+  async getDatabaseConfigs(rootDir?: string): Promise<DatabaseConfig> {
+    if (this.databaseConfig) return this.databaseConfig;
+    const config = await this.loadConfig(rootDir);
+    const databaseConfig = await this.loadDatabaseSchemas(config);
+    const validator = new ConfigValidator(databaseConfig);
+    validator.validate();
+    return databaseConfig;
   }
 }
