@@ -100,7 +100,7 @@ export interface Project extends Record<string, boolean | Project> {}
 
 export interface Projection {
   name: string;
-  projection: Project;
+  project: Project;
 }
 
 export interface Collection {

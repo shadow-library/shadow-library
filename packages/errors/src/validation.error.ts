@@ -52,4 +52,8 @@ export class ValidationError extends Error {
     const lastField = fields.pop() as string;
     return `Validation failed for ${fields.join(', ')} and ${lastField}`;
   }
+
+  override get message(): string {
+    return this.getMessage();
+  }
 }
