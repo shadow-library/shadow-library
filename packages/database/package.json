@@ -17,6 +17,7 @@
   "dependencies": {
     "@shadow-library/app": "workspace:*",
     "@shadow-library/common": "workspace:*",
+    "@shadow-library/errors": "workspace:*",
     "ajv": "^8.16.0",
     "ajv-formats": "^3.0.1",
     "cosmiconfig": "^9.0.0",

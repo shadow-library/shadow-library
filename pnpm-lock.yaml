@@ -107,6 +107,9 @@ importers:
       '@shadow-library/common':
         specifier: workspace:*
         version: link:../common
+      '@shadow-library/errors':
+        specifier: workspace:*
+        version: link:../errors
       ajv:
         specifier: ^8.16.0
         version: 8.16.0

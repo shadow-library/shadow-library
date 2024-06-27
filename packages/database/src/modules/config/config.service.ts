@@ -33,6 +33,8 @@ export class ConfigService implements OnModuleInit {
   private readonly validators = new Map<string, ValidateFunction>();
   private databaseConfig: DatabaseConfig | null = null;
 
+  constructor(private readonly configValidator: ConfigValidator) {}
+
   onModuleInit(): void {
     const filenames = ['config', 'collection', 'database-metadata'];
     for (const filename of filenames) {
@@ -92,8 +94,7 @@ export class ConfigService implements OnModuleInit {
     if (this.databaseConfig) return this.databaseConfig;
     const config = await this.loadConfig(rootDir);
     const databaseConfig = await this.loadDatabaseSchemas(config);
-    const validator = new ConfigValidator(databaseConfig);
-    validator.validate();
+    this.configValidator.validate(databaseConfig);
     return databaseConfig;
   }
 }

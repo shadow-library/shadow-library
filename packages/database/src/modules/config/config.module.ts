@@ -7,6 +7,7 @@ import { Module } from '@shadow-library/app';
  * Importing user defined packages
  */
 import { ConfigService } from './config.service';
+import { ConfigValidator } from './config.validator';
 
 /**
  * Defining types
@@ -17,7 +18,7 @@ import { ConfigService } from './config.service';
  */
 
 @Module({
-  providers: [ConfigService],
+  providers: [ConfigService, ConfigValidator],
   exports: [ConfigService],
 })
 export class ConfigModule {}
