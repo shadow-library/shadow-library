@@ -12,6 +12,9 @@ const config: Config = {
   testEnvironment: 'node',
   testRegex: '.spec.ts$',
   detectOpenHandles: true,
+  collectCoverage: true,
+  coverageReporters: ['text-summary', 'html-spa'],
+  // coverageThreshold: { global: { branches: 90, functions: 90, lines: 90, statements: 90 } },
   projects: [
     {
       displayName: '@shadow-library/app',
