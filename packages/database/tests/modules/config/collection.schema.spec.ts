@@ -51,7 +51,7 @@ describe('CollectionSchema', () => {
       fail('Should throw error');
     } catch (err: any) {
       expect(err).toBeInstanceOf(ValidationError);
-      expect(err.getErrors()).toStrictEqual([{ field: 'schema:id', msg: `Duplicate key 'id' in _id alias` }]);
+      expect(err.getErrors()).toStrictEqual([{ field: 'schema:id', msg: `Duplicate key 'id' in schema` }]);
     }
   });
 

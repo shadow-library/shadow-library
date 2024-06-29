@@ -32,9 +32,16 @@ const getDotNotationKeys = (obj: Record<string, any>, prefix = ''): string[] => 
 };
 
 export class CollectionSchema {
-  private readonly object: Record<string, Field> = {};
+  private readonly object: Record<string, Field> = { _id: 'objectId' };
 
-  constructor(private readonly collection: Collection) {}
+  constructor(private readonly collection: Collection) {
+    const id = collection.schema._id;
+    if (id) this.object._id = id.type;
+    const defaultIndexes: Index[] = [{ keys: { _id: 1 }, unique: true }];
+    const alias = collection.schema._id?.alias;
+    if (alias) defaultIndexes.push({ keys: { [alias]: 1 }, unique: true });
+    collection.indexes = collection.indexes ? [...collection.indexes, ...defaultIndexes] : defaultIndexes;
+  }
 
   private getSubDocument(name: string): Document {
     const subDocuments = this.collection.subDocuments ?? [];
@@ -93,18 +100,42 @@ export class CollectionSchema {
 
   private validateIndex(index: Index) {
     for (const key in index.keys) {
-      const accessor = key.split('.');
-      let obj = this.object;
-      for (const k of accessor) {
-        obj = obj[k] as Record<string, Field>;
-        if (!obj) throw new Error(`Unknown key '${key}' in index`);
-      }
+      const field = this.getFieldType(key);
+      if (!field) throw new Error(`Unknown key '${key}' in index`);
     }
+  }
+
+  getFieldType(key: string): Field | null {
+    const accessor = key.split('.');
+    let obj = this.object;
+    for (const k of accessor) {
+      obj = obj[k] as Record<string, Field>;
+      if (!obj) return null;
+    }
+    return obj;
+  }
+
+  getData(): Collection {
+    return this.collection;
   }
 
   getObject(): Record<string, Field> {
     if (Object.keys(this.object).length === 0) this.validate();
     return this.object;
+  }
+
+  validateForeignRelation(key: string, type: string): void {
+    if (key !== '_id') {
+      const indexes = this.collection.indexes ?? [];
+      const indexKeys = indexes
+        .map(index => getDotNotationKeys(index.keys))
+        .filter(keys => keys.length === 1)
+        .flat();
+      if (!indexKeys.includes(key)) throw new Error(`Key '${key}' not found or indexed in collection, hence can't be used in relation`);
+    }
+
+    const fieldType = this.getFieldType(key);
+    if (fieldType !== type) throw new Error(`TypeMismatch: The type of the fields should be same`);
   }
 
   validate(): void {
@@ -118,7 +149,7 @@ export class CollectionSchema {
         if (key === '_id' && 'alias' in schemaField) [fieldKey, type] = [schemaField.alias as string, schemaField.type];
         else type = this.getSchemaType(schemaField);
 
-        if (fieldKey in this.object) throw new Error(`Duplicate key '${fieldKey}' in _id alias`);
+        if (fieldKey in this.object) throw new Error(`Duplicate key '${fieldKey}' in schema`);
         this.object[fieldKey] = type;
       } catch (err: any) {
         validatorError.addFieldError(`schema:${key}`, err.message);
@@ -142,6 +173,18 @@ export class CollectionSchema {
       } catch (err: any) {
         validatorError.addFieldError(`projection:${projection.name}`, err.message);
       }
+    }
+
+    const relations = this.collection.relations ?? [];
+    const allowedRelationFieldTypes = ['uniqueId', 'objectId', 'int', 'long', 'double', 'string', 'date'];
+    for (const relation of relations) {
+      const fieldType = this.getFieldType(relation.localField);
+      if (!fieldType) validatorError.addFieldError(`relation:${relation.collection}`, `Key '${relation.localField}' not found in schema`);
+
+      let valid = true;
+      if (typeof fieldType === 'object') valid = false;
+      else if (!allowedRelationFieldTypes.includes(fieldType)) valid = false;
+      if (!valid) validatorError.addFieldError(`relation:${relation.collection}`, `type should be one of ${allowedRelationFieldTypes.join(', ')}`);
     }
 
     if (validatorError.getErrorCount() > 0) throw validatorError;
