@@ -19,12 +19,13 @@ import { format } from 'winston';
 let timestamp: number;
 
 function padLevel(level: string) {
+  level = level.toUpperCase();
   const padding = '   '.substring(0, 5 - (level?.length ?? 0));
   return level + padding;
 }
 
 /** Formats and print the logs to the console */
-export const consoleFormat = format.printf(info => {
+export const httpConsoleFormat = format.printf(info => {
   const level = info.level;
   const prevTime = timestamp;
   timestamp = Date.now();
@@ -34,6 +35,8 @@ export const consoleFormat = format.printf(info => {
   if (level != 'http') return `${padLevel(info.level)} ${yellow(`[${info.label || '-'}]`)} ${info.message} ${timeTaken} ${stack}`;
   return cyan(`${padLevel('HTTP')} [REST] ${info.method} ${info.url} - ${info.timeTaken}ms`);
 });
+
+export const cliConsoleFormat = format.printf(info => `${padLevel(info.level)} ${info.message}`);
 
 /** Appends the additional data to the log metadata */
 export function additionalDataFormat(fn: () => Record<string, any>): ReturnType<typeof format> {

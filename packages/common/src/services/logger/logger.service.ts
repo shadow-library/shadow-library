@@ -11,12 +11,16 @@ import { Logger as WinstonLogger, createLogger as createWinstonLogger, format, t
  */
 
 import { CloudWatchTransport } from './cloudwatch.logger';
-import { additionalDataFormat, consoleFormat } from './formats.logger';
+import { additionalDataFormat, cliConsoleFormat, httpConsoleFormat } from './formats.logger';
 import { Config } from '../config.service';
 
 /**
  * Defining types
  */
+
+export type Format = ReturnType<typeof formatError>;
+
+export type ConsoleFormats = 'http' | 'cli' | Format;
 
 export enum LogTransport {
   Console,
@@ -27,11 +31,13 @@ export enum LogTransport {
 export interface LoggerOptions {
   transports?: LogTransport[];
   getContext?: () => Record<string, any>;
+  consoleFormat?: ConsoleFormats;
 }
 
 /**
  * Declaring the constants
  */
+const formatError = format.errors;
 const logColorFormat = { info: 'green', error: 'bold red', warn: 'yellow', debug: 'magenta', http: 'cyan' };
 
 // istanbul ignore next
@@ -77,9 +83,9 @@ export class Logger {
     /** Setting up the logger transports */
     if (opts.transports.includes(LogTransport.Console)) {
       const consoleColor = format.colorize({ level: true, colors: logColorFormat, message: true });
-      const uppercaseLevel = format(info => ({ ...info, level: info.level.toUpperCase() }));
-      const consoleLogFormat = format.combine(format.errors({ stack: true }), uppercaseLevel(), consoleColor, consoleFormat);
-      this.instance.add(new transports.Console({ format: consoleLogFormat }));
+      const customFormat = typeof opts.consoleFormat === 'object' ? opts.consoleFormat : opts.consoleFormat === 'cli' ? cliConsoleFormat : httpConsoleFormat;
+      const consoleFormat = format.combine(format.errors({ stack: true }), consoleColor, customFormat);
+      this.instance.add(new transports.Console({ format: consoleFormat }));
     }
     if (opts.transports.includes(LogTransport.CloudWatch)) this.instance.add(new CloudWatchTransport({ format: logFormat }));
     if (opts.transports.includes(LogTransport.File)) {
