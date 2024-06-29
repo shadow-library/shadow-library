@@ -2,7 +2,6 @@
  * Importing npm packages
  */
 import { Logger } from '@shadow-library/common';
-import { ValidationError } from '@shadow-library/errors';
 
 /**
  * Importing user defined packages
@@ -36,11 +35,25 @@ export class ConfigValidator {
       }
     }
 
-    for (const error of errors) {
-      let message = error.message;
-      if (error instanceof ValidationError) message = error.getMessage();
-      this.logger.error(message);
+    for (const collection of this.collectionData.values()) {
+      const data = collection.getData();
+      const relationErrors: Error[] = [];
+      for (const relation of data.relations ?? []) {
+        try {
+          const targetCollection = this.collectionData.get(relation.collection);
+          if (!targetCollection) throw new Error(`Collection not found: ${relation.collection}`);
+
+          const type = collection.getFieldType(relation.localField);
+          if (typeof type === 'string') targetCollection.validateForeignRelation(relation.foreignField, type);
+          else throw new Error(`Invalid field type for relation: ${relation.localField}`);
+        } catch (err: any) {
+          relationErrors.push(err);
+        }
+      }
+      errors.push(...relationErrors);
     }
+
+    for (const error of errors) this.logger.error(error.message);
     if (errors.length) throw new Error('Database config validation failed');
   }
 }
