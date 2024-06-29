@@ -26,10 +26,9 @@ describe('DependencyGraph', () => {
 
   it('should add a dependency between two nodes', () => {
     const graph = new DependencyGraph<string>();
-    graph.addNode('A');
-    graph.addNode('B');
     graph.addDependency('A', 'B');
     expect(graph.getDependencies('A')).toContain('B');
+    expect(graph.getDependencies('C')).toBeInstanceOf(Set);
   });
 
   it('should return the sorted nodes in topological order', () => {

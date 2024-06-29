@@ -1,6 +1,0 @@
-{
-  "$schema": "../schema/config.schema.json",
-  "collections": "packages/database/tests/schema/**/*.collection.json",
-  "metadata": "packages/database/tests/schema/metadata.json",
-  "outDir": "dist/output"
-}

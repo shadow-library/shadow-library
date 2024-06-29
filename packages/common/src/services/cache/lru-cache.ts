@@ -18,9 +18,9 @@ type UintArrayConstructor = Uint8ArrayConstructor | Uint16ArrayConstructor | Uin
 /**
  * Declaring the constants
  */
-const MAX_8BIT_INTEGER = Math.pow(2, 8) - 1;
-const MAX_16BIT_INTEGER = Math.pow(2, 16) - 1;
-const MAX_32BIT_INTEGER = Math.pow(2, 32) - 1;
+const MAX_8BIT_INTEGER = Math.pow(2, 8);
+const MAX_16BIT_INTEGER = Math.pow(2, 16);
+const MAX_32BIT_INTEGER = Math.pow(2, 32);
 
 export class LRUCache {
   private head: number = 0;
@@ -48,10 +48,9 @@ export class LRUCache {
   }
 
   private static getTypedArray(capacity: number): UintArrayConstructor {
-    const maxIndex = capacity - 1;
-    if (maxIndex <= MAX_8BIT_INTEGER) return Uint8Array;
-    if (maxIndex <= MAX_16BIT_INTEGER) return Uint16Array;
-    if (maxIndex <= MAX_32BIT_INTEGER) return Uint32Array;
+    if (capacity <= MAX_8BIT_INTEGER) return Uint8Array;
+    if (capacity <= MAX_16BIT_INTEGER) return Uint16Array;
+    if (capacity <= MAX_32BIT_INTEGER) return Uint32Array;
     throw new InternalError('Cache capacity must be less than 4294967295');
   }
 
@@ -148,10 +147,7 @@ export class LRUCache {
     delete this.items[key];
 
     if (this.size === 1) {
-      this.size = 0;
-      this.head = 0;
-      this.tail = 0;
-      this.deletedSize = 0;
+      this.clear();
       return deletedValue;
     }
 

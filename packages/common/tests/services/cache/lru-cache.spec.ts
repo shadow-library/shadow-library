@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { InternalError } from '@shadow-library/errors';
 
 /**
@@ -29,6 +29,14 @@ describe('LRU Cache', () => {
     it('should throw an error if the capacity is more than the maximum limit', () => {
       const error = new InternalError('Cache capacity must be less than 4294967295');
       expect(() => new LRUCache(4294967297)).toThrow(error);
+    });
+
+    it('should initialize the cache with the correct typed array', () => {
+      /** @ts-expect-error Accessing private method */
+      const getTypedArray = LRUCache.getTypedArray;
+      expect(getTypedArray(1)).toBe(Uint8Array);
+      expect(getTypedArray(257)).toBe(Uint16Array);
+      expect(getTypedArray(65537)).toBe(Uint32Array);
     });
 
     it('should initialize the cache with the given capacity', () => {
@@ -122,6 +130,24 @@ describe('LRU Cache', () => {
     it('should return undefined for not found key', () => {
       const deletedValue = cache.remove('key-undefined');
       expect(deletedValue).toBeUndefined();
+    });
+
+    it('should clear if the size is 1 before removing', () => {
+      const cache = new LRUCache(10);
+      const mockClear = jest.spyOn(cache, 'clear');
+      cache.set('key', 'value').remove('key');
+      expect(mockClear).toHaveBeenCalled();
+    });
+  });
+
+  describe('clear', () => {
+    it('should clear the cache', () => {
+      cache.clear();
+      const obj = cache as any;
+      expect(obj.items).toStrictEqual({});
+      expect(obj.head).toBe(0);
+      expect(obj.tail).toBe(0);
+      expect(obj.size).toBe(0);
     });
   });
 });

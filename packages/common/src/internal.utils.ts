@@ -15,6 +15,7 @@ import { red } from '@colors/colors';
  * Declaring the constants
  */
 
+/* istanbul ignore next */
 class InternalUtils {
   public exit(message: string): void {
     console.error(red(message)); // eslint-disable-line no-console

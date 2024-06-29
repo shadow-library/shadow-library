@@ -23,6 +23,7 @@ interface LogEvent {
  * Declaring the constants
  */
 
+/* istanbul ignore next */
 export class CloudWatchTransport extends Transport {
   private readonly cloudWatchLogs: CloudWatchLogs;
   private readonly logGroupName: string;

@@ -32,6 +32,9 @@ describe('Shadow Application', () => {
   }
 
   const application = new ShadowApplication(AppModule);
+  const debugMock = jest.fn().mockReturnThis();
+  /** @ts-expect-error Accessing private member */
+  application.logger.debug = debugMock;
 
   it('should throw an error if the module is not a module', () => {
     class InvalidModule {}
@@ -45,8 +48,15 @@ describe('Shadow Application', () => {
     expect(application.isInited()).toBe(true);
   });
 
+  it('should only initialize the application once', async () => {
+    debugMock.mockClear();
+    await application.init();
+    expect(debugMock).toBeCalledTimes(0);
+  });
+
   it('should execute the main module', async () => {
     await application.start();
+    expect(debugMock).toBeCalledTimes(0);
     expect(executableMock).toBeCalledTimes(1);
   });
 
@@ -59,6 +69,7 @@ describe('Shadow Application', () => {
     class NotFound {}
     const error = new InternalError(`Provider '${NotFound.name}' not found or exported`);
     expect(() => application.get(NotFound)).toThrowError(error);
+    expect(() => application.get('NotFound')).toThrowError(error);
   });
 
   it('should stop the application', async () => {
@@ -67,5 +78,11 @@ describe('Shadow Application', () => {
     expect(application.isInited()).toBe(false);
     expect(executableMock).toBeCalledTimes(1);
     expect(() => application.get(AppProvider)).toThrowError(error);
+  });
+
+  it('should do nothing when stop() is called if the application is not initialized', async () => {
+    debugMock.mockClear();
+    await application.stop();
+    expect(debugMock).toBeCalledTimes(0);
   });
 });

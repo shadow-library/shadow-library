@@ -15,20 +15,27 @@ import { ErrorCode, InternalError } from '@shadow-library/errors';
 /**
  * Declaring the constants
  */
+const maskedErrorMessage = 'Internal Masked Error';
+const internalErrorMessage = 'Internal Unmasked Error';
 
 describe('InternalError', () => {
-  let interalError: InternalError;
+  let maskedError: InternalError;
+  let internalError: InternalError;
 
   it('should create an instance of InternalError', () => {
-    interalError = new InternalError(ErrorCode.S002, 'Internal Error');
-    expect(interalError).toBeInstanceOf(InternalError);
+    maskedError = new InternalError(ErrorCode.S002, maskedErrorMessage);
+    internalError = new InternalError(internalErrorMessage);
+    expect(maskedError).toBeInstanceOf(InternalError);
+    expect(internalError).toBeInstanceOf(InternalError);
   });
 
   it('should return the public error code', () => {
-    expect(interalError.getPublicErrorCode()).toBe(ErrorCode.S002);
+    expect(maskedError.getPublicErrorCode()).toBe(ErrorCode.S002);
+    expect(internalError.getPublicErrorCode()).toBe(ErrorCode.S001);
   });
 
   it('should return the error message', () => {
-    expect(interalError.getMessage()).toBe('Internal Error');
+    expect(maskedError.getMessage()).toBe(maskedErrorMessage);
+    expect(internalError.getMessage()).toBe(internalErrorMessage);
   });
 });
