@@ -41,6 +41,6 @@ export class ConfigValidator {
       if (error instanceof ValidationError) message = error.getMessage();
       this.logger.error(message);
     }
-    if (errors.length) throw new Error('Satabase config validation failed');
+    if (errors.length) throw new Error('Database config validation failed');
   }
 }

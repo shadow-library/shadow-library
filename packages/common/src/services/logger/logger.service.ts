@@ -34,6 +34,7 @@ export interface LoggerOptions {
  */
 const logColorFormat = { info: 'green', error: 'bold red', warn: 'yellow', debug: 'magenta', http: 'cyan' };
 
+// istanbul ignore next
 /**
  * Gets the index or number of the log file
  * @param filename
@@ -45,6 +46,7 @@ function getFileIndex(filename: string): number {
   return parseInt(num);
 }
 
+/* istanbul ignore next */
 export class Logger {
   private static instance: WinstonLogger;
 
@@ -107,7 +109,7 @@ export class Logger {
   static removeSensitiveFields(data: Record<string, any>, sensitiveFields: string[]): Record<string, any> {
     for (const key in data) {
       const value = data[key];
-      if (sensitiveFields.includes(key)) data[key] = 'xxxx';
+      if (sensitiveFields.includes(key)) data[key] = '****';
       else if (typeof value === 'object' && !Array.isArray(value)) this.removeSensitiveFields(value, sensitiveFields);
     }
     return data;

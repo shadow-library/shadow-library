@@ -4,47 +4,39 @@
 import type { Config } from 'jest';
 
 /**
+ * Defining types
+ */
+type Project = string | { name: string; config: Config };
+
+/**
  * Declaring the constants.
  */
-const transform: Config['transform'] = { '^.+\\.(t|j)s$': 'ts-jest' };
+const projects: Project[] = ['app', 'common', 'database', 'errors', 'server'];
+const generateProjectConfig = (project: Project): Config => {
+  if (typeof project === 'string') project = { name: project, config: {} };
+  const configs: Config = { displayName: project.name };
+
+  /** Setting up the test configs */
+  configs.rootDir = `packages/${project.name}`;
+  configs.transform = { '^.+\\.(t|j)s$': 'ts-jest' };
+  configs.moduleNameMapper = { [`@shadow-library/${project.name}/(.*)`]: `<rootDir>/src/$1` };
+
+  /** Setting up the coverage configs */
+  configs.coveragePathIgnorePatterns = ['/tests/'];
+
+  return Object.assign(configs, project.config);
+};
 
 const config: Config = {
   testEnvironment: 'node',
   testRegex: '.spec.ts$',
   detectOpenHandles: true,
+
   collectCoverage: true,
-  coverageReporters: ['text-summary', 'html-spa'],
-  // coverageThreshold: { global: { branches: 90, functions: 90, lines: 90, statements: 90 } },
-  projects: [
-    {
-      displayName: '@shadow-library/app',
-      transform,
-      rootDir: 'packages/app',
-      moduleNameMapper: { '@shadow-library/app/(.*)': '<rootDir>/src/$1' },
-    },
-    {
-      displayName: '@shadow-library/common',
-      transform,
-      rootDir: 'packages/common',
-      moduleNameMapper: { '@shadow-library/common/(.*)': '<rootDir>/src/$1' },
-    },
-    {
-      displayName: '@shadow-library/database',
-      transform,
-      rootDir: 'packages/database',
-      moduleNameMapper: { '@shadow-library/database/(.*)': '<rootDir>/src/$1' },
-    },
-    {
-      displayName: '@shadow-library/errors',
-      transform,
-      rootDir: 'packages/errors',
-    },
-    {
-      displayName: '@shadow-library/server',
-      transform,
-      rootDir: 'packages/server',
-    },
-  ],
+  coverageReporters: process.env.CI ? ['text'] : ['text-summary', 'html-spa'],
+  coverageThreshold: { global: { lines: 90, branches: 85, functions: 90, statements: 90 } },
+
+  projects: projects.map(generateProjectConfig),
 };
 
 export default config;

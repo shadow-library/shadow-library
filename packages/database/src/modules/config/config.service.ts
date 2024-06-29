@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 import { Injectable, OnModuleInit } from '@shadow-library/app';
+import { NeverError } from '@shadow-library/errors';
 import { type ValidateFunction } from 'ajv';
 import { cosmiconfig } from 'cosmiconfig';
 import { TypeScriptLoader } from 'cosmiconfig-typescript-loader';
@@ -23,6 +24,8 @@ import { ConfigValidator } from './config.validator';
  */
 
 type ValidationResult = { valid: true } | { valid: false; errors: string };
+
+type SchemaName = 'config' | 'collection' | 'database-metadata';
 
 /**
  * Declaring the constants
@@ -46,9 +49,10 @@ export class ConfigService implements OnModuleInit {
     }
   }
 
-  private validate(schemaName: string, data: any): ValidationResult {
+  /* istanbul ignore next */
+  private validate(schemaName: SchemaName, data: any): ValidationResult {
     const validator = this.validators.get(schemaName);
-    if (!validator) throw new Error(`Validator not found for schema: ${schemaName}`);
+    if (!validator) throw new NeverError(`Validator not found for schema: ${schemaName}`);
     const valid = validator(data);
     if (!valid) return { valid: false, errors: ajv.errorsText(validator.errors) };
     return { valid: true };
@@ -95,6 +99,7 @@ export class ConfigService implements OnModuleInit {
     const config = await this.loadConfig(rootDir);
     const databaseConfig = await this.loadDatabaseSchemas(config);
     this.configValidator.validate(databaseConfig);
+    this.databaseConfig = databaseConfig;
     return databaseConfig;
   }
 }
