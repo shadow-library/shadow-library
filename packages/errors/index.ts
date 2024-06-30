@@ -1,3 +1,4 @@
+export * from './src/aggregate.error';
 export * from './src/app.error';
 export * from './src/error-code.error';
 export * from './src/internal.error';
