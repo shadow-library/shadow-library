@@ -142,6 +142,9 @@ importers:
       '@shadow-library/errors':
         specifier: workspace:*
         version: link:../errors
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
 
   packages/types: {}
 

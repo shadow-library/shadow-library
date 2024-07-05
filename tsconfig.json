@@ -33,6 +33,8 @@
       "@shadow-library/database/*": ["packages/database/src/*"],
       "@shadow-library/errors": ["packages/errors"],
       "@shadow-library/errors/*": ["packages/errors/src/*"],
+      "@shadow-library/server": ["packages/server"],
+      "@shadow-library/server/*": ["packages/server/src/*"],
       "@shadow-library/types": ["packages/types"],
       "@shadow-library/types/*": ["packages/types/src/*"]
     },

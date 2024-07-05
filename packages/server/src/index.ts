@@ -1,19 +1,9 @@
 /**
  * Importing npm packages
  */
+import 'reflect-metadata';
 
 /**
- * Importing user defined packages
+ * exporting modules
  */
-
-/**
- * Defining types
- */
-
-/**
- * Declaring the constants
- */
-
-export function server(): never {
-  throw new Error('Not implemented');
-}
+export * from './decorators';

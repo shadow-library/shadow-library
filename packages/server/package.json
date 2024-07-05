@@ -16,6 +16,7 @@
   "dependencies": {
     "@shadow-library/app": "workspace:*",
     "@shadow-library/common": "workspace:*",
-    "@shadow-library/errors": "workspace:*"
+    "@shadow-library/errors": "workspace:*",
+    "reflect-metadata": "^0.2.2"
   }
 }
