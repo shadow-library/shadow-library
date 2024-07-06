@@ -115,13 +115,23 @@ describe('Module', () => {
     expect(module.getInstance()).toBeInstanceOf(CatModule);
   });
 
+  it('should initialize the module when optional provider is not provided', async () => {
+    @Module({ providers: [MockCatService] })
+    class OptionalModule {}
+
+    const module = new ModuleWrapper(OptionalModule, []);
+    await expect(module.init()).resolves.toBe(module);
+    expect(module.isInited()).toBe(true);
+    expect(module.getInstance()).toBeInstanceOf(OptionalModule);
+  });
+
   it('should export the exported providers', () => {
     expect(module.getExportedProvider(CatService)).toBeInstanceOf(CatService);
     expect(module.getExportedProvider('MOCK_CAT')).toBeInstanceOf(MockCatService);
   });
 
-  it('should return null if the provider is not exported', () => {
-    expect(module.getExportedProvider(CatSubService)).toBeNull();
+  it('should return undefined if the provider is not exported', () => {
+    expect(module.getExportedProvider(CatSubService)).toBeUndefined();
   });
 
   it('should run lifecycle methods', async () => {

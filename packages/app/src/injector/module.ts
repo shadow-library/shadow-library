@@ -93,19 +93,19 @@ export class Module {
     logger.debug(`Module '${metatype.name}' created`);
   }
 
-  private getProvider(name: InjectionName): object;
-  private getProvider(name: InjectionName, optional: boolean): object | null;
-  private getProvider(name: InjectionName, optional?: boolean): object | null {
-    const provider = this.providers.get(name);
+  private getProvider<T = object>(name: InjectionName): T;
+  private getProvider<T = object>(name: InjectionName, optional: boolean): T | undefined;
+  private getProvider<T = object>(name: InjectionName, optional?: boolean): T | undefined {
+    const provider = this.providers.get(name) as T | undefined;
     if (provider) return provider;
 
     for (const module of this.imports) {
-      const provider = module.getExportedProvider(name);
+      const provider = module.getExportedProvider<T>(name);
       if (provider) return provider;
     }
 
     if (!optional) throw new InternalError(`Provider '${InjectorUtils.getProviderName(name)}' not found in module '${this.metatype.name}'`);
-    return null;
+    return;
   }
 
   async runLifecycleMethod(method: LifecycleMethods): Promise<this> {
@@ -134,11 +134,11 @@ export class Module {
     return this.instance;
   }
 
-  getExportedProvider<T = object>(name: InjectionName): T | null {
+  getExportedProvider<T = object>(name: InjectionName): T | undefined {
     if (!this.isInited()) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
     const isExported = this.exports.has(name);
-    if (!isExported) return null;
-    return this.getProvider(name, true) as T | null;
+    if (!isExported) return;
+    return this.getProvider(name, true);
   }
 
   async destroy(): Promise<this> {
