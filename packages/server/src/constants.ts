@@ -14,5 +14,4 @@
  * Declaring the constants
  */
 
-export const PATH_METADATA = 'path';
-export const METHOD_METADATA = 'method';
+export const ROUTE_METADATA = 'route';
