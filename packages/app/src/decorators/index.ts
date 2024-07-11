@@ -1,3 +1,4 @@
+export * from './apply-decorators';
 export * from './controller.decorator';
 export * from './inject.decorator';
 export * from './injectable.decorator';
