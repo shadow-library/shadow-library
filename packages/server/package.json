@@ -17,6 +17,10 @@
     "@shadow-library/app": "workspace:*",
     "@shadow-library/common": "workspace:*",
     "@shadow-library/errors": "workspace:*",
+    "cookie": "^0.6.0",
     "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.6.0"
   }
 }
