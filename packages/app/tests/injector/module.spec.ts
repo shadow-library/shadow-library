@@ -7,7 +7,7 @@ import { NeverError } from '@shadow-library/errors';
 /**
  * Importing user defined packages
  */
-import { Inject, Injectable, Module, type OnApplicationReady, OnModuleDestroy, OnModuleInit, Optional } from '@shadow-library/app';
+import { Controller, Inject, Injectable, Module, type OnApplicationReady, OnModuleDestroy, OnModuleInit, Optional } from '@shadow-library/app';
 import { LifecycleMethods, Module as ModuleWrapper } from '@shadow-library/app/injector';
 
 /**
@@ -42,6 +42,9 @@ describe('Module', () => {
     onModuleInit = onModuleInitMock;
   }
 
+  @Controller('cats')
+  class CatController {}
+
   @Module({
     providers: [
       CatService,
@@ -50,6 +53,7 @@ describe('Module', () => {
       { name: testConfig, useFactory: (config: string) => `TEST_${config}`, inject: ['CONFIG'] },
       CatSubService,
     ],
+    controllers: [CatController],
     exports: [CatService, 'MOCK_CAT'],
   })
   class CatModule implements OnModuleDestroy {
@@ -132,6 +136,14 @@ describe('Module', () => {
 
   it('should return undefined if the provider is not exported', () => {
     expect(module.getExportedProvider(CatSubService)).toBeUndefined();
+  });
+
+  it('should return the controllers', () => {
+    const controllers = module.getControllers();
+    const controller = controllers[0];
+    expect(controllers).toHaveLength(1);
+    expect(controller?.type).toBe(CatController);
+    expect(controller?.instance).toBeInstanceOf(CatController);
   });
 
   it('should run lifecycle methods', async () => {
