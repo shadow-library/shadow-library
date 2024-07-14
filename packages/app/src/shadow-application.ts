@@ -10,6 +10,8 @@ import { Type } from '@shadow-library/types';
  */
 import { MODULE_METADATA, MODULE_WATERMARK } from './constants';
 import { DependencyGraph, InjectorUtils, LifecycleMethods, Module } from './injector';
+import { Router } from './interfaces';
+import { ShadowRouter } from './shadow-router';
 
 /**
  * Defining types
@@ -23,11 +25,13 @@ export class ShadowApplication {
   private readonly modules = new Map<Type, Module>();
   private readonly main: Module;
   private readonly logger: Logger;
+  private readonly router: Router;
 
-  constructor(module: Type) {
+  constructor(module: Type, router?: Router) {
     this.logger = Logger.getLogger('shadow-app');
     this.main = this.scanForModules(module);
     this.logger.debug('Modules scanned successfully');
+    this.router = router ?? new ShadowRouter();
   }
 
   private scanForModules(module: Type): Module {
@@ -61,6 +65,8 @@ export class ShadowApplication {
     for (const module of sortedModules) {
       const moduleInstance = this.modules.get(module) as Module;
       await moduleInstance.init();
+      const controllers = moduleInstance.getControllers();
+      for (const controller of controllers) this.router.registerController(controller);
     }
 
     this.logger.debug('Application initialized');

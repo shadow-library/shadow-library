@@ -25,6 +25,11 @@ export enum LifecycleMethods {
   ON_APPLICATION_STOP = 'onApplicationStop',
 }
 
+export interface Controller {
+  type: Type;
+  instance: object;
+}
+
 interface ParsedInjection {
   name: InjectionName;
   optional: boolean;
@@ -139,6 +144,11 @@ export class Module {
     const isExported = this.exports.has(name);
     if (!isExported) return;
     return this.getProvider(name, true);
+  }
+
+  getControllers(): Controller[] {
+    if (!this.isInited()) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
+    return [...this.controllers.entries()].map(([type, instance]) => ({ type, instance }));
   }
 
   async destroy(): Promise<this> {
