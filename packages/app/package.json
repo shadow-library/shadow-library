@@ -18,6 +18,10 @@
     "@shadow-library/common": "workspace:*",
     "@shadow-library/errors": "workspace:*",
     "@shadow-library/types": "workspace:*",
+    "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.6"
   }
 }
