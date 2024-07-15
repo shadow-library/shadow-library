@@ -35,6 +35,7 @@ const config: Config = {
   collectCoverage: true,
   coverageReporters: process.env.CI ? ['text'] : ['text-summary', 'html-spa'],
   coverageThreshold: { global: { lines: 90, branches: 85, functions: 90, statements: 90 } },
+  coveragePathIgnorePatterns: ['node_modules'],
 
   projects: projects.map(generateProjectConfig),
 };
