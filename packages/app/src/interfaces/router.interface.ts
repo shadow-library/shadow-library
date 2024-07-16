@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { Controller } from '../injector';
+import { ControllerWrapper } from '../injector';
 
 /**
  * Defining types
@@ -16,5 +16,5 @@ import { Controller } from '../injector';
  */
 
 export interface Router {
-  registerController(controller: Controller): void;
+  registerController(controller: ControllerWrapper): void;
 }

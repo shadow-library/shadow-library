@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { Controller } from './injector';
+import { ControllerWrapper } from './injector';
 import { Router } from './interfaces';
 
 /**
@@ -17,9 +17,9 @@ import { Router } from './interfaces';
  */
 
 export class ShadowRouter implements Router {
-  private readonly controllers: Controller[] = [];
+  private readonly controllers: ControllerWrapper[] = [];
 
-  registerController(controller: Controller): void {
+  registerController(controller: ControllerWrapper): void {
     this.controllers.push(controller);
   }
 }

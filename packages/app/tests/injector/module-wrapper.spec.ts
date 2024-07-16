@@ -8,7 +8,7 @@ import { NeverError } from '@shadow-library/errors';
  * Importing user defined packages
  */
 import { Controller, Inject, Injectable, Module, type OnApplicationReady, OnModuleDestroy, OnModuleInit, Optional } from '@shadow-library/app';
-import { LifecycleMethods, Module as ModuleWrapper } from '@shadow-library/app/injector';
+import { ControllerWrapper, LifecycleMethods, ModuleWrapper } from '@shadow-library/app/injector';
 
 /**
  * Defining types
@@ -18,7 +18,7 @@ import { LifecycleMethods, Module as ModuleWrapper } from '@shadow-library/app/i
  * Declaring the constants
  */
 
-describe('Module', () => {
+describe('ModuleWrapper', () => {
   const testConfig = Symbol('CONFIG');
   const onModuleInitMock = jest.fn(() => {});
   const onAppReadyMock = jest.fn(() => {});
@@ -140,10 +140,8 @@ describe('Module', () => {
 
   it('should return the controllers', () => {
     const controllers = module.getControllers();
-    const controller = controllers[0];
     expect(controllers).toHaveLength(1);
-    expect(controller?.type).toBe(CatController);
-    expect(controller?.instance).toBeInstanceOf(CatController);
+    expect(controllers[0]).toBeInstanceOf(ControllerWrapper);
   });
 
   it('should run lifecycle methods', async () => {

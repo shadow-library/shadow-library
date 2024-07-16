@@ -8,9 +8,10 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
+import { ControllerWrapper } from './controller-wrapper';
 import { DependencyGraph } from './dependency-graph';
 import { InjectorUtils } from './injector.utils';
-import { CONTROLLER_WATERMARK, INJECTABLE_WATERMARK, MODULE_METADATA, OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '../constants';
+import { INJECTABLE_WATERMARK, MODULE_METADATA, OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '../constants';
 import { InjectMetadata } from '../decorators';
 import { FactoryProvider, FactoryProviderInject, InjectionName, Provider } from '../interfaces';
 
@@ -23,11 +24,6 @@ export enum LifecycleMethods {
   ON_MODULE_DESTROY = 'onModuleDestroy',
   ON_APPLICATION_READY = 'onApplicationReady',
   ON_APPLICATION_STOP = 'onApplicationStop',
-}
-
-export interface Controller {
-  type: Type;
-  instance: object;
 }
 
 interface ParsedInjection {
@@ -46,7 +42,6 @@ interface ParsedProvider {
  */
 const logger = Logger.getLogger('ShadowModule');
 const isInjectable = (provider: Type): boolean => Reflect.getMetadata(INJECTABLE_WATERMARK, provider) ?? false;
-const isController = (provider: Type): boolean => Reflect.hasMetadata(CONTROLLER_WATERMARK, provider);
 const isFactoryProvider = (provider: Provider): provider is FactoryProvider => 'useFactory' in provider;
 
 function parseInjection(injection: FactoryProviderInject): ParsedInjection {
@@ -79,17 +74,17 @@ function parseProvider(provider: Provider): ParsedProvider {
   return { name: classProvider.name, useFactory: (...args: any) => new classProvider.useClass(...args), inject };
 }
 
-export class Module {
+export class ModuleWrapper {
   private readonly metatype: Type;
-  private readonly imports: Module[];
+  private readonly imports: ModuleWrapper[];
 
-  private readonly controllers = new Map<Type, object>();
+  private readonly controllers = new Array<ControllerWrapper>();
   private readonly providers = new Map<InjectionName, object>();
   private readonly exports = new Set<InjectionName>();
 
   private instance?: object;
 
-  constructor(metatype: Type, imports: Module[]) {
+  constructor(metatype: Type, imports: ModuleWrapper[]) {
     this.metatype = metatype;
     this.imports = imports;
 
@@ -146,9 +141,9 @@ export class Module {
     return this.getProvider(name, true);
   }
 
-  getControllers(): Controller[] {
+  getControllers(): ControllerWrapper[] {
     if (!this.isInited()) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
-    return [...this.controllers.entries()].map(([type, instance]) => ({ type, instance }));
+    return [...this.controllers];
   }
 
   async destroy(): Promise<this> {
@@ -156,7 +151,7 @@ export class Module {
     await this.runLifecycleMethod(LifecycleMethods.ON_MODULE_DESTROY);
     this.instance = undefined;
     this.providers.clear();
-    this.controllers.clear();
+    this.controllers.length = 0;
     return this;
   }
 
@@ -195,13 +190,11 @@ export class Module {
     /** Initializing the controllers */
     const controllers = InjectorUtils.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
     for (const controller of controllers) {
-      const valid = isController(controller);
-      if (!valid) throw new InternalError(`Class '${controller.name}' is not a controller`);
       logger.debug(`Initializing controller '${controller.name}'`);
       const dependencyNames = InjectorUtils.getMetadata<Type>(PARAMTYPES_METADATA, controller);
       const dependencies = dependencyNames.map(name => this.getProvider(name));
-      const controllerInstance = new controller(...dependencies);
-      this.controllers.set(controller, controllerInstance);
+      const controllerWrapper = new ControllerWrapper(controller, dependencies);
+      this.controllers.push(controllerWrapper);
       logger.debug(`Controller '${controller.name}' initialized`);
     }
 
