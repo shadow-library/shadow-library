@@ -9,7 +9,7 @@ import { Type } from '@shadow-library/types';
  * Importing user defined packages
  */
 import { MODULE_METADATA, MODULE_WATERMARK } from './constants';
-import { DependencyGraph, InjectorUtils, LifecycleMethods, Module } from './injector';
+import { DependencyGraph, InjectorUtils, LifecycleMethods, ModuleWrapper } from './injector';
 import { Router } from './interfaces';
 import { ShadowRouter } from './shadow-router';
 
@@ -22,8 +22,8 @@ import { ShadowRouter } from './shadow-router';
  */
 
 export class ShadowApplication {
-  private readonly modules = new Map<Type, Module>();
-  private readonly main: Module;
+  private readonly modules = new Map<Type, ModuleWrapper>();
+  private readonly main: ModuleWrapper;
   private readonly logger: Logger;
   private readonly router: Router;
 
@@ -34,13 +34,13 @@ export class ShadowApplication {
     this.router = router ?? new ShadowRouter();
   }
 
-  private scanForModules(module: Type): Module {
-    if (this.modules.has(module)) return this.modules.get(module) as Module;
+  private scanForModules(module: Type): ModuleWrapper {
+    if (this.modules.has(module)) return this.modules.get(module) as ModuleWrapper;
     const isModule = Reflect.getMetadata(MODULE_WATERMARK, module) ?? false;
     if (!isModule) throw new Error(`Class '${module.name}' is not a module`);
     const dependencies = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
     const dependentModules = dependencies.map(m => this.scanForModules(m));
-    const moduleInstance = new Module(module, dependentModules);
+    const moduleInstance = new ModuleWrapper(module, dependentModules);
     this.modules.set(module, moduleInstance);
     return moduleInstance;
   }
@@ -63,7 +63,7 @@ export class ShadowApplication {
     const sortedModules = dependencyGraph.getSortedNodes();
 
     for (const module of sortedModules) {
-      const moduleInstance = this.modules.get(module) as Module;
+      const moduleInstance = this.modules.get(module) as ModuleWrapper;
       await moduleInstance.init();
       const controllers = moduleInstance.getControllers();
       for (const controller of controllers) this.router.registerController(controller);
