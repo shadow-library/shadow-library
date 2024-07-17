@@ -27,7 +27,7 @@ describe('ControllerWrapper', () => {
     const classRules = { isPrivate: true };
     const methodRules = { method: 'POST', path: '/test' };
     const mock = jest.fn();
-    @Controller('test', classRules)
+    @Controller(classRules)
     class TestController {
       mock = mock;
 
