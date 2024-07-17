@@ -42,7 +42,7 @@ describe('ModuleWrapper', () => {
     onModuleInit = onModuleInitMock;
   }
 
-  @Controller('cats')
+  @Controller()
   class CatController {}
 
   @Module({
