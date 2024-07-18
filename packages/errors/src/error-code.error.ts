@@ -35,13 +35,15 @@ const ERROR_STATUS_CODES: Record<ErrorType, number> = {
 };
 
 export class ErrorCode {
+  private readonly statusCode: number;
+
   protected constructor(
     private readonly code: string,
     private readonly type: ErrorType,
     private readonly msg: string,
-    private readonly statusCode?: number,
+    statusCode?: number,
   ) {
-    if (!statusCode) this.statusCode = ERROR_STATUS_CODES[type];
+    this.statusCode = statusCode || ERROR_STATUS_CODES[type];
   }
 
   getCode(): string {
@@ -57,7 +59,7 @@ export class ErrorCode {
   }
 
   getStatusCode(): number {
-    return this.statusCode || 500;
+    return this.statusCode;
   }
 
   /**
