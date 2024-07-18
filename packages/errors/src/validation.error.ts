@@ -30,9 +30,9 @@ export class ValidationError extends Error {
     if (field && message) this.addFieldError(field, message);
   }
 
-  static combineErrors(errors: ValidationError[]): ValidationError {
+  static combineErrors(...errors: ValidationError[]): ValidationError {
     const combinedError = new ValidationError();
-    for (const error of errors) {
+    for (const error of errors.flat()) {
       for (const fieldError of error.getErrors()) {
         combinedError.addFieldError(fieldError.field, fieldError.msg);
       }

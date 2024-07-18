@@ -29,9 +29,17 @@ describe('ValidationError', () => {
     expect(validationError.getErrorCount()).toBe(2);
   });
 
+  it('should throw generic error for no error fields', () => {
+    const error = new ValidationError();
+    expect(error.message).toBe('Validation failed');
+  });
+
   it('should return the error message for single field', () => {
-    const singleValidationError = new ValidationError('fieldOne', 'value one');
-    expect(singleValidationError.getMessage()).toBe('Validation failed for fieldOne');
+    const msg = 'Validation failed for fieldOne';
+    const error = new ValidationError('fieldOne', 'value one');
+
+    expect(error.getMessage()).toBe(msg);
+    expect(error.message).toBe(msg);
   });
 
   it('should return the error message for multiple fields', () => {
@@ -44,6 +52,19 @@ describe('ValidationError', () => {
   it('should return the errors', () => {
     const errors = validationError.getErrors();
     expect(errors).toStrictEqual([
+      { field: 'fieldOne', msg: 'value one' },
+      { field: 'fieldTwo', msg: 'value two' },
+    ]);
+  });
+
+  it('should combine errors', () => {
+    const errorOne = new ValidationError('fieldOne', 'value one');
+    const errorTwo = new ValidationError('fieldTwo', 'value two');
+    const combinedError = ValidationError.combineErrors(errorOne, errorTwo);
+
+    expect(combinedError).toBeInstanceOf(ValidationError);
+    expect(combinedError.getErrorCount()).toBe(2);
+    expect(combinedError.getErrors()).toStrictEqual([
       { field: 'fieldOne', msg: 'value one' },
       { field: 'fieldTwo', msg: 'value two' },
     ]);
