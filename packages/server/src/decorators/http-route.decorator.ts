@@ -12,15 +12,15 @@ import { ROUTE_METADATA } from '@shadow-library/server/constants';
  */
 
 export enum HttpMethod {
-  GET,
-  POST,
-  PUT,
-  DELETE,
-  PATCH,
-  OPTIONS,
-  HEAD,
-  SEARCH,
-  ALL,
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+  PATCH = 'PATCH',
+  OPTIONS = 'OPTIONS',
+  HEAD = 'HEAD',
+  SEARCH = 'SEARCH',
+  ALL = 'ALL',
 }
 
 export interface RouteOptions {

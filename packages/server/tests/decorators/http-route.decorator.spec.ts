@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { HttpMethod, Route } from '@shadow-library/server';
+import { All, Delete, Get, Head, HttpMethod, Options, Patch, Post, Put, Route, Search } from '@shadow-library/server';
 import { ROUTE_METADATA } from '@shadow-library/server/constants';
 
 /**
@@ -40,5 +40,20 @@ describe('Http Methods Decorators', () => {
     const route = Reflect.getMetadata(ROUTE_METADATA, Controller.execute);
 
     expect(route.path).toBe('/');
+  });
+
+  [All, Delete, Get, Head, Options, Patch, Post, Put, Search].forEach(Decorator => {
+    it(`should enhance the method with the request metadata for ${Decorator.name}`, () => {
+      const path = '/data';
+      class Controller {
+        @Decorator(path)
+        static execute() {}
+      }
+
+      const route = Reflect.getMetadata(ROUTE_METADATA, Controller.execute);
+
+      expect(route.path).toBe(path);
+      expect(route.method).toBe(Decorator.name.toUpperCase());
+    });
   });
 });
