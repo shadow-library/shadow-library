@@ -18,8 +18,6 @@ import { LRUCache } from '@shadow-library/common';
  */
 
 describe('LRU Cache', () => {
-  let cache: LRUCache;
-
   describe('init', () => {
     it('should throw an error if the capacity is less than or equal to 0', () => {
       const error = new InternalError('Cache capacity must be a positive number greater than 0');
@@ -40,95 +38,116 @@ describe('LRU Cache', () => {
     });
 
     it('should initialize the cache with the given capacity', () => {
-      cache = new LRUCache(3);
+      const cache = new LRUCache(3);
       expect(cache).toBeInstanceOf(LRUCache);
     });
   });
 
   describe('set', () => {
     it('should set the value for the given key', () => {
-      cache.set('key-str', 'value');
-      const value = cache.get('key-str');
+      const cache = new LRUCache(1);
+      const value = cache.set('key', 'value').get('key');
       expect(value).toBe('value');
     });
 
     it('should update the value for the given key', () => {
-      cache.set('key-str', 'updated-value');
-      const value = cache.get('key-str');
+      const cache = new LRUCache(1);
+      const value = cache.set('key', 'value').set('key', 'updated-value').get('key');
       expect(value).toBe('updated-value');
     });
 
     it('should set the number value for the given key', () => {
-      cache.set('key-num', 123);
-      const value = cache.get('key-num');
+      const cache = new LRUCache(1);
+      const value = cache.set('key', 123).get('key');
       expect(value).toBe(123);
     });
 
     it('should set the object value for the given key', () => {
-      cache.set('key-obj', { key: 'value' });
-      const value = cache.get('key-obj');
-      expect(value).toEqual({ key: 'value' });
+      const obj = { key: 'value' };
+      const cache = new LRUCache(1);
+      const value = cache.set('key', obj).get('key');
+      expect(value).toBe(obj);
     });
 
     it('should set when value is null', () => {
-      cache.set('key-null', null);
-      const value = cache.get('key-null');
+      const cache = new LRUCache(1);
+      const value = cache.set('key', null).get('key');
       expect(value).toBeNull();
     });
 
     it('should delete the least recently used key if the capacity is full', () => {
-      const value = cache.get('key-str');
+      const cache = new LRUCache(2);
+      const value = cache.set('key-1', 'value-1').set('key-2', 'value-2').set('key-3', 'value-3').get('key-1');
       expect(value).toBeUndefined();
+    });
+
+    it('should use the free space if the capacity is full', () => {
+      const cache = new LRUCache(3);
+      cache.set('key-1', 'value-1').set('key-2', 'value-2').set('key-3', 'value-3').remove('key-2');
+      const value = cache.set('key-4', 'value-4').get('key-1');
+      expect(value).toBe('value-1');
     });
   });
 
   describe('peek', () => {
-    it('should return the value for the given key', () => {
-      const value = cache.peek('key-num');
-      expect(value).not.toBeUndefined();
-    });
+    it('should return the value for the given key without updating least recently accessed list', () => {
+      const cache = new LRUCache(2);
+      const peekValue = cache.set('key-1', 'value-1').set('key-2', 'value-2').peek('key-1');
+      const unknownPeekValue = cache.peek('key-3');
+      const value = cache.set('key-3', 'value-3').get('key-1');
 
-    it('should return undefined for the least recently accessed key', () => {
-      cache.set('key-str', 'value');
-      const value = cache.peek('key-num');
+      expect(peekValue).toBe('value-1');
+      expect(unknownPeekValue).toBeUndefined();
       expect(value).toBeUndefined();
     });
   });
 
   describe('get', () => {
-    it('should return the value for the given key', () => {
-      const value = cache.get('key-obj');
-      expect(value).not.toBeUndefined();
-    });
+    it('should splay the key to the top of the list', () => {
+      const cache = new LRUCache(3);
+      const value = cache.set('key-1', 'value-1').set('key-2', 'value-2').set('key-3', 'value-3').get('key-2');
 
-    it('should return undefined if the key is not found', () => {
-      const value = cache.get('key-undefined');
-      expect(value).toBeUndefined();
+      /** @ts-expect-error Accessing private member */
+      expect(cache.head).toBe(1);
+      expect(value).toBe('value-2');
     });
   });
 
   describe('has', () => {
     it('should return true if the key is found', () => {
-      const value = cache.has('key-obj');
+      const cache = new LRUCache(1);
+      const value = cache.set('key', 'value').has('key');
       expect(value).toBe(true);
     });
 
     it('should return false if the key is not found', () => {
-      const value = cache.has('key-undefined');
+      const cache = new LRUCache(1);
+      const value = cache.has('key');
       expect(value).toBe(false);
     });
   });
 
   describe('remove', () => {
     it('should delete the value for the given key and return its value', () => {
-      const deletedValue = cache.remove('key-obj');
-      const value = cache.get('key-obj');
-      expect(deletedValue).not.toBeUndefined();
-      expect(value).toBeUndefined();
+      /** Removing head element */
+      const cacheOne = new LRUCache(2);
+      const deletedValueOne = cacheOne.set('key-1', 'value-1').set('key-2', 'value-2').remove('key-1');
+      const valueOne = cacheOne.get('key-1');
+
+      /** Removing tail element */
+      const cacheTwo = new LRUCache(2);
+      const deletedValueTwo = cacheTwo.set('key-1', 'value-1').set('key-2', 'value-2').remove('key-2');
+      const valueTwo = cacheTwo.get('key-2');
+
+      expect(deletedValueOne).toBe('value-1');
+      expect(deletedValueTwo).toBe('value-2');
+      expect(valueOne).toBeUndefined();
+      expect(valueTwo).toBeUndefined();
     });
 
     it('should return undefined for not found key', () => {
-      const deletedValue = cache.remove('key-undefined');
+      const cache = new LRUCache(1);
+      const deletedValue = cache.remove('key');
       expect(deletedValue).toBeUndefined();
     });
 
@@ -142,7 +161,10 @@ describe('LRU Cache', () => {
 
   describe('clear', () => {
     it('should clear the cache', () => {
+      const cache = new LRUCache(2);
+      cache.set('key-1', 'value-1').set('key-2', 'value-2');
       cache.clear();
+
       const obj = cache as any;
       expect(obj.items).toStrictEqual({});
       expect(obj.head).toBe(0);
