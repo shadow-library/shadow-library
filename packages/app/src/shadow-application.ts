@@ -8,10 +8,9 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { MODULE_METADATA, MODULE_WATERMARK } from './constants';
+import { GLOBAL_WATERMARK, MODULE_METADATA, MODULE_WATERMARK } from './constants';
 import { DependencyGraph, InjectorUtils, LifecycleMethods, ModuleWrapper } from './injector';
-import { Router } from './interfaces';
-import { ShadowRouter } from './shadow-router';
+import { ApplicationConfig } from './interfaces';
 
 /**
  * Defining types
@@ -22,26 +21,45 @@ import { ShadowRouter } from './shadow-router';
  */
 
 export class ShadowApplication {
+  private readonly globalModuleType?: Type;
   private readonly modules = new Map<Type, ModuleWrapper>();
   private readonly main: ModuleWrapper;
   private readonly logger: Logger;
-  private readonly router: Router;
+  private readonly config: ApplicationConfig;
 
-  constructor(module: Type, router?: Router) {
+  constructor(module: Type, config: ApplicationConfig = {}) {
     this.logger = Logger.getLogger('shadow-app');
+    this.config = { ...config };
+    this.globalModuleType = this.scanForGlobalModule(module);
     this.main = this.scanForModules(module);
     this.logger.debug('Modules scanned successfully');
-    this.router = router ?? new ShadowRouter();
+  }
+
+  private scanForGlobalModule(module: Type): Type | undefined {
+    const imports = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+    const [globalModule, ...others] = imports.filter(m => Reflect.getMetadata(GLOBAL_WATERMARK, m) ?? false);
+    if (!globalModule) return;
+    if (others.length > 0) throw new InternalError('There can only be one global module');
+
+    const moduleInstance = new ModuleWrapper(globalModule, []);
+    this.modules.set(globalModule, moduleInstance);
+    return globalModule;
   }
 
   private scanForModules(module: Type): ModuleWrapper {
     if (this.modules.has(module)) return this.modules.get(module) as ModuleWrapper;
+
     const isModule = Reflect.getMetadata(MODULE_WATERMARK, module) ?? false;
-    if (!isModule) throw new Error(`Class '${module.name}' is not a module`);
+    if (!isModule) throw new InternalError(`Class '${module.name}' is not a module`);
+    const isGlobal = Reflect.getMetadata(GLOBAL_WATERMARK, module) ?? false;
+    if (isGlobal) throw new InternalError(`Global module '${module.name}' can only be imported in main module`);
+
     const dependencies = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+    if (this.globalModuleType && !dependencies.includes(this.globalModuleType)) dependencies.unshift(this.globalModuleType);
     const dependentModules = dependencies.map(m => this.scanForModules(m));
     const moduleInstance = new ModuleWrapper(module, dependentModules);
     this.modules.set(module, moduleInstance);
+
     return moduleInstance;
   }
 
@@ -62,11 +80,14 @@ export class ShadowApplication {
     }
     const sortedModules = dependencyGraph.getSortedNodes();
 
+    const router = this.config.router;
     for (const module of sortedModules) {
       const moduleInstance = this.modules.get(module) as ModuleWrapper;
       await moduleInstance.init();
       const controllers = moduleInstance.getControllers();
-      for (const controller of controllers) this.router.registerController(controller);
+      if (!router) continue;
+      const routes = controllers.flatMap(controller => controller.getRoutes());
+      for (const route of routes) await router.registerRoute(route);
     }
 
     this.logger.debug('Application initialized');

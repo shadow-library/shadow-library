@@ -51,6 +51,9 @@ export function Module(metadata: ModuleMetadata): ClassDecorator {
 
   return target => {
     Reflect.defineMetadata(MODULE_WATERMARK, true, target);
-    for (const property in metadata) Reflect.defineMetadata(property, metadata[property as keyof ModuleMetadata], target);
+    for (const metadataKey of validMetadataKeys) {
+      const value = metadata[metadataKey as keyof ModuleMetadata] ?? [];
+      Reflect.defineMetadata(metadataKey, value, target);
+    }
   };
 }

@@ -6,7 +6,7 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { Router } from './interfaces';
+import { ApplicationConfig } from './interfaces';
 import { ShadowApplication } from './shadow-application';
 
 /**
@@ -18,8 +18,8 @@ import { ShadowApplication } from './shadow-application';
  */
 
 export class ShadowFactoryStatic {
-  async create(module: Type, router?: Router): Promise<ShadowApplication> {
-    const app = new ShadowApplication(module, router);
+  async create(module: Type, options?: ApplicationConfig): Promise<ShadowApplication> {
+    const app = new ShadowApplication(module, options);
     return await app.init();
   }
 }
