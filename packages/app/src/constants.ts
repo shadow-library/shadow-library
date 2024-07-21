@@ -23,6 +23,7 @@ export const SELF_DECLARED_DEPS_METADATA = 'self:paramtypes';
 export const CONTROLLER_WATERMARK = Symbol('controller');
 export const INJECTABLE_WATERMARK = Symbol('injectable');
 export const MODULE_WATERMARK = Symbol('module');
+export const GLOBAL_WATERMARK = Symbol('global');
 export const ROUTE_WATERMARK = Symbol('route');
 
 export const ROUTE_RULES_METADATA = Symbol('route:rules');

@@ -1,5 +1,6 @@
 export * from './apply-decorators';
 export * from './controller.decorator';
+export * from './global-module.decorator';
 export * from './inject.decorator';
 export * from './injectable.decorator';
 export * from './module.decorator';
