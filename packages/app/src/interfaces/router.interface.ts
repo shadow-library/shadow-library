@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { ControllerWrapper } from '../injector';
+import { RouteController } from '../injector';
 
 /**
  * Defining types
@@ -16,5 +16,5 @@ import { ControllerWrapper } from '../injector';
  */
 
 export interface Router {
-  registerController(controller: ControllerWrapper): void;
+  registerRoute<T extends Record<string, any> = any>(route: RouteController<T>): void | Promise<void>;
 }
