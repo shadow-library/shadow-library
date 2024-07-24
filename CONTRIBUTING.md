@@ -61,7 +61,6 @@ The following is the list of supported scopes:
 
 - **app**: for changes made on `packages/app` directory
 - **common**: for changes made on `packages/common` directory
-- **database**: for changes made on `packages/database` directory
 - **errors**: for changes made on `packages/errors` directory
 - **server**: for changes made on `packages/server` directory
 - **types**: for changes made on `package/types` directory
