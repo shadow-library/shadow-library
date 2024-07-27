@@ -6,7 +6,8 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { InjectionName } from '../interfaces';
+import { ROUTE_RULES_METADATA } from '@shadow-library/app/constants';
+import { InjectionName } from '@shadow-library/app/interfaces';
 
 /**
  * Defining types
@@ -16,7 +17,7 @@ import { InjectionName } from '../interfaces';
  * Declaring the constants
  */
 
-class InjectorUtilsStatic {
+class ExtractorStatic {
   getMetadata<T>(key: string, target: Type): T[] {
     return Reflect.getMetadata(key, target) ?? [];
   }
@@ -25,6 +26,10 @@ class InjectorUtilsStatic {
     if (typeof provider === 'function') return provider.name;
     return provider.toString();
   }
+
+  getRouteRules(method: object): Record<string, any> {
+    return Reflect.getMetadata(ROUTE_RULES_METADATA, method);
+  }
 }
 
-export const InjectorUtils = new InjectorUtilsStatic();
+export const Extractor = new ExtractorStatic();

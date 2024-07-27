@@ -9,7 +9,7 @@ import { LoggerService, Type } from '@shadow-library/types';
  * Importing user defined packages
  */
 import { GLOBAL_WATERMARK, MODULE_METADATA, MODULE_WATERMARK } from './constants';
-import { DependencyGraph, InjectorUtils, LifecycleMethods, ModuleWrapper } from './injector';
+import { DependencyGraph, Extractor, LifecycleMethods, ModuleWrapper } from './injector';
 import { ApplicationConfig } from './interfaces';
 
 /**
@@ -36,7 +36,7 @@ export class ShadowApplication {
   }
 
   private scanForGlobalModule(module: Type): Type | undefined {
-    const imports = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+    const imports = Extractor.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
     const [globalModule, ...others] = imports.filter(m => Reflect.getMetadata(GLOBAL_WATERMARK, m) ?? false);
     if (!globalModule) return;
     if (others.length > 0) throw new InternalError('There can only be one global module');
@@ -54,7 +54,7 @@ export class ShadowApplication {
     const isGlobal = Reflect.getMetadata(GLOBAL_WATERMARK, module) ?? false;
     if (isGlobal) throw new InternalError(`Global module '${module.name}' can only be imported in main module`);
 
-    const dependencies = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+    const dependencies = Extractor.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
     if (this.globalModuleType && !dependencies.includes(this.globalModuleType)) dependencies.unshift(this.globalModuleType);
     const dependentModules = dependencies.map(m => this.scanForModules(m));
     const moduleInstance = new ModuleWrapper(module, dependentModules);
@@ -75,7 +75,7 @@ export class ShadowApplication {
     const modules = Array.from(this.modules.keys());
     for (const module of modules) {
       dependencyGraph.addNode(module);
-      const dependencies = InjectorUtils.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+      const dependencies = Extractor.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
       for (const dependency of dependencies) dependencyGraph.addDependency(module, dependency);
     }
     const sortedModules = dependencyGraph.getSortedNodes();
