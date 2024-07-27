@@ -8,7 +8,8 @@ import { merge } from 'lodash';
 /**
  * Importing user defined packages
  */
-import { CONTROLLER_WATERMARK, ROUTE_RULES_METADATA, ROUTE_WATERMARK } from '../constants';
+import { Extractor, Validator } from './helpers';
+import { CONTROLLER_WATERMARK } from '../constants';
 
 /**
  * Defining types
@@ -23,8 +24,6 @@ export interface RouteController<T extends Record<string, any>> {
 /**
  * Declaring the constants
  */
-const isRoute = (method: object) => Reflect.hasMetadata(ROUTE_WATERMARK, method);
-const getRouteRules = (method: object) => Reflect.getMetadata(ROUTE_RULES_METADATA, method);
 
 export class ControllerWrapper {
   private readonly instance: Record<string, any>;
@@ -44,17 +43,17 @@ export class ControllerWrapper {
     do {
       for (const propertyName of Object.getOwnPropertyNames(prototype)) {
         const method = this.instance[propertyName];
-        const isRouteMethod = typeof method === 'function' && isRoute(method);
+        const isRouteMethod = typeof method === 'function' && Validator.isRoute(method);
         if (isRouteMethod) methods.add(method);
       }
     } while ((prototype = Object.getPrototypeOf(prototype)));
 
     /* Extracting the route rules from the route methods */
     const routes: RouteController<T>[] = [];
-    const baseRouteRules = getRouteRules(this.type);
+    const baseRouteRules = Extractor.getRouteRules(this.type);
     for (const method of methods) {
-      const methodRouteRules = getRouteRules(method);
-      const rules = merge({}, baseRouteRules, methodRouteRules);
+      const methodRouteRules = Extractor.getRouteRules(method);
+      const rules = merge({}, baseRouteRules, methodRouteRules) as T;
       routes.push({ rules, handler: method.bind(this.instance) });
     }
 

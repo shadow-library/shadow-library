@@ -10,10 +10,9 @@ import { Type } from '@shadow-library/types';
  */
 import { ControllerWrapper } from './controller-wrapper';
 import { DependencyGraph } from './dependency-graph';
-import { InjectorUtils } from './injector.utils';
-import { INJECTABLE_WATERMARK, MODULE_METADATA, OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '../constants';
-import { InjectMetadata } from '../decorators';
-import { FactoryProvider, FactoryProviderInject, InjectionName, Provider } from '../interfaces';
+import { Extractor, Parser } from './helpers';
+import { MODULE_METADATA, PARAMTYPES_METADATA } from '../constants';
+import { InjectionName, Provider } from '../interfaces';
 
 /**
  * Defining types
@@ -26,53 +25,10 @@ export enum LifecycleMethods {
   ON_APPLICATION_STOP = 'onApplicationStop',
 }
 
-interface ParsedInjection {
-  name: InjectionName;
-  optional: boolean;
-}
-
-interface ParsedProvider {
-  name: InjectionName;
-  useFactory: (...args: any[]) => any | Promise<any>;
-  inject: ParsedInjection[];
-}
-
 /**
  * Declaring the constants
  */
 const logger = Logger.getLogger('ShadowModule');
-const isInjectable = (provider: Type): boolean => Reflect.getMetadata(INJECTABLE_WATERMARK, provider) ?? false;
-const isFactoryProvider = (provider: Provider): provider is FactoryProvider => 'useFactory' in provider;
-
-function parseInjection(injection: FactoryProviderInject): ParsedInjection {
-  if (typeof injection === 'object' && 'name' in injection) return { name: injection.name, optional: injection.optional ?? false };
-  return { name: injection, optional: false };
-}
-
-function parseProvider(provider: Provider): ParsedProvider {
-  if ('useValue' in provider) return { name: provider.name, useFactory: () => provider.useValue, inject: [] };
-
-  if (isFactoryProvider(provider)) {
-    const inject = provider.inject ?? [];
-    return { name: provider.name, useFactory: provider.useFactory, inject: inject.map(parseInjection) };
-  }
-
-  const classProvider = typeof provider === 'function' ? { name: provider, useClass: provider } : provider;
-  const injectable = isInjectable(classProvider.useClass);
-  if (!injectable) throw new InternalError(`Class '${classProvider.useClass.name}' is not an injectable provider`);
-  const dependencies = InjectorUtils.getMetadata<FactoryProviderInject>(PARAMTYPES_METADATA, classProvider.useClass);
-  const selfDependencies = InjectorUtils.getMetadata<InjectMetadata>(SELF_DECLARED_DEPS_METADATA, classProvider.useClass);
-  for (const dependency of selfDependencies) dependencies[dependency.index] = dependency.name;
-  const optionalDependencies = InjectorUtils.getMetadata<number>(OPTIONAL_DEPS_METADATA, classProvider.useClass);
-  for (const index of optionalDependencies) {
-    const dependency = dependencies[index] as FactoryProviderInject;
-    const name = typeof dependency === 'object' && 'name' in dependency ? dependency.name : dependency;
-    dependencies[index] = { name, optional: true };
-  }
-
-  const inject = dependencies.map(parseInjection);
-  return { name: classProvider.name, useFactory: (...args: any) => new classProvider.useClass(...args), inject };
-}
 
 export class ModuleWrapper {
   private readonly metatype: Type;
@@ -88,7 +44,7 @@ export class ModuleWrapper {
     this.metatype = metatype;
     this.imports = imports;
 
-    const exports = InjectorUtils.getMetadata<InjectionName>(MODULE_METADATA.EXPORTS, metatype);
+    const exports = Extractor.getMetadata<InjectionName>(MODULE_METADATA.EXPORTS, metatype);
     this.exports = new Set(exports);
     logger.debug(`Module '${metatype.name}' created`);
   }
@@ -104,7 +60,7 @@ export class ModuleWrapper {
       if (provider) return provider;
     }
 
-    if (!optional) throw new InternalError(`Provider '${InjectorUtils.getProviderName(name)}' not found in module '${this.metatype.name}'`);
+    if (!optional) throw new InternalError(`Provider '${Extractor.getProviderName(name)}' not found in module '${this.metatype.name}'`);
     return;
   }
 
@@ -158,8 +114,8 @@ export class ModuleWrapper {
   async init(): Promise<this> {
     /** Determining the order to initiate the providers */
     logger.debug(`Determining the order to initialize providers for module '${this.metatype.name}'`);
-    const providers = InjectorUtils.getMetadata<Provider>(MODULE_METADATA.PROVIDERS, this.metatype);
-    const parsedProviders = providers.map(parseProvider);
+    const providers = Extractor.getMetadata<Provider>(MODULE_METADATA.PROVIDERS, this.metatype);
+    const parsedProviders = providers.map(p => Parser.parseProvider(p));
     const dependencyGraph = new DependencyGraph<InjectionName>();
     for (const provider of parsedProviders) {
       dependencyGraph.addNode(provider.name);
@@ -175,7 +131,7 @@ export class ModuleWrapper {
       const provider = parsedProviders.find(p => p.name === providerName);
       if (!provider) continue;
 
-      logger.debug(`Initializing provider '${InjectorUtils.getProviderName(providerName)}'`);
+      logger.debug(`Initializing provider '${Extractor.getProviderName(providerName)}'`);
       const instances = [];
       for (const injection of provider.inject) {
         const instance = this.getProvider(injection.name, injection.optional);
@@ -184,14 +140,14 @@ export class ModuleWrapper {
 
       const providerInstance = await provider.useFactory(...instances);
       this.providers.set(provider.name, providerInstance);
-      logger.debug(`Provider '${InjectorUtils.getProviderName(providerName)}' initialized`);
+      logger.debug(`Provider '${Extractor.getProviderName(providerName)}' initialized`);
     }
 
     /** Initializing the controllers */
-    const controllers = InjectorUtils.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
+    const controllers = Extractor.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
     for (const controller of controllers) {
       logger.debug(`Initializing controller '${controller.name}'`);
-      const dependencyNames = InjectorUtils.getMetadata<Type>(PARAMTYPES_METADATA, controller);
+      const dependencyNames = Extractor.getMetadata<Type>(PARAMTYPES_METADATA, controller);
       const dependencies = dependencyNames.map(name => this.getProvider(name));
       const controllerWrapper = new ControllerWrapper(controller, dependencies);
       this.controllers.push(controllerWrapper);
@@ -200,7 +156,7 @@ export class ModuleWrapper {
 
     /** Initializing the module instance */
     logger.debug(`Initializing Module '${this.metatype.name}'`);
-    const dependencyNames = InjectorUtils.getMetadata<Type>(PARAMTYPES_METADATA, this.metatype);
+    const dependencyNames = Extractor.getMetadata<Type>(PARAMTYPES_METADATA, this.metatype);
     const dependencies = dependencyNames.map(name => this.getProvider(name));
     this.instance = new this.metatype(...dependencies);
     logger.debug(`Module '${this.metatype.name}' initialized`);
