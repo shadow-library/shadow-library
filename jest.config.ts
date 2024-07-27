@@ -18,7 +18,7 @@ const generateProjectConfig = (project: Project): Config => {
 
   /** Setting up the test configs */
   configs.rootDir = `packages/${project.name}`;
-  configs.transform = { '^.+\\.(t|j)s$': 'ts-jest' };
+  configs.transform = { '^.+\\.(t|j)s$': ['ts-jest', { isolatedModules: false }] };
   configs.moduleNameMapper = { [`@shadow-library/${project.name}/(.*)`]: `<rootDir>/src/$1` };
 
   /** Setting up the coverage configs */
