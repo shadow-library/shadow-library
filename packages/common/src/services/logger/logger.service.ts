@@ -1,158 +1,83 @@
 /**
  * Importing npm packages
  */
-import fs from 'fs';
-
-import { InternalError } from '@shadow-library/errors';
-import { Logger as WinstonLogger, createLogger as createWinstonLogger, format, transports } from 'winston';
+import { LoggerService } from '@shadow-library/types';
+import { Logform, Logger as WinstonLogger, createLogger } from 'winston';
+import Transport from 'winston-transport';
 
 /**
  * Importing user defined packages
  */
-
-import { CloudWatchTransport } from './cloudwatch.logger';
-import { additionalDataFormat, cliConsoleFormat, httpConsoleFormat } from './formats.logger';
+import { format as formats } from './formats';
+import { CloudWatchTransport, ConsoleTransport, FileTransport } from './transports';
 import { Config } from '../config.service';
 
 /**
  * Defining types
  */
 
-export type Format = ReturnType<typeof formatError>;
-
-export type ConsoleFormats = 'http' | 'cli' | Format;
-
-export enum LogTransport {
-  Console,
-  File,
-  CloudWatch,
-}
-
-export interface LoggerOptions {
-  transports?: LogTransport[];
-  getContext?: () => Record<string, any>;
-  consoleFormat?: ConsoleFormats;
-}
-
 /**
  * Declaring the constants
  */
-const formatError = format.errors;
-const logColorFormat = { info: 'green', error: 'bold red', warn: 'yellow', debug: 'magenta', http: 'cyan' };
-
-// istanbul ignore next
-/**
- * Gets the index or number of the log file
- * @param filename
- * @returns
- */
-function getFileIndex(filename: string): number {
-  const filenameArr = filename.split(/[-.]/);
-  const num = filenameArr[filenameArr.length - 2] || '0';
-  return parseInt(num);
-}
-
 /* istanbul ignore next */
-export class Logger {
-  private static instance: WinstonLogger;
+const noop = new Transport({ log: () => {} });
+const logger = createLogger({ level: Config.get('log.level') });
 
-  private constructor() {}
-
-  static getLogger(label: string): Logger {
-    if (this.instance) return this.instance.child({ label });
-    return new Logger();
-  }
-
-  static initInstance(opts: LoggerOptions = {}): void {
-    if (this.instance) throw new InternalError('Logger instance already initialized');
-
-    if (!opts.getContext) opts.getContext = () => ({});
-    if (!opts.transports) {
-      opts.transports = [];
-      const enableFileLog = Config.get('log.dir') !== 'false' && Config.get('app.env') !== 'test';
-      const isTestDebug = Config.get('app.env') === 'test' && !!process.env.TEST_DEBUG;
-      if (Config.get('app.env') === 'development') opts.transports.push(LogTransport.Console);
-      if (Config.get('app.env') === 'production') opts.transports.push(LogTransport.CloudWatch);
-      if (enableFileLog || isTestDebug) opts.transports.push(LogTransport.File);
-    }
-
-    const contextFormat = additionalDataFormat(opts.getContext);
-    const logFormat = format.combine(contextFormat(), format.errors({ stack: true }), format.json());
-    this.instance = createWinstonLogger({ level: Config.get('log.level') });
-
-    /** Setting up the logger transports */
-    if (opts.transports.includes(LogTransport.Console)) {
-      const consoleColor = format.colorize({ level: true, colors: logColorFormat, message: true });
-      const customFormat = typeof opts.consoleFormat === 'object' ? opts.consoleFormat : opts.consoleFormat === 'cli' ? cliConsoleFormat : httpConsoleFormat;
-      const consoleFormat = format.combine(format.errors({ stack: true }), consoleColor, customFormat);
-      this.instance.add(new transports.Console({ format: consoleFormat }));
-    }
-    if (opts.transports.includes(LogTransport.CloudWatch)) this.instance.add(new CloudWatchTransport({ format: logFormat }));
-    if (opts.transports.includes(LogTransport.File)) {
-      const logDir = Config.get('log.dir');
-      try {
-        fs.accessSync(logDir);
-      } catch (err) {
-        fs.mkdirSync(logDir);
-      }
-
-      /** Changing the name of the old files so that the file '<app-name>-0.log' always contains the latest logs */
-      const appName = Config.get('app.name');
-      const logFiles = fs.readdirSync(logDir);
-      const regex = new RegExp(`^(${appName}-)[0-9]+(.log)$`);
-      const appLogFiles = logFiles.filter(filename => regex.test(filename));
-      const sortedFilenames = appLogFiles.sort((a, b) => getFileIndex(b) - getFileIndex(a));
-      for (const filename of sortedFilenames) {
-        const num = getFileIndex(filename);
-        fs.renameSync(`${logDir}/${filename}`, `${logDir}/${appName}-${num + 1}.log`);
-      }
-
-      this.instance.add(new transports.File({ format: logFormat, filename: `${logDir}/${appName}-0.log` }));
-    }
+class LoggerStatic {
+  private getInstance(): WinstonLogger {
+    return logger;
   }
 
   /** Mutates the input object to remove the sensitive fields that are present in it */
-  static removeSensitiveFields(data: Record<string, any>, sensitiveFields: string[]): Record<string, any> {
+  maskFields(data: Record<string, any>, fields: string[]): Record<string, any> {
     for (const key in data) {
       const value = data[key];
-      if (sensitiveFields.includes(key)) data[key] = '****';
-      else if (typeof value === 'object' && !Array.isArray(value)) this.removeSensitiveFields(value, sensitiveFields);
+      if (fields.includes(key)) data[key] = '****';
+      else if (typeof value === 'object') this.maskFields(value, fields);
     }
     return data;
   }
 
-  debug(message: string, ...meta: any[]): this;
-  debug(infoObject: object): this;
-  debug(message: any): this; // eslint-disable-line  @typescript-eslint/explicit-module-boundary-types
-  debug(): this {
+  /** Adds a transport to the logger */
+  addTransport(transport: Transport): this {
+    logger.add(transport);
     return this;
   }
 
-  info(message: string, ...meta: any[]): this;
-  info(infoObject: object): this;
-  info(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
-  info(): this {
-    return this;
+  /** Returns a child logger with the provided metadata */
+  getLogger(metadata: string | object): LoggerService {
+    if (logger.transports.length === 0) this.addTransport(noop);
+    return logger.child(metadata);
   }
 
-  http(message: string, ...meta: any[]): this;
-  http(infoObject: object): this;
-  http(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
-  http(): this {
-    return this;
-  }
+  /* istanbul ignore next */
+  addDefaultTransports(format?: Logform.Format): this {
+    const baseFormats = [formats.errors({ stack: true })];
+    if (format) baseFormats.unshift(format);
+    const jsonFormat = formats.combine(...baseFormats, formats.json());
+    const consoleFormat = formats.combine(...baseFormats, formats.colorize(), formats.brief());
 
-  warn(message: string, ...meta: any[]): this;
-  warn(infoObject: object): this;
-  warn(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
-  warn(): this {
-    return this;
-  }
+    if (Config.get('app.env') === 'development') {
+      const transport = new ConsoleTransport().addFormat(consoleFormat);
+      this.addTransport(transport);
+    }
 
-  error(message: string, ...meta: any[]): this;
-  error(infoObject: object): this;
-  error(message: any): this; // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
-  error(): this {
+    if (Config.get('app.env') === 'production') {
+      const transport = new CloudWatchTransport().addFormat(jsonFormat);
+      this.addTransport(transport);
+    }
+
+    const enableFileLog = Config.get('log.dir') !== 'false' && Config.get('app.env') !== 'test';
+    const isTestDebug = Config.get('app.env') === 'test' && !!process.env.TEST_DEBUG;
+    if (enableFileLog || isTestDebug) {
+      const dirname = Config.get('log.dir');
+      const filename = Config.get('app.name');
+      const transport = new FileTransport({ dirname, filename }).addFormat(jsonFormat);
+      this.addTransport(transport);
+    }
+
     return this;
   }
 }
+
+export const Logger = new LoggerStatic();

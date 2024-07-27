@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { Logger } from '@shadow-library/common';
+import { ConsoleTransport, Logger } from '@shadow-library/common';
 
 /**
  * Defining types
@@ -15,26 +15,42 @@ import { Logger } from '@shadow-library/common';
 /**
  * Declaring the constants
  */
+const maskedValue = '****';
 
-describe('LoggerService', () => {
+describe('Logger Service', () => {
   it('should mask sensitive data', () => {
-    const data = { username: 'username', password: 'password', inner: { password: 'secret' } };
-    const maskedData = Logger.removeSensitiveFields(data, ['password']);
-    expect(maskedData).toStrictEqual({ username: 'username', password: '****', inner: { password: '****' } });
+    const inner = { password: 'secret', api: {} };
+    const array = [{ password: 'secret' }];
+    const data = { username: 'username', password: 'password', inner, array };
+    const value = Logger.maskFields(data, ['password', 'api']);
+
+    expect(value).toBe(data);
+    expect(data).toStrictEqual({
+      username: 'username',
+      password: maskedValue,
+      inner: { password: maskedValue, api: maskedValue },
+      array: [{ password: maskedValue }],
+    });
   });
 
-  it('should return dummy logger instance when not inited', () => {
+  it('should return the logger', () => {
     const logger = Logger.getLogger('test');
-    expect(logger).toBeInstanceOf(Logger); // Since actual would return the WinstonLogger instance
+
+    const methods = ['info', 'http', 'error', 'warn', 'debug'] as const;
+    methods.forEach(method => expect(logger[method]).toBeInstanceOf(Function));
   });
 
-  it('should init the logger instance', () => {
-    Logger.initInstance();
-    const logger = Logger.getLogger('test');
-    expect(logger).not.toBeInstanceOf(Logger); // Since actual would return the WinstonLogger instance
+  it('should add a dummy transport if no transport is provided', () => {
+    /** @ts-expect-error private property access */
+    const logger = Logger.getInstance();
+    expect(logger.transports).toHaveLength(1);
   });
 
-  it('should throw error if logger instance already initialized', () => {
-    expect(() => Logger.initInstance()).toThrowError();
+  it('should add a transport', () => {
+    const transport = new ConsoleTransport();
+    /** @ts-expect-error private property access */
+    const instance = Logger.addTransport(transport).getInstance();
+
+    expect(instance.transports).toHaveLength(2);
   });
 });

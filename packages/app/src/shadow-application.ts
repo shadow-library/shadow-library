@@ -3,7 +3,7 @@
  */
 import { Logger } from '@shadow-library/common';
 import { InternalError } from '@shadow-library/errors';
-import { Type } from '@shadow-library/types';
+import { LoggerService, Type } from '@shadow-library/types';
 
 /**
  * Importing user defined packages
@@ -24,7 +24,7 @@ export class ShadowApplication {
   private readonly globalModuleType?: Type;
   private readonly modules = new Map<Type, ModuleWrapper>();
   private readonly main: ModuleWrapper;
-  private readonly logger: Logger;
+  private readonly logger: LoggerService;
   private readonly config: ApplicationConfig;
 
   constructor(module: Type, config: ApplicationConfig = {}) {

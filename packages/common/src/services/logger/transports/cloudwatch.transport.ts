@@ -3,12 +3,13 @@
  */
 import { CloudWatchLogs } from '@aws-sdk/client-cloudwatch-logs';
 import stringify from 'fast-safe-stringify';
+import { Logform, format } from 'winston';
 import Transport, { type TransportStreamOptions } from 'winston-transport';
 
 /**
  * Importing user defined packages
  */
-import { Config } from '../config.service';
+import { Config } from '../../config.service';
 
 /**
  * Defining types
@@ -69,6 +70,12 @@ export class CloudWatchTransport extends Transport {
     await this.cloudWatchLogs
       .putLogEvents({ logEvents, logGroupName: this.logGroupName, logStreamName: this.logStreamName })
       .catch(err => console.error('Error flushing cloudwatch logs', err)); // eslint-disable-line no-console
+  }
+
+  addFormat(...formats: Logform.Format[]): this {
+    const newFormats = this.format ? [this.format, ...formats] : formats;
+    this.format = format.combine(...newFormats);
+    return this;
   }
 
   override log(info: object, next: () => void): void {
