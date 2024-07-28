@@ -3,7 +3,7 @@
  * Importing npm packages
  */
 import { cyan, gray, yellow } from '@colors/colors/safe';
-import { format } from 'winston';
+import { Logform, format } from 'winston';
 
 /**
  * Importing user defined packages
@@ -12,6 +12,8 @@ import { format } from 'winston';
 /**
  * Defining types
  */
+
+export type Format = Logform.Format;
 
 export interface BriefFormatOptions {
   label?: boolean;
@@ -22,7 +24,7 @@ export interface BriefFormatOptions {
 declare module 'winston' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace format {
-    function brief(opts?: BriefFormatOptions): Logform.Format;
+    function brief(opts?: BriefFormatOptions): Format;
   }
 }
 

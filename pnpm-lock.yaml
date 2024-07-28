@@ -96,6 +96,9 @@ importers:
       '@shadow-library/errors':
         specifier: workspace:*
         version: link:../errors
+      '@shadow-library/types':
+        specifier: workspace:*
+        version: link:../types
       fast-safe-stringify:
         specifier: ^2.1.1
         version: 2.1.1
