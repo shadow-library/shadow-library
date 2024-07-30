@@ -28,9 +28,9 @@ export enum LifecycleMethods {
 /**
  * Declaring the constants
  */
-const logger = Logger.getLogger('ShadowModule');
 
 export class ModuleWrapper {
+  private readonly logger = Logger.getLogger('ModuleWrapper');
   private readonly metatype: Type;
   private readonly imports: ModuleWrapper[];
 
@@ -46,7 +46,7 @@ export class ModuleWrapper {
 
     const exports = Extractor.getMetadata<InjectionName>(MODULE_METADATA.EXPORTS, metatype);
     this.exports = new Set(exports);
-    logger.debug(`Module '${metatype.name}' created`);
+    this.logger.debug(`Module '${metatype.name}' created`);
   }
 
   private getProvider<T = object>(name: InjectionName): T;
@@ -66,7 +66,7 @@ export class ModuleWrapper {
 
   async runLifecycleMethod(method: LifecycleMethods): Promise<this> {
     if (!this.instance) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
-    logger.debug(`Executing lifecycle method '${method}' in module '${this.metatype.name}'`);
+    this.logger.debug(`Executing lifecycle method '${method}' in module '${this.metatype.name}'`);
 
     const instances = [...this.providers.values(), ...this.controllers.values(), this.instance];
     if (method === LifecycleMethods.ON_MODULE_DESTROY) instances.reverse();
@@ -74,7 +74,7 @@ export class ModuleWrapper {
       const hasMethod = typeof instance === 'object' && method in instance && typeof (instance as any)[method] === 'function';
       if (hasMethod) {
         await (instance as any)[method]();
-        logger.debug(`Executed lifecycle method '${instance.constructor.name}.${method}()'`);
+        this.logger.debug(`Executed lifecycle method '${instance.constructor.name}.${method}()'`);
       }
     }
 
@@ -113,7 +113,7 @@ export class ModuleWrapper {
 
   async init(): Promise<this> {
     /** Determining the order to initiate the providers */
-    logger.debug(`Determining the order to initialize providers for module '${this.metatype.name}'`);
+    this.logger.debug(`Determining the order to initialize providers for module '${this.metatype.name}'`);
     const providers = Extractor.getMetadata<Provider>(MODULE_METADATA.PROVIDERS, this.metatype);
     const parsedProviders = providers.map(p => Parser.parseProvider(p));
     const dependencyGraph = new DependencyGraph<InjectionName>();
@@ -131,7 +131,7 @@ export class ModuleWrapper {
       const provider = parsedProviders.find(p => p.name === providerName);
       if (!provider) continue;
 
-      logger.debug(`Initializing provider '${Extractor.getProviderName(providerName)}'`);
+      this.logger.debug(`Initializing provider '${Extractor.getProviderName(providerName)}'`);
       const instances = [];
       for (const injection of provider.inject) {
         const instance = this.getProvider(injection.name, injection.optional);
@@ -140,26 +140,26 @@ export class ModuleWrapper {
 
       const providerInstance = await provider.useFactory(...instances);
       this.providers.set(provider.name, providerInstance);
-      logger.debug(`Provider '${Extractor.getProviderName(providerName)}' initialized`);
+      this.logger.debug(`Provider '${Extractor.getProviderName(providerName)}' initialized`);
     }
 
     /** Initializing the controllers */
     const controllers = Extractor.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
     for (const controller of controllers) {
-      logger.debug(`Initializing controller '${controller.name}'`);
+      this.logger.debug(`Initializing controller '${controller.name}'`);
       const dependencyNames = Extractor.getMetadata<Type>(PARAMTYPES_METADATA, controller);
       const dependencies = dependencyNames.map(name => this.getProvider(name));
       const controllerWrapper = new ControllerWrapper(controller, dependencies);
       this.controllers.push(controllerWrapper);
-      logger.debug(`Controller '${controller.name}' initialized`);
+      this.logger.debug(`Controller '${controller.name}' initialized`);
     }
 
     /** Initializing the module instance */
-    logger.debug(`Initializing Module '${this.metatype.name}'`);
+    this.logger.debug(`Initializing Module '${this.metatype.name}'`);
     const dependencyNames = Extractor.getMetadata<Type>(PARAMTYPES_METADATA, this.metatype);
     const dependencies = dependencyNames.map(name => this.getProvider(name));
     this.instance = new this.metatype(...dependencies);
-    logger.debug(`Module '${this.metatype.name}' initialized`);
+    this.logger.debug(`Module '${this.metatype.name}' initialized`);
 
     return await this.runLifecycleMethod(LifecycleMethods.ON_MODULE_INIT);
   }
