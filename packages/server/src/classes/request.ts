@@ -23,15 +23,17 @@ export class Request {
   readonly pathname: string;
   readonly hash: string;
 
+  readonly body?: any;
   readonly query: URLSearchParams;
   readonly cookies: Record<string, string | string[]> = {};
 
   constructor(
     readonly raw: IncomingMessage,
-    readonly body: Buffer = Buffer.alloc(0),
+    readonly rawBody: Buffer = Buffer.alloc(0),
     readonly params: Record<string, string> = {},
   ) {
     const url = new URL(raw.url as string);
+    const isJSON = raw.headers['content-type']?.toLowerCase() === 'application/json';
 
     this.url = raw.url as string;
     this.method = raw.method as string;
@@ -40,6 +42,7 @@ export class Request {
 
     this.query = url.searchParams;
     this.cookies = raw.headers.cookie ? parse(raw.headers.cookie) : {};
+    if (rawBody.length > 0 && isJSON) this.body = JSON.parse(rawBody.toString());
   }
 
   hasHeader(name: string): boolean {
