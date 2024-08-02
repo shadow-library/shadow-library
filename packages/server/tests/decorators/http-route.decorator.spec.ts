@@ -17,7 +17,7 @@ import { ROUTE_METADATA } from '@shadow-library/server/constants';
  * Declaring the constants
  */
 
-describe('Http Methods Decorators', () => {
+describe('HTTP Methods Decorators', () => {
   it(`should enhance the method with the request metadata`, () => {
     const path = '/data';
     class Controller {

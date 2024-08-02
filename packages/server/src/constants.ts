@@ -16,4 +16,4 @@
 
 export const ROUTE_METADATA = Symbol('route');
 
-export const BODY_PARAMETER = Symbol('body');
+export const ROUTE_INPUT_METADATA = Symbol('route-input');
