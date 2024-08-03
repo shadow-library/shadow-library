@@ -26,6 +26,6 @@ export const MODULE_WATERMARK = Symbol('module');
 export const GLOBAL_WATERMARK = Symbol('global');
 export const ROUTE_WATERMARK = Symbol('route');
 
-export const ROUTE_RULES_METADATA = Symbol('route:rules');
+export const ROUTE_METADATA = Symbol('route:metadata');
 
 export const TRANSIENT_METADATA = Symbol('transient');

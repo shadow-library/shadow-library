@@ -17,7 +17,7 @@ import { CONTROLLER_WATERMARK } from '../constants';
 type Func = (...args: any[]) => any | Promise<any>;
 
 export interface RouteController<T extends Record<string, any>> {
-  rules: T;
+  metadata: T;
   handler: Func;
 }
 
@@ -48,13 +48,13 @@ export class ControllerWrapper {
       }
     } while ((prototype = Object.getPrototypeOf(prototype)));
 
-    /* Extracting the route rules from the route methods */
+    /* Extracting the route metadata from the route methods */
     const routes: RouteController<T>[] = [];
-    const baseRouteRules = Extractor.getRouteRules(this.type);
+    const controllerMetadata = Extractor.getRouteMetadata(this.type);
     for (const method of methods) {
-      const methodRouteRules = Extractor.getRouteRules(method);
-      const rules = merge({}, baseRouteRules, methodRouteRules) as T;
-      routes.push({ rules, handler: method.bind(this.instance) });
+      const routeMetadata = Extractor.getRouteMetadata(method);
+      const metadata = merge({}, controllerMetadata, routeMetadata) as T;
+      routes.push({ metadata, handler: method.bind(this.instance) });
     }
 
     return routes;

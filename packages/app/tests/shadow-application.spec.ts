@@ -17,7 +17,7 @@ import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route
  * Declaring the constants
  */
 const globalProvider = { name: 'CONFIG', useValue: 'CONFIG_VALUE' };
-const router: Router = { registerRoute: jest.fn<() => void>() };
+const router: Router = { register: jest.fn<() => void>() };
 
 describe('Shadow Application', () => {
   const executableMock = jest.fn(() => {});

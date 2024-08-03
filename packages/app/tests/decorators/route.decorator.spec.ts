@@ -7,7 +7,7 @@ import { describe, expect, it } from '@jest/globals';
  * Importing user defined packages
  */
 import { Route } from '@shadow-library/app';
-import { ROUTE_RULES_METADATA, ROUTE_WATERMARK } from '@shadow-library/app/constants';
+import { ROUTE_METADATA, ROUTE_WATERMARK } from '@shadow-library/app/constants';
 
 /**
  * Defining types
@@ -18,14 +18,14 @@ import { ROUTE_RULES_METADATA, ROUTE_WATERMARK } from '@shadow-library/app/const
  */
 
 describe('RouteDecorator', () => {
-  const routeRuleOne = { method: 'GET', auth: { jwt: true } };
-  const routeRuleTwo = { path: '/users', auth: { oauth: true } };
+  const routeMetadataOne = { method: 'GET', auth: { jwt: true } };
+  const routeMetadataTwo = { path: '/users', auth: { oauth: true } };
   class CatController {
-    @Route(routeRuleOne)
+    @Route(routeMetadataOne)
     methodOne() {}
 
-    @Route(routeRuleOne)
-    @Route(routeRuleTwo)
+    @Route(routeMetadataOne)
+    @Route(routeMetadataTwo)
     methodTwo() {}
   }
 
@@ -36,13 +36,13 @@ describe('RouteDecorator', () => {
     expect(metadata).toBe(true);
   });
 
-  it('should set route rules', () => {
-    const metadata = Reflect.getMetadata(ROUTE_RULES_METADATA, controller.methodOne);
-    expect(metadata).toEqual(routeRuleOne);
+  it('should set route metadata', () => {
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, controller.methodOne);
+    expect(metadata).toEqual(routeMetadataOne);
   });
 
-  it('should append route rules', () => {
-    const metadata = Reflect.getMetadata(ROUTE_RULES_METADATA, controller.methodTwo);
+  it('should append route metadata', () => {
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, controller.methodTwo);
     expect(metadata).toStrictEqual({ method: 'GET', path: '/users', auth: { jwt: true, oauth: true } });
   });
 });

@@ -6,7 +6,7 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { ROUTE_RULES_METADATA } from '@shadow-library/app/constants';
+import { ROUTE_METADATA } from '@shadow-library/app/constants';
 import { InjectionName } from '@shadow-library/app/interfaces';
 
 /**
@@ -27,8 +27,8 @@ class ExtractorStatic {
     return provider.toString();
   }
 
-  getRouteRules(method: object): Record<string, any> {
-    return Reflect.getMetadata(ROUTE_RULES_METADATA, method);
+  getRouteMetadata(method: object): Record<string, any> {
+    return Reflect.getMetadata(ROUTE_METADATA, method);
   }
 }
 
