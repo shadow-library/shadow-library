@@ -7,7 +7,7 @@ import { describe, expect, it } from '@jest/globals';
  * Importing user defined packages
  */
 import { Controller } from '@shadow-library/app';
-import { CONTROLLER_WATERMARK, ROUTE_RULES_METADATA } from '@shadow-library/app/constants';
+import { CONTROLLER_WATERMARK, ROUTE_METADATA } from '@shadow-library/app/constants';
 
 /**
  * Defining types
@@ -18,9 +18,9 @@ import { CONTROLLER_WATERMARK, ROUTE_RULES_METADATA } from '@shadow-library/app/
  */
 
 describe('@controller', () => {
-  const rules = { action: 'controller-action-rule' };
+  const metadata = { action: 'controller-action' };
 
-  @Controller(rules)
+  @Controller(metadata)
   class TestController {}
 
   it(`should enhance component with '${CONTROLLER_WATERMARK.toString()}' metadata`, () => {
@@ -29,9 +29,9 @@ describe('@controller', () => {
     expect(controllerWatermark).toBe(true);
   });
 
-  it('should set action rules', () => {
-    const routeRules = Reflect.getMetadata(ROUTE_RULES_METADATA, TestController);
+  it('should set action metadata', () => {
+    const routeMetadata = Reflect.getMetadata(ROUTE_METADATA, TestController);
 
-    expect(routeRules).toStrictEqual(rules);
+    expect(routeMetadata).toStrictEqual(metadata);
   });
 });

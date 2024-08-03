@@ -87,7 +87,7 @@ export class ShadowApplication {
       const controllers = moduleInstance.getControllers();
       if (!router) continue;
       const routes = controllers.flatMap(controller => controller.getRoutes());
-      for (const route of routes) await router.registerRoute(route);
+      for (const route of routes) await router.register(route);
     }
 
     this.logger.debug('Application initialized');
@@ -99,7 +99,7 @@ export class ShadowApplication {
     if (!this.isInited()) await this.init();
     const instance = this.main.getInstance();
     const isExecutable = 'execute' in instance && typeof (instance as any).execute === 'function';
-    if (isExecutable) await (instance as any).execute();
+    if (isExecutable) await (instance as any).execute(this, this.config.router);
     return this;
   }
 

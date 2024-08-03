@@ -24,14 +24,14 @@ describe('ControllerWrapper', () => {
   });
 
   it('should return the routes of the controller', () => {
-    const classRules = { isPrivate: true };
-    const methodRules = { method: 'POST', path: '/test' };
+    const controllerMetadata = { isPrivate: true };
+    const routeMetadata = { method: 'POST', path: '/test' };
     const mock = jest.fn();
-    @Controller(classRules)
+    @Controller(controllerMetadata)
     class TestController {
       mock = mock;
 
-      @Route(methodRules)
+      @Route(routeMetadata)
       test(...args: string[]) {
         return this.mock(...args);
       }
@@ -42,7 +42,7 @@ describe('ControllerWrapper', () => {
     routes[0]?.handler('arg1', 'arg2');
 
     expect(routes).toHaveLength(1);
-    expect(routes[0]?.rules).toStrictEqual({ ...classRules, ...methodRules });
+    expect(routes[0]?.metadata).toStrictEqual({ ...controllerMetadata, ...routeMetadata });
     expect(mock).toHaveBeenCalledTimes(1);
     expect(mock).toHaveBeenCalledWith('arg1', 'arg2');
   });
