@@ -6,12 +6,11 @@ import { InternalError } from '@shadow-library/errors';
 /**
  * Importing user defined packages
  */
-import { OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '@shadow-library/app/constants';
-import { InjectMetadata } from '@shadow-library/app/decorators';
-import { FactoryProviderInject, InjectionName, Provider } from '@shadow-library/app/interfaces';
-
 import { Extractor } from './extractor.helper';
 import { Validator } from './validator.helper';
+import { OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '../../constants';
+import { InjectMetadata } from '../../decorators';
+import { FactoryProviderInject, InjectionName, Provider } from '../../interfaces';
 
 /**
  * Defining types

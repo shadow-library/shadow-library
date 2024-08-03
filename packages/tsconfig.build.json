@@ -31,9 +31,6 @@
     "importHelpers": true,
     "removeComments": true,
 
-    /** Editor Support */
-    "plugins": [{ "transform": "typescript-transform-paths" }, { "transform": "typescript-transform-paths", "afterDeclarations": true }],
-
     /** Interop Constraints */
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

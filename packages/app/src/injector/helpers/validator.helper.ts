@@ -6,8 +6,8 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { INJECTABLE_WATERMARK, ROUTE_WATERMARK } from '@shadow-library/app/constants';
-import { FactoryProvider, Provider } from '@shadow-library/app/interfaces';
+import { INJECTABLE_WATERMARK, ROUTE_WATERMARK } from '../../constants';
+import { FactoryProvider, Provider } from '../../interfaces';
 
 /**
  * Defining types

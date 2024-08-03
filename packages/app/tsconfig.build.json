@@ -1,10 +1,5 @@
 {
   "extends": "../tsconfig.build.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@shadow-library/app/*": ["src/*"]
-    }
-  },
+  "compilerOptions": { "baseUrl": "." },
   "include": ["src/**/*.ts", "index.ts"]
 }

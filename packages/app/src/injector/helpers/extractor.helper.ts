@@ -6,8 +6,8 @@ import { Type } from '@shadow-library/types';
 /**
  * Importing user defined packages
  */
-import { ROUTE_METADATA } from '@shadow-library/app/constants';
-import { InjectionName } from '@shadow-library/app/interfaces';
+import { ROUTE_METADATA } from '../../constants';
+import { InjectionName } from '../../interfaces';
 
 /**
  * Defining types
