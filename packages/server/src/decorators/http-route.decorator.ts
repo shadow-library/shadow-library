@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { ROUTE_METADATA } from '@shadow-library/server/constants';
+import { ROUTE_METADATA } from '../constants';
 
 /**
  * Defining types
