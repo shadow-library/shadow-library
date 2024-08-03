@@ -14,6 +14,4 @@
  * Declaring the constants
  */
 
-export const ROUTE_METADATA = Symbol('route');
-
 export const ROUTE_INPUT_METADATA = Symbol('route-input');
