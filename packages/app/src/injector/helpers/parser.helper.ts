@@ -33,7 +33,7 @@ interface ParsedProvider {
 
 class ParserStatic {
   parseInjection(injection: FactoryProviderInject): ParsedInjection {
-    if (typeof injection === 'object' && 'name' in injection) return { name: injection.name, optional: injection.optional ?? false };
+    if (typeof injection === 'object' && 'name' in injection) return { name: injection.name, optional: !!injection.optional };
     return { name: injection, optional: false };
   }
 
@@ -52,11 +52,7 @@ class ParserStatic {
     const selfDependencies = Extractor.getMetadata<InjectMetadata>(SELF_DECLARED_DEPS_METADATA, classProvider.useClass);
     for (const dependency of selfDependencies) dependencies[dependency.index] = dependency.name;
     const optionalDependencies = Extractor.getMetadata<number>(OPTIONAL_DEPS_METADATA, classProvider.useClass);
-    for (const index of optionalDependencies) {
-      const dependency = dependencies[index] as FactoryProviderInject;
-      const name = typeof dependency === 'object' && 'name' in dependency ? dependency.name : dependency;
-      dependencies[index] = { name, optional: true };
-    }
+    for (const index of optionalDependencies) dependencies[index] = { name: dependencies[index] as InjectionName, optional: true };
 
     const inject = dependencies.map(d => this.parseInjection(d));
     return { name: classProvider.name, useFactory: (...args: any) => new classProvider.useClass(...args), inject };

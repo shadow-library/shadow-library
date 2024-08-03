@@ -1,7 +1,6 @@
 /**
  * Importing npm packages
  */
-import os from 'os';
 
 /**
  * Importing user defined packages
@@ -45,10 +44,6 @@ export interface ConfigRecords {
 /**
  * Declaring the constants
  */
-const defaultAppName = 'shadow-app';
-const appEnvs = ['development', 'production', 'test'];
-const logLevels = ['silly', 'debug', 'http', 'info', 'warn', 'error'];
-const ipAddress = os.networkInterfaces().eth0?.find(info => info.family === 'IPv4')?.address ?? 'unknown-ip';
 
 export class ConfigService<Configs extends ConfigRecords = ConfigRecords> {
   private readonly cache = new Map<keyof Configs, any>();
@@ -58,6 +53,10 @@ export class ConfigService<Configs extends ConfigRecords = ConfigRecords> {
       for (const key in configs) this.cache.set(key, configs[key]);
     }
 
+    const defaultAppName = 'shadow-app';
+    const appEnvs = ['development', 'production', 'test'];
+    const logLevels = ['silly', 'debug', 'http', 'info', 'warn', 'error'];
+
     this.set('app.env', { envKey: 'NODE_ENV', allowedValues: appEnvs, defaultValue: 'development' });
     this.set('app.name', { defaultValue: defaultAppName });
 
@@ -66,7 +65,7 @@ export class ConfigService<Configs extends ConfigRecords = ConfigRecords> {
 
     this.set('aws.region', { defaultValue: 'ap-south-1' });
     this.set('aws.cloudwatch.log-group', { defaultValue: defaultAppName });
-    this.set('aws.cloudwatch.log-stream', { defaultValue: ipAddress });
+    this.set('aws.cloudwatch.log-stream', { defaultValue: defaultAppName });
     this.set('aws.cloudwatch.upload-rate', { defaultValue: '2000', validateType: 'number' });
   }
 

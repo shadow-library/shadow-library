@@ -43,6 +43,13 @@ describe('InMemoryStore', () => {
     expect(value).toBeUndefined();
   });
 
+  it('should throw an error if value is not an array', () => {
+    const key = 'invalid-array';
+    store.set(key, 'value');
+
+    expect(() => store.insert(key, 'value')).toThrowError(`The value at key '${key}' is not an array`);
+  });
+
   it('should insert a value in an array', () => {
     store.insert('key', 'value1');
     store.insert('key', 'value2');

@@ -87,6 +87,15 @@ describe('Shadow Application', () => {
     expect(application.isInited()).toBe(true);
   });
 
+  it('should initialize the application on start if not inited', async () => {
+    @Module({ imports: [DependencyOne, GlobalDependency] })
+    class AppModule {}
+    const application = new ShadowApplication(AppModule);
+    await application.start();
+
+    expect(application.isInited()).toBe(true);
+  });
+
   it('should only initialize the application once', async () => {
     debugMock.mockClear();
     await application.init();

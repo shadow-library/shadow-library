@@ -43,7 +43,9 @@ describe('ModuleWrapper', () => {
   }
 
   @Controller()
-  class CatController {}
+  class CatController {
+    constructor(public catService: CatService) {}
+  }
 
   @Module({
     providers: [
@@ -51,12 +53,14 @@ describe('ModuleWrapper', () => {
       { name: 'CONFIG', useValue: 'CONFIG_VALUE' },
       { name: 'MOCK_CAT', useClass: MockCatService },
       { name: testConfig, useFactory: (config: string) => `TEST_${config}`, inject: ['CONFIG'] },
+      { name: 'NO_INJECT', useFactory: (config: string) => `NO_INJECT_${config}` },
       CatSubService,
     ],
     controllers: [CatController],
     exports: [CatService, 'MOCK_CAT'],
   })
   class CatModule implements OnModuleDestroy {
+    constructor(public catService: CatService) {}
     onModuleDestroy = onModuleDestroyMock;
   }
 
@@ -86,6 +90,14 @@ describe('ModuleWrapper', () => {
     const module = new ModuleWrapper(InvalidCatModule, []);
     const error = `Class 'InvalidCatController' is not a controller`;
     await expect(module.init()).rejects.toThrowError(error);
+  });
+
+  it('should throw error when method is called before module initialization', async () => {
+    const module = new ModuleWrapper(CatModule, []);
+    const error = new NeverError(`Module '${CatModule.name}' not yet initialized`);
+
+    expect(() => module.getControllers()).toThrowError(error);
+    expect(module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY)).rejects.toThrowError(error);
   });
 
   it('should detect circular dependencies', async () => {
@@ -152,9 +164,17 @@ describe('ModuleWrapper', () => {
   it('should destroy the module', async () => {
     await module.destroy();
     const error = new NeverError(`Module '${CatModule.name}' not yet initialized`);
+
     expect(module.isInited()).toBe(false);
     expect(onModuleDestroyMock).toBeCalledTimes(1);
     expect(() => module.getInstance()).toThrowError(error);
     expect(() => module.getExportedProvider('MOCK_CAT')).toThrowError(error);
+  });
+
+  it('should do nothing when destorying uninited module', async () => {
+    module.runLifecycleMethod = jest.fn<(a: any) => any>();
+    await module.destroy();
+
+    expect(module.runLifecycleMethod).not.toBeCalled();
   });
 });
