@@ -30,7 +30,7 @@ export interface CookieOpts {
 export class Response {
   constructor(readonly raw: ServerResponse) {}
 
-  setHeader(name: string, value: string): this {
+  setHeader(name: string, value: string | number): this {
     this.raw.setHeader(name, value);
     return this;
   }
@@ -56,10 +56,15 @@ export class Response {
     return this;
   }
 
+  isSent(): boolean {
+    return this.raw.writableEnded;
+  }
+
   send(contentType: string, body: string): this {
+    const buffer = Buffer.from(body);
     this.setHeader('Content-Type', contentType);
-    this.setHeader('Content-Length', Buffer.byteLength(body).toString());
-    this.raw.end(body);
+    this.setHeader('Content-Length', buffer.length);
+    this.raw.end(buffer);
     return this;
   }
 }

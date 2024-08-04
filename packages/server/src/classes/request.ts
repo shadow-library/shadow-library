@@ -33,7 +33,6 @@ export class Request {
     readonly params: Record<string, string> = {},
   ) {
     const url = new URL(raw.url as string);
-    const isJSON = raw.headers['content-type']?.toLowerCase() === 'application/json';
 
     this.url = raw.url as string;
     this.method = raw.method as string;
@@ -42,7 +41,18 @@ export class Request {
 
     this.query = url.searchParams;
     this.cookies = raw.headers.cookie ? parse(raw.headers.cookie) : {};
-    if (rawBody.length > 0 && isJSON) this.body = JSON.parse(rawBody.toString());
+  }
+
+  /**
+   * @internal
+   */
+  parseBody(): void {
+    const isJSON = this.raw.headers['content-type']?.toLowerCase() === 'application/json';
+    const rawBody = this.rawBody;
+    if (rawBody.length > 0 && isJSON) {
+      /** @ts-expect-error set readonly body */
+      this.body = JSON.parse(rawBody.toString());
+    }
   }
 
   hasHeader(name: string): boolean {
