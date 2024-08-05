@@ -37,18 +37,19 @@ export class Response {
 
   setCookie(name: string, value: string, options: CookieOpts = {}): this {
     const cookieOpts = { ...options } as CookieSerializeOptions;
+    if (cookieOpts.path === undefined) cookieOpts.path = '/';
     if (options.maxAge !== undefined && options.expires === undefined) {
       cookieOpts.expires = new Date(Date.now() + options.maxAge * 1000);
       delete cookieOpts.maxAge;
     }
 
-    const cookie = serialize(name, value, options);
+    const cookie = serialize(name, value, cookieOpts);
     this.raw.setHeader('Set-Cookie', cookie);
     return this;
   }
 
   clearCookie(name: string, options: Pick<CookieOpts, 'domain' | 'path'> = {}): this {
-    return this.setCookie(name, '', { path: '/', ...options, expires: new Date(0) });
+    return this.setCookie(name, '', { ...options, expires: new Date(0) });
   }
 
   setStatusCode(code: number): this {
