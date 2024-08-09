@@ -20,18 +20,16 @@ import { Utils } from '../utils';
 const postURL = 'http://testing.shadow-apps.com/api/v1/users/123';
 const getURL = 'http://testing.shadow-apps.com/api/v1/users?name=test#tag';
 const data = { username: 'test', password: 'Password@123' };
-const params = { id: '123' };
-const body = Buffer.from(JSON.stringify(data));
-const rawReq = Utils.getMockedIncomingMessage('POST', postURL, { cookie: 'uid=123456789' });
-const rawGetReq = Utils.getMockedIncomingMessage('GET', getURL);
 
 describe('Request', () => {
   let getReq: Request;
   let postReq: Request;
 
   it('should create a new instance', () => {
+    const rawReq = Utils.getMockedRequest('POST', postURL, { cookie: 'uid=123456789' });
+    const rawGetReq = Utils.getMockedRequest('GET', getURL);
     getReq = new Request(rawGetReq);
-    postReq = new Request(rawReq, body, params);
+    postReq = new Request(rawReq, Buffer.from(JSON.stringify(data)), { id: '123' });
 
     expect(getReq).toBeInstanceOf(Request);
     expect(postReq).toBeInstanceOf(Request);

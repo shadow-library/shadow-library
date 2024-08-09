@@ -1,14 +1,14 @@
 /**
  * Importing npm packages
  */
-import { ServerResponse } from 'http';
-
 import { describe, expect, it } from '@jest/globals';
 
 /**
  * Importing user defined packages
  */
 import { Response } from '@shadow-library/server';
+
+import { Utils } from '../utils';
 
 /**
  * Defining types
@@ -19,10 +19,10 @@ import { Response } from '@shadow-library/server';
  */
 
 describe('Response', () => {
-  const rawRes = new ServerResponse({} as any);
   let response: Response;
 
   it('should create a new instance', () => {
+    const rawRes = Utils.getMockedResponse();
     response = new Response(rawRes);
     expect(response).toBeInstanceOf(Response);
   });
