@@ -1,7 +1,9 @@
 /**
  * Importing npm packages
  */
-import { IncomingMessage } from 'http';
+import { Http2ServerRequest, Http2ServerResponse, IncomingHttpHeaders, ServerHttp2Stream } from 'http2';
+
+import { jest } from '@jest/globals';
 
 /**
  * Importing user defined packages
@@ -14,6 +16,14 @@ import { IncomingMessage } from 'http';
 /**
  * Declaring the constants
  */
+const defaultHeader = {
+  host: 'testing.shadow-apps.com',
+  'user-agent': 'Jest',
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8',
+  'accept-language': 'en-GB,en;q=0.5',
+  'accept-encoding': 'gzip, deflate, br, zstd',
+  connection: 'keep-alive',
+};
 
 class UtilsStatic {
   getSymbolMetadata(key: string, target: object): any {
@@ -26,22 +36,25 @@ class UtilsStatic {
     return this.getSymbolMetadata('route:metadata', target);
   }
 
-  getMockedIncomingMessage(method: string, url: string, headers?: Record<string, string>) {
-    const message = new IncomingMessage(null as any);
-    message.url = url;
-    message.method = method;
-    message.headers = {
-      host: 'testing.shadow-apps.com',
-      'user-agent': 'Jest',
-      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8',
-      'accept-language': 'en-GB,en;q=0.5',
-      'accept-encoding': 'gzip, deflate, br, zstd',
-      connection: 'keep-alive',
-      ...headers,
-    };
-    if (method === 'POST' || method === 'PUT') message.headers['content-type'] = 'application/json';
+  getMockedStream(): ServerHttp2Stream {
+    const stream = {} as any;
+    const methods = ['on', 'respond', 'write', 'end'];
+    for (const method of methods) stream[method] = jest.fn();
+    return stream;
+  }
 
-    return message;
+  getMockedRequest(method: string, url: string, headers?: Record<string, string>) {
+    const httpHeaders = { ...defaultHeader, ...headers } as IncomingHttpHeaders;
+    httpHeaders[':method'] = method;
+    httpHeaders[':path'] = url;
+    if (method === 'POST' || method === 'PUT') httpHeaders['content-type'] = 'application/json';
+    const stream = this.getMockedStream();
+    return new Http2ServerRequest(stream, httpHeaders, null as any, null as any);
+  }
+
+  getMockedResponse(): Http2ServerResponse {
+    const stream = this.getMockedStream();
+    return new Http2ServerResponse(stream);
   }
 }
 

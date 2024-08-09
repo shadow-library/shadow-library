@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { ServerResponse } from 'http';
+import { Http2ServerResponse } from 'http2';
 
 import { type CookieSerializeOptions, serialize } from 'cookie';
 
@@ -28,7 +28,7 @@ export interface CookieOpts {
  */
 
 export class Response {
-  constructor(readonly raw: ServerResponse) {}
+  constructor(readonly raw: Http2ServerResponse) {}
 
   setHeader(name: string, value: string | number): this {
     this.raw.setHeader(name, value);

@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { IncomingMessage } from 'http';
+import { Http2ServerRequest } from 'http2';
 
 import { parse } from 'cookie';
 
@@ -28,7 +28,7 @@ export class Request {
   readonly cookies: Record<string, string | string[]> = {};
 
   constructor(
-    readonly raw: IncomingMessage,
+    readonly raw: Http2ServerRequest,
     readonly rawBody: Buffer = Buffer.alloc(0),
     readonly params: Record<string, string> = {},
   ) {
