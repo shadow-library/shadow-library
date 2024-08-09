@@ -27,7 +27,7 @@ describe('ServerConfig', () => {
 
     it('should have default values', () => {
       expect(serverConfig.getPort()).toBe(8080);
-      expect(serverConfig.getHostname()).toBeUndefined();
+      expect(serverConfig.getHostname()).toBe('127.0.0.1');
       expect(serverConfig.getRouterConfig()).toStrictEqual({
         ignoreTrailingSlash: true,
         caseSensitive: true,

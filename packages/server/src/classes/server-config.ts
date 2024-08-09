@@ -21,8 +21,8 @@ type RouterConfig = RequiredFields<TRouterConfig, 'defaultRoute' | 'ignoreTraili
  */
 
 export class ServerConfig {
-  private port: number = 8080;
-  private hostname?: string;
+  private port = 8080;
+  private hostname = '127.0.0.1';
 
   private routerConfig = ServerConfig.getDefaultRouterConfig();
 

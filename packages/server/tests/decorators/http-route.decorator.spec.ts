@@ -43,6 +43,17 @@ describe('HTTP Methods Decorators', () => {
     expect(route.path).toBe('/');
   });
 
+  it(`should prepend the path with '/' if not present`, () => {
+    class Controller {
+      @HttpRoute({ method: HttpMethod.POST, path: 'path' })
+      static execute() {}
+    }
+
+    const route = Utils.getRouteMetadata(Controller.execute);
+
+    expect(route.path).toBe('/path');
+  });
+
   [All, Delete, Get, Head, Options, Patch, Post, Put, Search].forEach(Decorator => {
     it(`should enhance the method with the request metadata for ${Decorator.name}`, () => {
       const path = '/data';

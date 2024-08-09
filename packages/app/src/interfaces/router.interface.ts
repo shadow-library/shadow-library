@@ -15,6 +15,6 @@ import { RouteController } from '../injector';
  * Declaring the constants
  */
 
-export interface Router {
-  register<T extends Record<string, any> = any>(route: RouteController<T>): void | Promise<void>;
+export interface Router<T extends Record<string, any> = any> {
+  register(route: RouteController<T>): void | Promise<void>;
 }
