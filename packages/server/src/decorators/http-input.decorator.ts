@@ -20,6 +20,8 @@ export enum RouteInputType {
   QUERY = 'query',
 }
 
+export type RouteInputSchemas = Partial<Record<RouteInputType, ZodObject<ZodRawShape>>>;
+
 /**
  * Declaring the constants
  */
@@ -31,7 +33,7 @@ export function HttpInput<T extends ZodRawShape>(type: RouteInputType, schema?: 
     Reflect.defineMetadata(ROUTE_INPUT_METADATA, newMetadata, target, propertyKey as string);
 
     if (schema) {
-      const schemas = { [type]: schema };
+      const schemas: RouteInputSchemas = { [type]: schema };
       const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey as string);
       Route({ schemas })(target, propertyKey!, descriptor!);
     }
