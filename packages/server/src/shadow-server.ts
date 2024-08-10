@@ -38,7 +38,7 @@ export class ShadowServer {
     this.server = http.createServer((req, res) => this.router.lookup(req, res));
   }
 
-  private async register(route: RouteController<ShadowServerMetadata>): Promise<void> {
+  private register(route: RouteController<ShadowServerMetadata>): void {
     const metadata = route.metadata;
     const handler = route.handler;
 
