@@ -23,7 +23,7 @@ export class InternalError extends Error {
   constructor(publicErrorCode: string | ErrorCode, message?: string) {
     if (!message) {
       message = publicErrorCode as string;
-      publicErrorCode = ErrorCode.S001;
+      publicErrorCode = ErrorCode.UNKNOWN;
     }
     super(message);
     this.name = this.constructor.name;

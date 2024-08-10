@@ -17,21 +17,21 @@ import { ErrorCode, ErrorType } from '@shadow-library/errors';
  */
 
 describe('ErrorCode', () => {
-  const errorCode = ErrorCode.S002;
+  const errorCode = ErrorCode.UNKNOWN;
 
   it('should return the error type', () => {
-    expect(errorCode.getType()).toBe(ErrorType.NOT_FOUND);
+    expect(errorCode.getType()).toBe(ErrorType.SERVER_ERROR);
   });
 
   it('should return the error code', () => {
-    expect(errorCode.getCode()).toBe('S002');
+    expect(errorCode.getCode()).toBe('UNKNOWN');
   });
 
   it('should return the error message', () => {
-    expect(errorCode.getMessage()).toBe('Not Found');
+    expect(errorCode.getMessage()).toBe('Unknown Error');
   });
 
   it('should return the status code', () => {
-    expect(errorCode.getStatusCode()).toBe(404);
+    expect(errorCode.getStatusCode()).toBe(500);
   });
 });

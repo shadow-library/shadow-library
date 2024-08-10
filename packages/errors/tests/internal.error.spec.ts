@@ -23,15 +23,15 @@ describe('InternalError', () => {
   let internalError: InternalError;
 
   it('should create an instance of InternalError', () => {
-    maskedError = new InternalError(ErrorCode.S002, maskedErrorMessage);
+    maskedError = new InternalError(ErrorCode.UNEXPECTED, maskedErrorMessage);
     internalError = new InternalError(internalErrorMessage);
     expect(maskedError).toBeInstanceOf(InternalError);
     expect(internalError).toBeInstanceOf(InternalError);
   });
 
   it('should return the public error code', () => {
-    expect(maskedError.getPublicErrorCode()).toBe(ErrorCode.S002);
-    expect(internalError.getPublicErrorCode()).toBe(ErrorCode.S001);
+    expect(maskedError.getPublicErrorCode()).toBe(ErrorCode.UNEXPECTED);
+    expect(internalError.getPublicErrorCode()).toBe(ErrorCode.UNKNOWN);
   });
 
   it('should return the error message', () => {
