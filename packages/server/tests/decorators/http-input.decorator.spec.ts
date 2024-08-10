@@ -7,7 +7,6 @@ import { describe, expect, it } from '@jest/globals';
  * Importing user defined packages
  */
 import { Body, HttpInput, Params, Query, RouteInputType } from '@shadow-library/server';
-import { ROUTE_INPUT_METADATA } from '@shadow-library/server/constants';
 
 import { Utils } from '../utils';
 
@@ -39,42 +38,27 @@ describe('HTTP Input Decorators', () => {
   }
 
   it(`should enhance the method with the request input metadata`, () => {
-    const input = Reflect.getMetadata(ROUTE_INPUT_METADATA, Controller, 'single');
     const metadata = Utils.getRouteMetadata(Controller.single);
-
-    expect(input).toStrictEqual({ body: 0 });
-    expect(metadata).toStrictEqual({ schemas: { body: schema } });
+    expect(metadata).toStrictEqual({ args: { body: 0 }, schemas: { body: schema } });
   });
 
   it(`should enhance the method with the Body input metadata`, () => {
-    const input = Reflect.getMetadata(ROUTE_INPUT_METADATA, Controller, 'body');
     const metadata = Utils.getRouteMetadata(Controller.body);
-
-    expect(input).toStrictEqual({ body: 1 });
-    expect(metadata).toBeUndefined();
+    expect(metadata).toStrictEqual({ args: { body: 1 } });
   });
 
   it(`should enhance the method with the Params input metadata`, () => {
-    const input = Reflect.getMetadata(ROUTE_INPUT_METADATA, Controller, 'params');
     const metadata = Utils.getRouteMetadata(Controller.params);
-
-    expect(input).toStrictEqual({ params: 0 });
-    expect(metadata).toBeUndefined();
+    expect(metadata).toStrictEqual({ args: { params: 0 } });
   });
 
   it(`should enhance the method with the Query input metadata`, () => {
-    const input = Reflect.getMetadata(ROUTE_INPUT_METADATA, Controller, 'query');
     const metadata = Utils.getRouteMetadata(Controller.query);
-
-    expect(input).toStrictEqual({ query: 0 });
-    expect(metadata).toStrictEqual({ schemas: { query: schema } });
+    expect(metadata).toStrictEqual({ args: { query: 0 }, schemas: { query: schema } });
   });
 
   it(`should enhance the method with the multiple request input metadata`, () => {
-    const input = Reflect.getMetadata(ROUTE_INPUT_METADATA, Controller, 'multiple');
     const metadata = Utils.getRouteMetadata(Controller.multiple);
-
-    expect(input).toStrictEqual({ body: 0, params: 1 });
-    expect(metadata).toStrictEqual({ schemas: { params: schema } });
+    expect(metadata).toStrictEqual({ args: { body: 0, params: 1 }, schemas: { params: schema } });
   });
 });
