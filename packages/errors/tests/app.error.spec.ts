@@ -20,24 +20,24 @@ describe('AppError', () => {
   let appError: AppError;
 
   it('should create an instance of AppError', () => {
-    appError = new AppError(ErrorCode.S002);
+    appError = new AppError(ErrorCode.UNKNOWN);
     expect(appError.name).toBe('AppError');
     expect(appError).toBeInstanceOf(AppError);
   });
 
   it('should return the error type', () => {
-    expect(appError.getType()).toBe(ErrorType.NOT_FOUND);
+    expect(appError.getType()).toBe(ErrorType.SERVER_ERROR);
   });
 
   it('should return the error code', () => {
-    expect(appError.getCode()).toBe('S002');
+    expect(appError.getCode()).toBe('UNKNOWN');
   });
 
   it('should return the error message', () => {
-    expect(appError.getMessage()).toBe('Not Found');
+    expect(appError.getMessage()).toBe('Unknown Error');
   });
 
   it('should return the status code', () => {
-    expect(appError.getStatusCode()).toBe(404);
+    expect(appError.getStatusCode()).toBe(500);
   });
 });
