@@ -18,7 +18,10 @@ import { Utils } from './utils';
  * Declaring the constants
  */
 const error = new Error('Stop Server Error');
-const mockHandler = jest.fn();
+const mockHandler = jest
+  .fn<() => Promise<void>>()
+  .mockImplementationOnce(async () => {})
+  .mockRejectedValueOnce(error);
 const mockServer = {
   listen: jest.fn((_arg1, _arg2, callback: () => void) => callback()),
   close: jest
@@ -28,10 +31,10 @@ const mockServer = {
 };
 
 describe('ShadowServer', () => {
+  const config = new ServerConfig();
   let server: ShadowServer;
 
   it('should create a new instance of ShadowServer', () => {
-    const config = new ServerConfig();
     const mockFn = jest.fn();
     server = new ShadowServer(config);
     /** @ts-expect-error accessing private property */
@@ -42,6 +45,16 @@ describe('ShadowServer', () => {
 
     expect(server).toBeInstanceOf(ShadowServer);
     expect(mockFn).toBeCalledWith(1, 2);
+  });
+
+  it('should return the default route handler', () => {
+    const errorHandler = jest.fn();
+    const req = Utils.getMockedRequest('GET', 'https://shadow-apps.com/test-single');
+    config.setErrorHandler({ handle: errorHandler });
+    /** @ts-expect-error accessing private property */
+    server.getDefaultRouteHandler()(req, {});
+
+    expect(errorHandler).toBeCalledWith(expect.any(Error), expect.any(Request), expect.any(Response));
   });
 
   it('should register a route with single method', async () => {
@@ -75,15 +88,24 @@ describe('ShadowServer', () => {
     /** @ts-expect-error accessing private property */
     const route = server.router.findRoute('GET', '/test-single');
     await route?.handler(req, res, {}, {}, {});
-    const [request, response] = mockHandler.mock.lastCall ?? [];
+    const [ctx] = mockHandler.mock.lastCall as any;
 
-    expect(request).toBeInstanceOf(Request);
-    /** @ts-expect-error accessing private property */
-    expect(request.raw).toBe(req);
+    expect(ctx.request).toBeInstanceOf(Request);
+    expect(ctx.request.raw).toBe(req);
+    expect(ctx.response).toBeInstanceOf(Response);
+    expect(ctx.response.raw).toBe(res);
+  });
 
-    expect(response).toBeInstanceOf(Response);
+  it('should handle the route with error', async () => {
+    const errorHandler = jest.fn();
+    const req = Utils.getMockedRequest('GET', 'https://shadow-apps.com/test-single');
+    const res = Utils.getMockedResponse();
+    config.setErrorHandler({ handle: errorHandler });
     /** @ts-expect-error accessing private property */
-    expect(response.raw).toBe(res);
+    const route = server.router.findRoute('GET', '/test-single');
+    await route?.handler(req, res, {}, {}, {});
+
+    expect(errorHandler).toBeCalledWith(error, expect.any(Request), expect.any(Response));
   });
 
   it('should stop the server', async () => {

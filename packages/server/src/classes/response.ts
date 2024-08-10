@@ -30,12 +30,12 @@ export interface CookieOpts {
 export class Response {
   constructor(readonly raw: Http2ServerResponse) {}
 
-  setHeader(name: string, value: string | number): this {
+  header(name: string, value: string | number): this {
     this.raw.setHeader(name, value);
     return this;
   }
 
-  setCookie(name: string, value: string, options: CookieOpts = {}): this {
+  cookie(name: string, value: string, options: CookieOpts = {}): this {
     const cookieOpts = { ...options } as CookieSerializeOptions;
     if (cookieOpts.path === undefined) cookieOpts.path = '/';
     if (options.maxAge !== undefined && options.expires === undefined) {
@@ -49,23 +49,27 @@ export class Response {
   }
 
   clearCookie(name: string, options: Pick<CookieOpts, 'domain' | 'path'> = {}): this {
-    return this.setCookie(name, '', { ...options, expires: new Date(0) });
+    return this.cookie(name, '', { ...options, expires: new Date(0) });
   }
 
-  setStatusCode(code: number): this {
+  status(code: number): this {
     this.raw.statusCode = code;
     return this;
   }
 
-  isSent(): boolean {
+  get sent(): boolean {
     return this.raw.writableEnded;
   }
 
   send(contentType: string, body: string): this {
     const buffer = Buffer.from(body);
-    this.setHeader('Content-Type', contentType);
-    this.setHeader('Content-Length', buffer.length);
+    this.header('Content-Type', contentType);
+    this.header('Content-Length', buffer.length);
     this.raw.end(buffer);
     return this;
+  }
+
+  json(body: string): this {
+    return this.send('application/json', body);
   }
 }

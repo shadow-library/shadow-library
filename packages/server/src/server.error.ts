@@ -15,7 +15,11 @@ import { AppError, ErrorCode, ErrorType } from '@shadow-library/errors';
  * Declaring the constants
  */
 
-export class ServerError extends AppError {}
+export class ServerError extends AppError {
+  serialize(): string {
+    return `{"code":"${this.getCode()}","type":"${this.getType()}","message":"${this.getMessage()}"}`;
+  }
+}
 
 export class ServerErrorCode extends ErrorCode {
   /*!

@@ -18,6 +18,7 @@ import { ServerConfig } from '@shadow-library/server';
 
 describe('ServerConfig', () => {
   describe('ServerConfig', () => {
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     let serverConfig: ServerConfig;
 
     it('should create a new instance', () => {
@@ -28,21 +29,23 @@ describe('ServerConfig', () => {
     it('should have default values', () => {
       expect(serverConfig.getPort()).toBe(8080);
       expect(serverConfig.getHostname()).toBe('127.0.0.1');
-      expect(serverConfig.getRouterConfig()).toStrictEqual({
-        ignoreTrailingSlash: true,
-        caseSensitive: true,
-        maxParamLength: 100,
-        defaultRoute: expect.any(Function),
-      });
+      expect(serverConfig.getRouterConfig()).toStrictEqual({ ignoreTrailingSlash: true, maxParamLength: 100 });
     });
 
-    it('should have default route handler', () => {
-      const thisFn = () => jest.fn().mockReturnThis();
-      const res = { writeHead: thisFn(), end: thisFn() };
-      serverConfig.getRouterConfig().defaultRoute({} as any, res as any);
+    it('should have default error handler handle error', () => {
+      /** @ts-expect-error test args */
+      serverConfig.getErrorHandler().handle(new Error('Test Error'), {}, res);
 
-      expect(res.writeHead).toHaveBeenCalledWith(404, { 'Content-Type': 'application/json', 'Content-Length': expect.any(Number) });
-      expect(res.end).toHaveBeenCalledWith(expect.any(Buffer));
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith('{"message":"Test Error"}');
+    });
+
+    it('should have default error handler handle unknown', () => {
+      /** @ts-expect-error test args */
+      serverConfig.getErrorHandler().handle({}, {}, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith('{"message":"Unknown Error"}');
     });
 
     it('should set and get the port', () => {
@@ -60,6 +63,12 @@ describe('ServerConfig', () => {
     it('should set and get the router config', () => {
       serverConfig.setRouterConfig('ignoreDuplicateSlashes', true);
       expect(serverConfig.getRouterConfig()).toHaveProperty('ignoreTrailingSlash', true);
+    });
+
+    it('should set and get the error handler', () => {
+      const errorHandler = jest.fn() as any;
+      serverConfig.setErrorHandler(errorHandler);
+      expect(serverConfig.getErrorHandler()).toBe(errorHandler);
     });
   });
 });
