@@ -1,20 +1,18 @@
 /**
  * Importing npm packages
  */
-import { RequiredFields } from '@shadow-library/types';
 import { Config, HTTPVersion } from 'find-my-way';
 
 /**
  * Importing user defined packages
  */
+import { ErrorHandler } from '../interfaces';
 
 /**
  * Defining types
  */
 
-type TRouterConfig = Config<HTTPVersion.V2>;
-
-type RouterConfig = RequiredFields<TRouterConfig, 'defaultRoute' | 'ignoreTrailingSlash' | 'maxParamLength'>;
+type RouterConfig = Config<HTTPVersion.V2>;
 
 /**
  * Declaring the constants
@@ -25,19 +23,17 @@ export class ServerConfig {
   private hostname = '127.0.0.1';
 
   private routerConfig = ServerConfig.getDefaultRouterConfig();
+  private errorHandler = ServerConfig.getDefaultErrorHandler();
 
   private static getDefaultRouterConfig(): RouterConfig {
-    const config: TRouterConfig = {};
-
+    const config: RouterConfig = {};
     config.ignoreTrailingSlash = true;
-    config.caseSensitive = true;
     config.maxParamLength = 100;
-
-    const notFoundBuffer = Buffer.from(JSON.stringify({ message: 'Not Found' }));
-    const notFoundHeader = { 'Content-Type': 'application/json', 'Content-Length': notFoundBuffer.length };
-    config.defaultRoute = (_req, res) => res.writeHead(404, notFoundHeader).end(notFoundBuffer);
-
     return config as RouterConfig;
+  }
+
+  private static getDefaultErrorHandler(): ErrorHandler {
+    return { handle: (err, _req, res) => res.status(500).json(`{"message":"${(err as any)?.message ?? 'Unknown Error'}"}`) };
   }
 
   getPort(): number {
@@ -64,6 +60,15 @@ export class ServerConfig {
 
   setRouterConfig<T extends keyof RouterConfig>(key: T, value: Required<RouterConfig>[T]): this {
     this.routerConfig[key] = value;
+    return this;
+  }
+
+  getErrorHandler(): ErrorHandler {
+    return this.errorHandler;
+  }
+
+  setErrorHandler(errorHandler: ErrorHandler): this {
+    this.errorHandler = errorHandler;
     return this;
   }
 }

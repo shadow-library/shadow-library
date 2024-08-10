@@ -28,24 +28,24 @@ describe('Response', () => {
   });
 
   it('should set the status code', () => {
-    response.setStatusCode(200);
+    response.status(200);
     expect(response.raw.statusCode).toBe(200);
   });
 
   it('should set header', () => {
     const key = 'Authorization';
     const value = 'Bearer token';
-    response.setHeader(key, value);
+    response.header(key, value);
     expect(response.raw.getHeader(key)).toBe(value);
   });
 
   it('should set cookie', () => {
-    response.setCookie('uid', '123');
+    response.cookie('uid', '123');
     const cookieOne = response.raw.getHeader('Set-Cookie');
 
     const now = new Date();
     now.setMinutes(now.getMinutes() + 1);
-    response.setCookie('uid', '123', { maxAge: 60, httpOnly: true });
+    response.cookie('uid', '123', { maxAge: 60, httpOnly: true });
     const cookieTwo = response.raw.getHeader('Set-Cookie');
 
     expect(cookieOne).toBe('uid=123; Path=/');
@@ -61,13 +61,13 @@ describe('Response', () => {
 
   it('should set send the response', () => {
     const data = { message: 'Hello' };
-    response.send('application/json', JSON.stringify(data));
+    response.json(JSON.stringify(data));
 
     expect(response.raw.getHeader('Content-Type')).toBe('application/json');
     expect(response.raw.getHeader('Content-Length')).toBe(19);
   });
 
   it('should check if response is sent', () => {
-    expect(response.isSent()).toBe(true);
+    expect(response.sent).toBe(true);
   });
 });
