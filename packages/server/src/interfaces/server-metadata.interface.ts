@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { HttpMethod, RouteInputSchemas } from '../decorators';
+import { HttpMethod, MiddlewareMetadata, RouteInputSchemas } from '../decorators';
 
 /**
  * Defining types
@@ -15,8 +15,10 @@ import { HttpMethod, RouteInputSchemas } from '../decorators';
  * Declaring the constants
  */
 
-export interface ServerMetadata {
+export interface RouteMetdata {
   method: HttpMethod;
   path: string;
   schemas?: RouteInputSchemas;
 }
+
+export type ServerMetadata = RouteMetdata | MiddlewareMetadata;
