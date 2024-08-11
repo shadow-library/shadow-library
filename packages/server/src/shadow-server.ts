@@ -10,8 +10,9 @@ import Router, { HTTPMethod, HTTPVersion, Handler, Instance } from 'find-my-way'
  * Importing user defined packages
  */
 import { Request, Response, ServerConfig } from './classes';
-import { HttpMethod } from './decorators';
-import { RawRouteHandler, ServerMetadata } from './interfaces';
+import { MIDDLEWARE_WATERMARK } from './constants';
+import { HttpMethod, MiddlewareMetadata } from './decorators';
+import { RawRouteHandler, RouteHandler, RouteMetdata, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
 
 /**
@@ -35,6 +36,11 @@ export class ShadowServer {
   private readonly server: http.Http2Server;
   private readonly config: ServerConfig;
 
+  private readonly routes: RouteController<RouteMetdata>[] = [];
+  private readonly middlewares: RouteController<MiddlewareMetadata>[] = [];
+
+  private inited = false;
+
   constructor(config: ServerConfig) {
     this.config = config;
 
@@ -52,30 +58,53 @@ export class ShadowServer {
   }
 
   private register(route: RouteController<ServerMetadata>): void {
-    const metadata = route.metadata;
-    const method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
-    this.router.on(method, metadata.path, this.generateRouteHandler(route));
+    const isMiddleware = (route.metadata as any)[MIDDLEWARE_WATERMARK];
+    if (isMiddleware) this.middlewares.push(route as RouteController<MiddlewareMetadata>);
+    else this.routes.push(route as RouteController<RouteMetdata>);
   }
 
-  private generateRouteHandler(route: RouteController<ServerMetadata>): Handler<HTTPVersion.V2> {
+  private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<Handler<HTTPVersion.V2>> {
     const argsOrder = route.paramtypes.map(p => p.name.toLowerCase()) as (keyof RequestContext)[];
+    const middlewares: RouteHandler[] = [];
+    for (const middleware of this.middlewares) {
+      const handler = await middleware.handler(route.metadata);
+      middlewares.push(handler);
+    }
+
     return async (req, res, params, _store, query) => {
       const request = new Request(req, Buffer.alloc(0), params as Record<string, string>);
       const response = new Response(res);
       const context = { request, response, params, query };
       try {
+        /** Running the middlewares */
+        for (const middleware of middlewares) {
+          await middleware(request, response);
+          if (response.sent) return;
+        }
+
+        /** Handling the actual route and serializing the output */
         const args = argsOrder.map(arg => context[arg]);
-        await route.handler(...args);
+        const resBody = await route.handler(...args);
+        if (!response.sent && resBody) response.json(JSON.stringify(resBody));
       } catch (err: unknown) {
         await this.config.getErrorHandler().handle(err, request, response);
       }
     };
   }
 
-  start(): Promise<void> {
+  async init(): Promise<void> {
+    for (const route of this.routes) {
+      const metadata = route.metadata;
+      const method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
+      this.router.on(method, metadata.path, await this.generateRouteHandler(route));
+    }
+  }
+
+  async start(): Promise<void> {
+    if (!this.inited) await this.init();
     const port = this.config.getPort();
     const hostname = this.config.getHostname();
-    return new Promise(resolve => this.server.listen(port, hostname, resolve));
+    return await new Promise(resolve => this.server.listen(port, hostname, resolve));
   }
 
   stop(): Promise<void> {

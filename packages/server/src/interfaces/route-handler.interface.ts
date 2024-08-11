@@ -6,6 +6,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2';
 /**
  * Importing user defined packages
  */
+import { Request, Response } from '../classes';
 
 /**
  * Defining types
