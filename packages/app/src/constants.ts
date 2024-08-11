@@ -16,6 +16,7 @@
 
 export const MODULE_METADATA = { IMPORTS: 'imports', PROVIDERS: 'providers', CONTROLLERS: 'controllers', EXPORTS: 'exports' } as const;
 
+export const RETURN_TYPE_METADATA = 'design:returntype';
 export const PARAMTYPES_METADATA = 'design:paramtypes';
 export const OPTIONAL_DEPS_METADATA = 'optional:paramtypes';
 export const SELF_DECLARED_DEPS_METADATA = 'self:paramtypes';
