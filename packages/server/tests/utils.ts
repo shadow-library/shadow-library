@@ -4,6 +4,7 @@
 import { Http2ServerRequest, Http2ServerResponse, IncomingHttpHeaders, ServerHttp2Stream } from 'http2';
 
 import { jest } from '@jest/globals';
+import { PARAMTYPES_METADATA } from '@shadow-library/app';
 
 /**
  * Importing user defined packages
@@ -34,6 +35,10 @@ class UtilsStatic {
 
   getRouteMetadata(target: object): Record<string, any> {
     return this.getSymbolMetadata('route:metadata', target);
+  }
+
+  getParamMetadata(target: object, method: string): Record<string, any> {
+    return Reflect.getMetadata(PARAMTYPES_METADATA, target, method);
   }
 
   getMockedStream(): ServerHttp2Stream {

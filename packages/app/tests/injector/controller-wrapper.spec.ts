@@ -6,7 +6,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { Controller, Route } from '@shadow-library/app';
+import { Controller, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, Route } from '@shadow-library/app';
 import { ControllerWrapper } from '@shadow-library/app/injector';
 
 /**
@@ -50,6 +50,12 @@ describe('ControllerWrapper', () => {
   });
 
   it('should return the param types and return type of the route', () => {
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, TestController.prototype, 'test');
+    const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, TestController.prototype, 'test');
+
+    expect(paramtypes).toStrictEqual([String, Number, Object]);
+    expect(returnType).toBe(String);
+
     expect(routes[0]?.paramtypes).toStrictEqual([String, Number, Object]);
     expect(routes[0]?.returnType).toBe(String);
 

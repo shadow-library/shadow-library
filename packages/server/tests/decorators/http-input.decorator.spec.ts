@@ -25,7 +25,7 @@ describe('HTTP Input Decorators', () => {
     static single(@HttpInput(RouteInputType.BODY, schema) _body: any) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    static multiple(@HttpInput(RouteInputType.BODY) _body: any, @HttpInput(RouteInputType.PARAMS, schema) _params: any) {}
+    static multiple(@HttpInput(RouteInputType.BODY) _body: any, _random: string, @HttpInput(RouteInputType.PARAMS, schema) _params: any) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static body(_string: string, @Body() _body: any) {}
@@ -39,26 +39,35 @@ describe('HTTP Input Decorators', () => {
 
   it(`should enhance the method with the request input metadata`, () => {
     const metadata = Utils.getRouteMetadata(Controller.single);
-    expect(metadata).toStrictEqual({ args: { body: 0 }, schemas: { body: schema } });
+    const paramtypes = Utils.getParamMetadata(Controller, 'single');
+
+    expect(metadata).toStrictEqual({ schemas: { body: schema } });
+    expect(paramtypes).toStrictEqual([{ name: 'body' }]);
   });
 
   it(`should enhance the method with the Body input metadata`, () => {
-    const metadata = Utils.getRouteMetadata(Controller.body);
-    expect(metadata).toStrictEqual({ args: { body: 1 } });
+    const paramtypes = Utils.getParamMetadata(Controller, 'body');
+    expect(paramtypes).toStrictEqual([String, { name: 'body' }]);
   });
 
   it(`should enhance the method with the Params input metadata`, () => {
-    const metadata = Utils.getRouteMetadata(Controller.params);
-    expect(metadata).toStrictEqual({ args: { params: 0 } });
+    const paramtypes = Utils.getParamMetadata(Controller, 'params');
+    expect(paramtypes).toStrictEqual([{ name: 'params' }]);
   });
 
   it(`should enhance the method with the Query input metadata`, () => {
     const metadata = Utils.getRouteMetadata(Controller.query);
-    expect(metadata).toStrictEqual({ args: { query: 0 }, schemas: { query: schema } });
+    const paramtypes = Utils.getParamMetadata(Controller, 'query');
+
+    expect(metadata).toStrictEqual({ schemas: { query: schema } });
+    expect(paramtypes).toStrictEqual([{ name: 'query' }]);
   });
 
   it(`should enhance the method with the multiple request input metadata`, () => {
     const metadata = Utils.getRouteMetadata(Controller.multiple);
-    expect(metadata).toStrictEqual({ args: { body: 0, params: 1 }, schemas: { params: schema } });
+    const paramtypes = Utils.getParamMetadata(Controller, 'multiple');
+
+    expect(metadata).toStrictEqual({ schemas: { params: schema } });
+    expect(paramtypes).toStrictEqual([{ name: 'body' }, String, { name: 'params' }]);
   });
 });

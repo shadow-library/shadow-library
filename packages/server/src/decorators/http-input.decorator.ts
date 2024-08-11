@@ -3,7 +3,7 @@
  */
 import assert from 'assert';
 
-import { Route } from '@shadow-library/app';
+import { PARAMTYPES_METADATA, Route } from '@shadow-library/app';
 import { ZodObject, ZodRawShape } from 'zod';
 
 /**
@@ -22,8 +22,6 @@ export enum RouteInputType {
 
 export type RouteInputSchemas = Partial<Record<RouteInputType, ZodObject<ZodRawShape>>>;
 
-export type RouteInputArgs = Record<RouteInputType, number>;
-
 /**
  * Declaring the constants
  */
@@ -31,12 +29,14 @@ export type RouteInputArgs = Record<RouteInputType, number>;
 export function HttpInput<T extends ZodRawShape>(type: RouteInputType, schema?: ZodObject<T>): ParameterDecorator {
   return (target, propertyKey, index) => {
     assert(propertyKey, 'Cannot apply decorator to a constructor parameter');
-    const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey);
-    assert(descriptor, 'Cannot apply decorator to a non-method');
+    const paramTypes = Reflect.getMetadata(PARAMTYPES_METADATA, target, propertyKey);
+    paramTypes[index] = { name: type };
 
-    const metadata = { args: { [type]: index } } as Record<string, any>;
-    if (schema) metadata.schemas = { [type]: schema };
-    return Route(metadata)(target, propertyKey, descriptor);
+    if (schema) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey);
+      assert(descriptor, 'Cannot apply decorator to a non-method');
+      Route({ schemas: { [type]: schema } })(target, propertyKey, descriptor);
+    }
   };
 }
 
