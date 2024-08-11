@@ -9,7 +9,7 @@ import { merge } from 'lodash';
  * Importing user defined packages
  */
 import { Extractor, Validator } from './helpers';
-import { CONTROLLER_WATERMARK } from '../constants';
+import { CONTROLLER_WATERMARK, PARAMTYPES_METADATA } from '../constants';
 
 /**
  * Defining types
@@ -19,6 +19,8 @@ type Func = (...args: any[]) => any | Promise<any>;
 export interface RouteController<T extends Record<string, any>> {
   metadata: T;
   handler: Func;
+  paramtypes: Type[];
+  returnType?: Type;
 }
 
 /**
@@ -53,8 +55,10 @@ export class ControllerWrapper {
     const controllerMetadata = Extractor.getRouteMetadata(this.type);
     for (const method of methods) {
       const routeMetadata = Extractor.getRouteMetadata(method);
+      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as Type[];
+      const returnType = Reflect.getMetadata('design:returntype', this.instance, method.name);
       const metadata = merge({}, controllerMetadata, routeMetadata) as T;
-      routes.push({ metadata, handler: method.bind(this.instance) });
+      routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });
     }
 
     return routes;

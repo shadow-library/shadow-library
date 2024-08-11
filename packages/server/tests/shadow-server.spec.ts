@@ -58,17 +58,19 @@ describe('ShadowServer', () => {
   });
 
   it('should register a route with single method', async () => {
+    const metadata = { method: HttpMethod.GET, path: '/test-single' };
     const router = server.getRouter();
-    router.register({ metadata: { method: HttpMethod.GET, path: '/test-single' }, handler: mockHandler });
+    router.register({ metadata, handler: mockHandler, paramtypes: [String] });
     /** @ts-expect-error accessing private property */
     const route = server.router.findRoute('GET', '/test-single');
     expect(route).toBeDefined();
   });
 
   it('should register route with ALL method', async () => {
+    const metadata = { method: HttpMethod.ALL, path: '/test-all' };
     const methods = Object.values(HttpMethod).filter(m => m !== HttpMethod.ALL);
     const router = server.getRouter();
-    router.register({ metadata: { method: HttpMethod.ALL, path: '/test-all' }, handler: mockHandler });
+    router.register({ metadata, handler: mockHandler, paramtypes: [Number, Object] });
 
     methods.forEach(method => {
       /** @ts-expect-error accessing private property */
