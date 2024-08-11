@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { HttpMethod, RouteInputArgs, RouteInputSchemas } from '../decorators';
+import { HttpMethod, RouteInputSchemas } from '../decorators';
 
 /**
  * Defining types
@@ -19,5 +19,4 @@ export interface ServerMetadata {
   method: HttpMethod;
   path: string;
   schemas?: RouteInputSchemas;
-  args?: RouteInputArgs;
 }
