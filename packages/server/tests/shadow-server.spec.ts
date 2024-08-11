@@ -60,7 +60,7 @@ describe('ShadowServer', () => {
   it('should register a route with single method', async () => {
     const metadata = { method: HttpMethod.GET, path: '/test-single' };
     const router = server.getRouter();
-    router.register({ metadata, handler: mockHandler, paramtypes: [String] });
+    router.register({ metadata, handler: mockHandler, paramtypes: [Request, { name: 'params' }, Response, { name: 'query' }] });
     /** @ts-expect-error accessing private property */
     const route = server.router.findRoute('GET', '/test-single');
     expect(route).toBeDefined();
@@ -70,7 +70,7 @@ describe('ShadowServer', () => {
     const metadata = { method: HttpMethod.ALL, path: '/test-all' };
     const methods = Object.values(HttpMethod).filter(m => m !== HttpMethod.ALL);
     const router = server.getRouter();
-    router.register({ metadata, handler: mockHandler, paramtypes: [Number, Object] });
+    router.register({ metadata, handler: mockHandler, paramtypes: [] });
 
     methods.forEach(method => {
       /** @ts-expect-error accessing private property */
@@ -87,15 +87,16 @@ describe('ShadowServer', () => {
   it('should handle the route', async () => {
     const req = Utils.getMockedRequest('GET', 'https://shadow-apps.com/test-single');
     const res = Utils.getMockedResponse();
+    const params = { id: '123' };
+    const query = { search: 'test' };
     /** @ts-expect-error accessing private property */
     const route = server.router.findRoute('GET', '/test-single');
-    await route?.handler(req, res, {}, {}, {});
-    const [ctx] = mockHandler.mock.lastCall as any;
+    await route?.handler(req, res, params, {}, query);
+    const args = mockHandler.mock.lastCall as any[];
 
-    expect(ctx.request).toBeInstanceOf(Request);
-    expect(ctx.request.raw).toBe(req);
-    expect(ctx.response).toBeInstanceOf(Response);
-    expect(ctx.response.raw).toBe(res);
+    expect(args).toStrictEqual([expect.any(Request), params, expect.any(Response), query]);
+    expect(args[0].raw).toBe(req);
+    expect(args[2].raw).toBe(res);
   });
 
   it('should handle the route with error', async () => {

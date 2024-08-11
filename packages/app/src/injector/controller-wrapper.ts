@@ -19,7 +19,7 @@ type Func = (...args: any[]) => any | Promise<any>;
 export interface RouteController<T extends Record<string, any>> {
   metadata: T;
   handler: Func;
-  paramtypes: Type[];
+  paramtypes: { name: string }[];
   returnType?: Type;
 }
 
