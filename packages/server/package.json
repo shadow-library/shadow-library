@@ -17,6 +17,7 @@
     "@shadow-library/app": "workspace:*",
     "@shadow-library/common": "workspace:*",
     "@shadow-library/errors": "workspace:*",
+    "@shadow-library/types": "workspace:*",
     "cookie": "^0.6.0",
     "find-my-way": "^8.2.0",
     "reflect-metadata": "^0.2.2",
