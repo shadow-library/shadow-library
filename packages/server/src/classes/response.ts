@@ -1,13 +1,12 @@
 /**
  * Importing npm packages
  */
-import { Http2ServerResponse } from 'http2';
-
 import { type CookieSerializeOptions, serialize } from 'cookie';
 
 /**
  * Importing user defined packages
  */
+import { RawResponse } from '../interfaces';
 
 /**
  * Defining types
@@ -28,7 +27,7 @@ export interface CookieOpts {
  */
 
 export class Response {
-  constructor(readonly raw: Http2ServerResponse) {}
+  constructor(readonly raw: RawResponse) {}
 
   header(name: string, value: string | number): this {
     this.raw.setHeader(name, value);

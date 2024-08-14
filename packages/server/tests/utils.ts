@@ -1,18 +1,27 @@
 /**
  * Importing npm packages
  */
+import { IncomingMessage, ServerResponse } from 'http';
 import { Http2ServerRequest, Http2ServerResponse, IncomingHttpHeaders, ServerHttp2Stream } from 'http2';
 
 import { jest } from '@jest/globals';
 import { PARAMTYPES_METADATA } from '@shadow-library/app';
+import { HTTPMethod } from 'find-my-way';
 
 /**
  * Importing user defined packages
  */
+import { RawRequest, RawResponse, ShadowServer } from '@shadow-library/server';
 
 /**
  * Defining types
  */
+
+type HttpVersion = 'v1' | 'v2';
+
+export interface RouteResult {
+  handler(params?: Record<string, string>, query?: Record<string, string>): Promise<unknown>;
+}
 
 /**
  * Declaring the constants
@@ -41,25 +50,48 @@ class UtilsStatic {
     return Reflect.getMetadata(PARAMTYPES_METADATA, target, method);
   }
 
-  getMockedStream(): ServerHttp2Stream {
+  private getMockedStream(): ServerHttp2Stream {
     const stream = {} as any;
     const methods = ['on', 'respond', 'write', 'end'];
     for (const method of methods) stream[method] = jest.fn();
     return stream;
   }
 
-  getMockedRequest(method: string, url: string, headers?: Record<string, string>) {
+  getMockedRequest(method: HTTPMethod, url: string, headers: Record<string, string> = {}, version: HttpVersion = 'v1'): RawRequest {
     const httpHeaders = { ...defaultHeader, ...headers } as IncomingHttpHeaders;
+    if (method === 'POST' || method === 'PUT') httpHeaders['content-type'] = 'application/json';
+
+    if (version === 'v1') {
+      const http = new IncomingMessage(null as any);
+      http.url = url;
+      http.method = method;
+      http.headers = httpHeaders;
+      return http;
+    }
+
     httpHeaders[':method'] = method;
     httpHeaders[':path'] = url;
-    if (method === 'POST' || method === 'PUT') httpHeaders['content-type'] = 'application/json';
     const stream = this.getMockedStream();
     return new Http2ServerRequest(stream, httpHeaders, null as any, null as any);
   }
 
-  getMockedResponse(): Http2ServerResponse {
+  getMockedResponse(version: HttpVersion = 'v1'): RawResponse {
+    if (version === 'v1') {
+      const request = new IncomingMessage(null as any);
+      return new ServerResponse(request);
+    }
+
     const stream = this.getMockedStream();
     return new Http2ServerResponse(stream);
+  }
+
+  getRoute(server: ShadowServer, method: HTTPMethod, path: string): RouteResult | null {
+    const req = Utils.getMockedRequest(method, `https://testing.shadow-apps.com${path}`);
+    const res = Utils.getMockedResponse();
+    /** @ts-expect-error accessing private property */
+    const route = server.router.findRoute(method, path);
+    if (!route) return null;
+    return { handler: (params = {}, query = {}) => route.handler(req as any, res as any, params, {}, query) };
   }
 }
 

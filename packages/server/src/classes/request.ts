@@ -1,13 +1,12 @@
 /**
  * Importing npm packages
  */
-import { Http2ServerRequest } from 'http2';
-
 import { parse } from 'cookie';
 
 /**
  * Importing user defined packages
  */
+import { RawRequest } from '../interfaces';
 
 /**
  * Defining types
@@ -28,7 +27,7 @@ export class Request {
   readonly cookies: Record<string, string | string[]> = {};
 
   constructor(
-    readonly raw: Http2ServerRequest,
+    readonly raw: RawRequest,
     readonly rawBody: Buffer = Buffer.alloc(0),
     readonly params: Record<string, string> = {},
   ) {

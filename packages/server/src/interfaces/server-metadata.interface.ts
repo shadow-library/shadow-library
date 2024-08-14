@@ -1,6 +1,8 @@
 /**
  * Importing npm packages
  */
+import { Server } from 'http';
+import { Http2SecureServer } from 'http2';
 
 /**
  * Importing user defined packages
@@ -22,3 +24,5 @@ export interface RouteMetdata {
 }
 
 export type ServerMetadata = RouteMetdata | MiddlewareMetadata;
+
+export type HttpServer = Server | Http2SecureServer;

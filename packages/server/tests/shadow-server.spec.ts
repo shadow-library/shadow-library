@@ -1,6 +1,9 @@
 /**
  * Importing npm packages
  */
+import path from 'path';
+import { Server as TLSServer } from 'tls';
+
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { Router } from '@shadow-library/app';
 
@@ -46,7 +49,7 @@ describe('ShadowServer', () => {
     mockMiddleware.mockClear();
   });
 
-  it('should create a new instance of ShadowServer', () => {
+  it('should create a http instance of ShadowServer', () => {
     const mockFn = jest.fn();
     server = new ShadowServer(config);
     router = server.getRouter();
@@ -58,6 +61,22 @@ describe('ShadowServer', () => {
 
     expect(server).toBeInstanceOf(ShadowServer);
     expect(mockFn).toBeCalledWith(1, 2);
+  });
+
+  it('should create a https instance of ShadowServer', () => {
+    const mockFn = jest.fn();
+    const dirname = path.join(__dirname, 'sample');
+    const config = new ServerConfig().setHttpsCertificate({ key: `${dirname}/private.key`, cert: `${dirname}/certificate.crt` });
+    const server = new ShadowServer(config);
+    /** @ts-expect-error accessing private property */
+    const instance = server.server;
+    /** @ts-expect-error accessing private property */
+    server.router.lookup = mockFn;
+    (server as any).server._events.request(1, 2);
+
+    expect(mockFn).toBeCalledWith(1, 2);
+    expect(instance).toBeInstanceOf(TLSServer);
+    expect(instance.constructor.name).toBe('Http2SecureServer');
   });
 
   it('should return the default route handler', () => {
@@ -103,24 +122,18 @@ describe('ShadowServer', () => {
   });
 
   it('should handle the route', async () => {
-    const req = Utils.getMockedRequest('GET', 'https://shadow-apps.com/test-single');
-    const res = Utils.getMockedResponse();
     const params = { id: '123' };
     const query = { search: 'test' };
-    /** @ts-expect-error accessing private property */
-    const route = server.router.findRoute('GET', '/test-single');
-    await route?.handler(req, res, params, {}, query);
+    const route = Utils.getRoute(server, 'GET', '/test-single');
+    await route?.handler(params, query);
 
     expect(mockMiddleware).toBeCalledWith(expect.any(Request), expect.any(Response));
     expect(mockHandler).toBeCalledWith(expect.any(Request), params, expect.any(Response), query);
   });
 
   it('should stop execution after response is sent', async () => {
-    const req = Utils.getMockedRequest('GET', 'https://shadow-apps.com/test-single');
-    const res = Utils.getMockedResponse();
-    /** @ts-expect-error accessing private property */
-    const route = server.router.findRoute('POST', '/test-all');
-    await route?.handler(req, res, {}, {}, {});
+    const route = Utils.getRoute(server, 'POST', '/test-all');
+    await route?.handler();
 
     expect(mockMiddleware).toBeCalledWith(expect.any(Request), expect.any(Response));
     expect(mockHandler).not.toBeCalled();
@@ -128,12 +141,10 @@ describe('ShadowServer', () => {
 
   it('should handle the route with error', async () => {
     const errorHandler = jest.fn();
-    const req = Utils.getMockedRequest('GET', 'https://shadow-apps.com/test-single');
-    const res = Utils.getMockedResponse();
     config.setErrorHandler({ handle: errorHandler });
-    /** @ts-expect-error accessing private property */
-    const route = server.router.findRoute('GET', '/test-single');
-    await route?.handler(req, res, {}, {}, {});
+
+    const route = Utils.getRoute(server, 'GET', '/test-single');
+    await route?.handler();
 
     expect(errorHandler).toBeCalledWith(error, expect.any(Request), expect.any(Response));
   });
