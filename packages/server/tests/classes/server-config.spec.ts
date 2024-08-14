@@ -70,5 +70,11 @@ describe('ServerConfig', () => {
       serverConfig.setErrorHandler(errorHandler);
       expect(serverConfig.getErrorHandler()).toBe(errorHandler);
     });
+
+    it('should set and get the https certificate', () => {
+      const certificate = { key: 'private.key', cert: 'certificate.crt' };
+      serverConfig.setHttpsCertificate(certificate);
+      expect(serverConfig.getHttpsCertificate()).toBe(certificate);
+    });
   });
 });

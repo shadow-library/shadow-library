@@ -1,7 +1,9 @@
 /**
  * Importing npm packages
  */
-import http from 'http2';
+import fs from 'fs';
+import http from 'http';
+import http2 from 'http2';
 
 import { Router as AppRouter, RouteController } from '@shadow-library/app';
 import Router, { HTTPMethod, HTTPVersion, Handler, Instance } from 'find-my-way';
@@ -12,12 +14,14 @@ import Router, { HTTPMethod, HTTPVersion, Handler, Instance } from 'find-my-way'
 import { Request, Response, ServerConfig } from './classes';
 import { MIDDLEWARE_WATERMARK } from './constants';
 import { HttpMethod, MiddlewareMetadata } from './decorators';
-import { RawRouteHandler, RouteHandler, RouteMetdata, ServerMetadata } from './interfaces';
+import { HttpServer, RawRouteHandler, RouteHandler, RouteMetdata, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
 
 /**
  * Defining types
  */
+
+type RouterInstance = Instance<HTTPVersion.V1> & Instance<HTTPVersion.V2>;
 
 export interface RequestContext {
   request: Request;
@@ -32,8 +36,8 @@ export interface RequestContext {
 const httpMethods = Object.values(HttpMethod).filter(m => m !== HttpMethod.ALL) as HTTPMethod[];
 
 export class ShadowServer {
-  private readonly router: Instance<HTTPVersion.V2>;
-  private readonly server: http.Http2Server;
+  private readonly router: RouterInstance;
+  private readonly server: HttpServer;
   private readonly config: ServerConfig;
 
   private readonly routes: RouteController<RouteMetdata>[] = [];
@@ -46,9 +50,14 @@ export class ShadowServer {
 
     const routerConfig = config.getRouterConfig();
     if (!routerConfig.defaultRoute) routerConfig.defaultRoute = this.getDefaultRouteHandler();
-    this.router = Router(routerConfig);
+    this.router = Router(routerConfig) as RouterInstance;
 
-    this.server = http.createServer((req, res) => this.router.lookup(req, res));
+    const certificate = config.getHttpsCertificate();
+    if (certificate) {
+      const key = fs.readFileSync(certificate.key);
+      const cert = fs.readFileSync(certificate.cert);
+      this.server = http2.createSecureServer({ key, cert }, (req, res) => this.router.lookup(req, res));
+    } else this.server = http.createServer((req, res) => this.router.lookup(req, res));
   }
 
   private getDefaultRouteHandler(): RawRouteHandler {

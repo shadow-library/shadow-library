@@ -12,7 +12,12 @@ import { ErrorHandler } from '../interfaces';
  * Defining types
  */
 
-type RouterConfig = Config<HTTPVersion.V2>;
+type RouterConfig = Config<HTTPVersion.V2> | Config<HTTPVersion.V1>;
+
+interface HttpsCertificate {
+  key: string;
+  cert: string;
+}
 
 /**
  * Declaring the constants
@@ -21,6 +26,7 @@ type RouterConfig = Config<HTTPVersion.V2>;
 export class ServerConfig {
   private port = 8080;
   private hostname = '127.0.0.1';
+  private httpsCertificate?: HttpsCertificate;
 
   private routerConfig = ServerConfig.getDefaultRouterConfig();
   private errorHandler = ServerConfig.getDefaultErrorHandler();
@@ -51,6 +57,15 @@ export class ServerConfig {
 
   setHostname(hostname: string): this {
     this.hostname = hostname;
+    return this;
+  }
+
+  getHttpsCertificate(): HttpsCertificate | undefined {
+    return this.httpsCertificate;
+  }
+
+  setHttpsCertificate(httpsCertificate: HttpsCertificate): this {
+    this.httpsCertificate = httpsCertificate;
     return this;
   }
 

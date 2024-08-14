@@ -1,6 +1,7 @@
 /**
  * Importing npm packages
  */
+import { IncomingMessage, ServerResponse } from 'http';
 import { Http2ServerRequest, Http2ServerResponse } from 'http2';
 
 /**
@@ -16,6 +17,10 @@ import { Request, Response } from '../classes';
  * Declaring the constants
  */
 
-export type RouteHandler = (req: Request, res: Response) => any | Promise<any>;
+export type RawRequest = IncomingMessage | Http2ServerRequest;
 
-export type RawRouteHandler = (req: Http2ServerRequest, res: Http2ServerResponse) => any | Promise<any>;
+export type RawResponse = ServerResponse | Http2ServerResponse;
+
+export type RouteHandler = (req: Request, res: Response) => unknown | Promise<unknown>;
+
+export type RawRouteHandler = (req: RawRequest, res: RawResponse) => unknown | Promise<unknown>;
