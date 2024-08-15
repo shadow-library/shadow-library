@@ -17,8 +17,8 @@ import { Utils } from '../utils';
 /**
  * Declaring the constants
  */
-const postURL = 'http://testing.shadow-apps.com/api/v1/users/123';
-const getURL = 'http://testing.shadow-apps.com/api/v1/users?name=test#tag';
+const postURL = '/api/v1/users/123';
+const getURL = '/api/v1/users?name=test';
 const data = { username: 'test', password: 'Password@123' };
 
 describe('Request', () => {
@@ -28,7 +28,7 @@ describe('Request', () => {
   it('should create a new instance', () => {
     const rawReq = Utils.getMockedRequest('POST', postURL, { cookie: 'uid=123456789' });
     const rawGetReq = Utils.getMockedRequest('GET', getURL);
-    getReq = new Request(rawGetReq);
+    getReq = new Request(rawGetReq, undefined, undefined, { name: 'test' });
     postReq = new Request(rawReq, Buffer.from(JSON.stringify(data)), { id: '123' });
 
     expect(getReq).toBeInstanceOf(Request);
@@ -44,20 +44,16 @@ describe('Request', () => {
     expect(postReq.url).toBe(postURL);
     expect(getReq.url).toBe(getURL);
 
-    expect(postReq.pathname).toBe('/api/v1/users/123');
-    expect(getReq.pathname).toBe('/api/v1/users');
-
-    expect(getReq.hash).toBe('#tag');
+    expect(postReq.path).toBe('/api/v1/users/123');
+    expect(getReq.path).toBe('/api/v1/users');
   });
 
   it('should parse the query', () => {
     expect(getReq.body).toBeUndefined();
     expect(getReq.rawBody).toHaveLength(0);
-    expect(postReq.body).toBeUndefined();
+    expect(getReq.query?.name).toBe('test');
 
-    expect(getReq.query.size).toBe(1);
-    expect(postReq.query.size).toBe(0);
-    expect(getReq.query.get('name')).toBe('test');
+    expect(postReq.body).toBeUndefined();
   });
 
   it('should parse the body', () => {

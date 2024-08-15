@@ -19,27 +19,24 @@ import { RawRequest } from '../interfaces';
 export class Request {
   readonly url: string;
   readonly method: string;
-  readonly pathname: string;
-  readonly hash: string;
 
   readonly body?: any;
-  readonly query: URLSearchParams;
   readonly cookies: Record<string, string | string[]> = {};
 
   constructor(
     readonly raw: RawRequest,
     readonly rawBody: Buffer = Buffer.alloc(0),
     readonly params: Record<string, string> = {},
+    readonly query: Record<string, string> = {},
   ) {
-    const url = new URL(raw.url as string);
-
     this.url = raw.url as string;
     this.method = raw.method as string;
-    this.pathname = url.pathname;
-    this.hash = url.hash;
 
-    this.query = url.searchParams;
     this.cookies = raw.headers.cookie ? parse(raw.headers.cookie) : {};
+  }
+
+  get path(): string {
+    return this.url.split('?')[0] as string;
   }
 
   /**
