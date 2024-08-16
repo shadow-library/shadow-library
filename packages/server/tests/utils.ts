@@ -86,7 +86,7 @@ class UtilsStatic {
   }
 
   getRoute(server: ShadowServer, method: HTTPMethod, path: string): RouteResult | null {
-    const req = Utils.getMockedRequest(method, `https://testing.shadow-apps.com${path}`);
+    const req = Utils.getMockedRequest(method, path);
     const res = Utils.getMockedResponse();
     /** @ts-expect-error accessing private property */
     const route = server.router.findRoute(method, path);
