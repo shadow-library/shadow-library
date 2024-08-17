@@ -57,22 +57,6 @@ async function buildPackage(name) {
   const tsbuildinfo = path.join(distDir, 'tsconfig.build.tsbuildinfo');
   if (fs.existsSync(tsbuildinfo)) fs.rmSync(tsbuildinfo);
 
-  /** Build for commmonJS */
-  // const tsconfigPath = path.join(packageDir, 'tsconfig.json');
-  // const tsconfigString = fs.readFileSync(tsconfigPath);
-  // const tsconfig = JSON.parse(tsconfigString);
-  // const entryPoints = tsconfig.include.map(include => path.join(packageDir, include));
-  // await esbuild.build({
-  //   entryPoints: await glob(entryPoints),
-  //   bundle: false,
-  //   platform: 'node',
-  //   outdir: distDir,
-  //   format: 'cjs',
-  //   target: 'es2020',
-  //   // outExtension: { '.js': '.cjs' },
-  //   external: Object.keys(packageJson.dependencies ?? {}),
-  // });
-
   const endTime = process.hrtime(startTime);
   const timeTaken = (endTime[0] * 1e3 + endTime[1] * 1e-6).toFixed(3);
   success(`Built successfull for package '@shadow-library/${name}' in ${formatTime(timeTaken)}`);
