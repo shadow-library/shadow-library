@@ -40,5 +40,6 @@
     /** Completeness and Projects */
     "composite": true,
     "skipLibCheck": true
-  }
+  },
+  "tsc-alias": { "resolveFullPaths": true }
 }
