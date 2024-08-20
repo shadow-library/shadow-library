@@ -49,8 +49,10 @@ async function buildPackage(name) {
   fs.copyFileSync(`${rootDir}/LICENSE`, `${distDir}/LICENSE`);
 
   /** Building typescript files */
-  const args = ['tsc', '--outDir', distDir, '--project', 'tsconfig.build.json'];
-  const result = spawnSync('pnpm', args, { cwd: packageDir, stdio: 'inherit' });
+  const tsc = ['tsc', '--outDir', distDir, '--project', 'tsconfig.build.json'];
+  const tscAlias = ['tsc-alias', '--outDir', distDir, '--project', 'tsconfig.build.json'];
+  let result = spawnSync('pnpm', tsc, { cwd: packageDir, stdio: 'inherit' });
+  if (result.status === 0) result = spawnSync('pnpm', tscAlias, { cwd: packageDir, stdio: 'inherit' });
   if (result.status !== 0) return error(`Build failed for package '@shadow-library/${name}'`);
 
   /** Removing temporary files */
