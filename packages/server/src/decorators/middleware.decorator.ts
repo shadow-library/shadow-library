@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import { Controller, Route } from '@shadow-library/app';
-import { Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -17,7 +17,7 @@ import { MIDDLEWARE_WATERMARK } from '../constants';
 
 export interface MiddlewareMetadata {
   [MIDDLEWARE_WATERMARK]: true;
-  target: Type;
+  target: Class<unknown>;
 }
 
 /**

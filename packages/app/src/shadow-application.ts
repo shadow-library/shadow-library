@@ -3,7 +3,7 @@
  */
 import { Logger } from '@shadow-library/common';
 import { InternalError } from '@shadow-library/errors';
-import { LoggerService, Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -21,13 +21,13 @@ import { ApplicationConfig } from './interfaces';
  */
 
 export class ShadowApplication {
-  private readonly globalModuleType?: Type;
-  private readonly modules = new Map<Type, ModuleWrapper>();
+  private readonly globalModuleType?: Class<unknown>;
+  private readonly modules = new Map<Class<unknown>, ModuleWrapper>();
   private readonly main: ModuleWrapper;
-  private readonly logger: LoggerService;
+  private readonly logger: Logger;
   private readonly config: ApplicationConfig;
 
-  constructor(module: Type, config: ApplicationConfig = {}) {
+  constructor(module: Class<unknown>, config: ApplicationConfig = {}) {
     this.logger = Logger.getLogger('shadow-app');
     this.config = { ...config };
     this.globalModuleType = this.scanForGlobalModule(module);
@@ -35,8 +35,8 @@ export class ShadowApplication {
     this.logger.debug('Modules scanned successfully');
   }
 
-  private scanForGlobalModule(module: Type): Type | undefined {
-    const imports = Extractor.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+  private scanForGlobalModule(module: Class<unknown>): Class<unknown> | undefined {
+    const imports = Extractor.getMetadata<Class<unknown>>(MODULE_METADATA.IMPORTS, module);
     const [globalModule, ...others] = imports.filter(m => Reflect.getMetadata(GLOBAL_WATERMARK, m) ?? false);
     if (!globalModule) return;
     if (others.length > 0) throw new InternalError('There can only be one global module');
@@ -46,7 +46,7 @@ export class ShadowApplication {
     return globalModule;
   }
 
-  private scanForModules(module: Type): ModuleWrapper {
+  private scanForModules(module: Class<unknown>): ModuleWrapper {
     if (this.modules.has(module)) return this.modules.get(module) as ModuleWrapper;
 
     const isModule = Reflect.getMetadata(MODULE_WATERMARK, module) ?? false;
@@ -54,7 +54,7 @@ export class ShadowApplication {
     const isGlobal = Reflect.getMetadata(GLOBAL_WATERMARK, module) ?? false;
     if (isGlobal) throw new InternalError(`Global module '${module.name}' can only be imported in main module`);
 
-    const dependencies = Extractor.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+    const dependencies = Extractor.getMetadata<Class<unknown>>(MODULE_METADATA.IMPORTS, module);
     if (this.globalModuleType && !dependencies.includes(this.globalModuleType)) dependencies.unshift(this.globalModuleType);
     const dependentModules = dependencies.map(m => this.scanForModules(m));
     const moduleInstance = new ModuleWrapper(module, dependentModules);
@@ -71,11 +71,11 @@ export class ShadowApplication {
     if (this.isInited()) return this;
 
     this.logger.debug('Initializing application');
-    const dependencyGraph = new DependencyGraph<Type>();
+    const dependencyGraph = new DependencyGraph<Class<unknown>>();
     const modules = Array.from(this.modules.keys());
     for (const module of modules) {
       dependencyGraph.addNode(module);
-      const dependencies = Extractor.getMetadata<Type>(MODULE_METADATA.IMPORTS, module);
+      const dependencies = Extractor.getMetadata<Class<unknown>>(MODULE_METADATA.IMPORTS, module);
       for (const dependency of dependencies) dependencyGraph.addDependency(module, dependency);
     }
     const sortedModules = dependencyGraph.getSortedNodes();
@@ -114,7 +114,7 @@ export class ShadowApplication {
     return this;
   }
 
-  get<TInput = any, TResult = TInput>(provider: Type<TInput> | string | symbol): TResult {
+  get<TInput = any, TResult = TInput>(provider: Class<TInput> | string | symbol): TResult {
     if (!this.isInited()) throw new InternalError(`Application not yet initialized`);
     for (const module of this.modules.values()) {
       try {

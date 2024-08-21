@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -18,7 +18,7 @@ import { FactoryProvider, Provider } from '../../interfaces';
  */
 
 class ValidatorStatic {
-  isInjectable(provider: Type): boolean {
+  isInjectable(provider: Class<unknown>): boolean {
     return Reflect.getMetadata(INJECTABLE_WATERMARK, provider) ?? false;
   }
 
