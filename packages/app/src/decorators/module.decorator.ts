@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { InternalError } from '@shadow-library/errors';
-import { type Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -17,12 +17,12 @@ export interface ModuleMetadata {
   /**
    * List of imported modules that export the providers which are required in this module.
    */
-  imports?: Type[];
+  imports?: Class<unknown>[];
 
   /**
    * List of controllers defined in this module which have to be instantiated.
    */
-  controllers?: Type[];
+  controllers?: Class<unknown>[];
 
   /**
    * List of providers that will be instantiated by the Shadow injector and that may be shared

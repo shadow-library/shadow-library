@@ -32,9 +32,7 @@
       "@shadow-library/errors": ["packages/errors"],
       "@shadow-library/errors/*": ["packages/errors/src/*"],
       "@shadow-library/server": ["packages/server"],
-      "@shadow-library/server/*": ["packages/server/src/*"],
-      "@shadow-library/types": ["packages/types"],
-      "@shadow-library/types/*": ["packages/types/src/*"]
+      "@shadow-library/server/*": ["packages/server/src/*"]
     },
     "resolveJsonModule": true,
 

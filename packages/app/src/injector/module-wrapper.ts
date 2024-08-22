@@ -3,7 +3,7 @@
  */
 import { Logger } from '@shadow-library/common';
 import { InternalError, NeverError } from '@shadow-library/errors';
-import { Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -31,7 +31,7 @@ export enum LifecycleMethods {
 
 export class ModuleWrapper {
   private readonly logger = Logger.getLogger('ModuleWrapper');
-  private readonly metatype: Type;
+  private readonly metatype: Class<unknown>;
   private readonly imports: ModuleWrapper[];
 
   private readonly controllers = new Array<ControllerWrapper>();
@@ -40,7 +40,7 @@ export class ModuleWrapper {
 
   private instance?: object;
 
-  constructor(metatype: Type, imports: ModuleWrapper[]) {
+  constructor(metatype: Class<unknown>, imports: ModuleWrapper[]) {
     this.metatype = metatype;
     this.imports = imports;
 
@@ -144,21 +144,21 @@ export class ModuleWrapper {
     }
 
     /** Initializing the controllers */
-    const controllers = Extractor.getMetadata<Type>(MODULE_METADATA.CONTROLLERS, this.metatype);
+    const controllers = Extractor.getMetadata<Class<unknown>>(MODULE_METADATA.CONTROLLERS, this.metatype);
     for (const controller of controllers) {
       this.logger.debug(`Initializing controller '${controller.name}'`);
-      const dependencyNames = Extractor.getMetadata<Type>(PARAMTYPES_METADATA, controller);
+      const dependencyNames = Extractor.getMetadata<Class<unknown>>(PARAMTYPES_METADATA, controller);
       const dependencies = dependencyNames.map(name => this.getProvider(name));
-      const controllerWrapper = new ControllerWrapper(controller, dependencies);
+      const controllerWrapper = new ControllerWrapper(controller as Class<object>, dependencies);
       this.controllers.push(controllerWrapper);
       this.logger.debug(`Controller '${controller.name}' initialized`);
     }
 
     /** Initializing the module instance */
     this.logger.debug(`Initializing Module '${this.metatype.name}'`);
-    const dependencyNames = Extractor.getMetadata<Type>(PARAMTYPES_METADATA, this.metatype);
+    const dependencyNames = Extractor.getMetadata<Class<unknown>>(PARAMTYPES_METADATA, this.metatype);
     const dependencies = dependencyNames.map(name => this.getProvider(name));
-    this.instance = new this.metatype(...dependencies);
+    this.instance = new this.metatype(...dependencies) as object;
     this.logger.debug(`Module '${this.metatype.name}' initialized`);
 
     return await this.runLifecycleMethod(LifecycleMethods.ON_MODULE_INIT);

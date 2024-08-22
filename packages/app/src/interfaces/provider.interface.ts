@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -11,11 +11,11 @@ import { Type } from '@shadow-library/types';
  * Defining types
  */
 
-export type InjectionName = string | symbol | Type;
+export type InjectionName = string | symbol | Class<unknown>;
 
 export interface ClassProvider {
   name: InjectionName;
-  useClass: Type;
+  useClass: Class<unknown>;
   useValue?: never;
   inject?: never;
   useFactory?: never;
@@ -39,4 +39,4 @@ export interface FactoryProvider {
   useValue?: never;
 }
 
-export type Provider = Type | ClassProvider | ValueProvider | FactoryProvider;
+export type Provider = Class<unknown> | ClassProvider | ValueProvider | FactoryProvider;

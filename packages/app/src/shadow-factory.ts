@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -18,7 +18,7 @@ import { ShadowApplication } from './shadow-application';
  */
 
 export class ShadowFactoryStatic {
-  async create(module: Type, options?: ApplicationConfig): Promise<ShadowApplication> {
+  async create(module: Class<unknown>, options?: ApplicationConfig): Promise<ShadowApplication> {
     const app = new ShadowApplication(module, options);
     return await app.init();
   }

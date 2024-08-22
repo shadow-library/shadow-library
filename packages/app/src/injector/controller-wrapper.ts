@@ -2,8 +2,8 @@
  * Importing npm packages
  */
 import { InternalError } from '@shadow-library/errors';
-import { Type } from '@shadow-library/types';
 import { merge } from 'lodash';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -20,7 +20,7 @@ export interface RouteController<T extends Record<string, any>> {
   metadata: T;
   handler: Func;
   paramtypes: { name: string }[];
-  returnType?: Type;
+  returnType?: Class<unknown>;
 }
 
 /**
@@ -29,9 +29,9 @@ export interface RouteController<T extends Record<string, any>> {
 
 export class ControllerWrapper {
   private readonly instance: Record<string, any>;
-  private readonly type: Type;
+  private readonly type: Class<Record<string, any>>;
 
-  constructor(Controller: Type, dependencies: object[]) {
+  constructor(Controller: Class<object>, dependencies: object[]) {
     const isController = Reflect.hasMetadata(CONTROLLER_WATERMARK, Controller);
     if (!isController) throw new InternalError(`Class '${Controller.name}' is not a controller`);
     this.type = Controller;
@@ -55,7 +55,7 @@ export class ControllerWrapper {
     const controllerMetadata = Extractor.getRouteMetadata(this.type);
     for (const method of methods) {
       const routeMetadata = Extractor.getRouteMetadata(method);
-      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as Type[];
+      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as Class<unknown>[];
       const returnType = Reflect.getMetadata('design:returntype', this.instance, method.name);
       const metadata = merge({}, controllerMetadata, routeMetadata) as T;
       routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });

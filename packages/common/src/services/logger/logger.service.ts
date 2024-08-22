@@ -1,7 +1,6 @@
 /**
  * Importing npm packages
  */
-import { LoggerService } from '@shadow-library/types';
 import { Logform, Logger as WinstonLogger, createLogger } from 'winston';
 import Transport from 'winston-transport';
 
@@ -15,6 +14,15 @@ import { Config } from '../config.service';
 /**
  * Defining types
  */
+
+export interface Logger {
+  verbose(message: string, ...meta: any[]): void;
+  debug(message: string, ...meta: any[]): void;
+  info(message: string, ...meta: any[]): void;
+  http(message: string, ...meta: any[]): void;
+  warn(message: string, ...meta: any[]): void;
+  error(message: string, ...meta: any[]): void;
+}
 
 /**
  * Declaring the constants
@@ -45,7 +53,7 @@ class LoggerStatic {
   }
 
   /** Returns a child logger with the provided metadata */
-  getLogger(metadata: string | object): LoggerService {
+  getLogger(metadata: string | object): Logger {
     if (logger.transports.length === 0) this.addTransport(noop);
     return logger.child(metadata);
   }

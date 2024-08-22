@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { Type } from '@shadow-library/types';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -18,7 +18,7 @@ import { InjectionName } from '../../interfaces';
  */
 
 class ExtractorStatic {
-  getMetadata<T>(key: string, target: Type): T[] {
+  getMetadata<T>(key: string, target: Class<unknown>): T[] {
     return Reflect.getMetadata(key, target) ?? [];
   }
 
