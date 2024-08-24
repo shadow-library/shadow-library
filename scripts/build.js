@@ -20,7 +20,7 @@ if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true });
 fs.mkdirSync(distDir);
 
 /** building the packages */
-const packages = fs.readdirSync(packagesDir).filter(dir => !dir.includes('.'));
+const packages = fs.readdirSync(packagesDir).filter(dir => fs.statSync(path.join(packagesDir, dir)).isDirectory());
 for (const name of packages) await buildPackage(name);
 
 /**

@@ -1,10 +1,9 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "independent",
   "npmClient": "pnpm",
   "command": {
     "version": {
-      "message": "chore: publish release packages",
+      "message": "chore: publish %s release",
       "conventionalCommits": true,
       "createRelease": "github",
       "npmClient": "pnpm"
