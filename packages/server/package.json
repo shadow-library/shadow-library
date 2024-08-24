@@ -1,6 +1,6 @@
 {
   "name": "@shadow-library/server",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A TypeScript package for building efficient Node.js servers with Fastify, featuring AJV validation, decorator-based routing, unified authentication, and response formatting with fast-json-stringify",
   "author": "Leander Paul",
   "homepage": "https://github.com/shadow-library/shadow-library#readme",

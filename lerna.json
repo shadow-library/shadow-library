@@ -1,17 +1,21 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "packages": ["packages/*"],
   "npmClient": "pnpm",
+  "version": "0.1.0",
   "command": {
     "version": {
-      "message": "chore: publish %s release",
-      "conventionalCommits": true,
       "createRelease": "github",
-      "npmClient": "pnpm"
+      "message": "chore: publish %s release",
+      "granularPathspec": false,
+      "commitHooks": false,
+
+      "exact": true,
+      "conventionalCommits": true,
+      "ignoreChanges": ["**/*.md", "**/*.spec.ts"]
     },
     "publish": {
-      "registry": "https://npm.pkg.github.com",
-      "directory": "{workspaceRoot}/dist/{projectRoot}",
-      "npmClient": "pnpm"
+      "contents": "dist"
     }
   }
 }

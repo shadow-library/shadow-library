@@ -12,12 +12,7 @@ const error = message => console.error('\x1b[31m%s\x1b[0m', message);
 
 /** declaring the root and package directories */
 const rootDir = path.join(import.meta.dirname, '..');
-const distDir = path.join(rootDir, 'dist');
 const packagesDir = path.join(rootDir, 'packages');
-
-/** cleaning the previous build */
-if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true });
-fs.mkdirSync(distDir);
 
 /** building the packages */
 const packages = fs.readdirSync(packagesDir).filter(dir => fs.statSync(path.join(packagesDir, dir)).isDirectory());
@@ -31,8 +26,11 @@ for (const name of packages) await buildPackage(name);
 async function buildPackage(name) {
   const startTime = process.hrtime();
   const packageDir = path.join(packagesDir, name);
-  const distDir = path.join(rootDir, 'dist', name);
-  if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
+  const distDir = path.join(packageDir, 'dist');
+
+  /** cleaning the previous build */
+  if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true });
+  fs.mkdirSync(distDir);
 
   const packageJsonPath = path.join(packageDir, 'package.json');
   const packageJsonString = fs.readFileSync(packageJsonPath);
