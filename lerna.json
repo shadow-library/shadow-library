@@ -2,14 +2,13 @@
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "packages": ["packages/*"],
   "npmClient": "pnpm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "command": {
     "version": {
       "createRelease": "github",
       "message": "chore: publish %s release",
       "granularPathspec": false,
       "commitHooks": false,
-
       "exact": true,
       "conventionalCommits": true,
       "ignoreChanges": ["**/*.md", "**/*.spec.ts"]

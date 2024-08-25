@@ -1,6 +1,6 @@
 {
   "name": "@shadow-library/app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A progressive Node.js framework for building efficient, scalable, and enterprise-grade applications using SOLID principles",
   "author": "Leander Paul",
   "homepage": "https://github.com/shadow-library/shadow-library#readme",
