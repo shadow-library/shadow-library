@@ -1,19 +1,28 @@
 /**
  * Importing npm packages
  */
+
+/**
+ * Importing user defined packages
+ */
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { spawnSync } from 'child_process';
 
-/** utility functions */
-const formatTime = time => (time < 1000 ? `${time}ms` : `${(time / 1000).toFixed(2)}s`);
-const success = message => console.log('\x1b[32m%s\x1b[0m', message);
-const error = message => console.error('\x1b[31m%s\x1b[0m', message);
+/**
+ * Defining types
+ */
 
-/** declaring the root and package directories */
+/**
+ * Declaring the constants
+ */
 const rootDir = path.join(import.meta.dirname, '..');
 const distDir = path.join(rootDir, 'dist');
 const packagesDir = path.join(rootDir, 'packages');
+
+const formatTime = (time: number) => (time < 1000 ? `${time}ms` : `${(time / 1000).toFixed(3)}s`);
+const success = (message: string) => console.log('\x1b[32m%s\x1b[0m', message); // eslint-disable-line no-console
+const error = (message: string) => console.error('\x1b[31m%s\x1b[0m', message); // eslint-disable-line no-console
 
 /** cleaning the previous build */
 if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true });
@@ -23,24 +32,18 @@ fs.mkdirSync(distDir);
 const packages = fs.readdirSync(packagesDir).filter(dir => fs.statSync(path.join(packagesDir, dir)).isDirectory());
 for (const name of packages) await buildPackage(name);
 
-/**
- * Function to build the package using esbuild
- * @param {string} name
- * @returns {Promise<void>}
- */
-async function buildPackage(name) {
+async function buildPackage(name: string): Promise<void> {
   const startTime = process.hrtime();
   const packageDir = path.join(packagesDir, name);
-  const distDir = path.join(rootDir, 'dist', name);
-  if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
+  const distDir = path.join(rootDir, 'dist', 'packages', name);
+  if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
   const packageJsonPath = path.join(packageDir, 'package.json');
-  const packageJsonString = fs.readFileSync(packageJsonPath);
+  const packageJsonString = fs.readFileSync(packageJsonPath, 'utf-8');
   const packageJson = JSON.parse(packageJsonString);
 
   /** modifying package.json and saving to 'dist' */
-  const main = name === 'types' ? 'index.d.ts' : 'index.js';
-  const distPackageJson = { ...structuredClone(packageJson), main };
+  const distPackageJson = { ...structuredClone(packageJson), main: 'index.js' };
   const distPackageJsonString = JSON.stringify(distPackageJson, null, 2);
   fs.writeFileSync(`${distDir}/package.json`, distPackageJsonString);
 
@@ -60,6 +63,6 @@ async function buildPackage(name) {
   if (fs.existsSync(tsbuildinfo)) fs.rmSync(tsbuildinfo);
 
   const endTime = process.hrtime(startTime);
-  const timeTaken = (endTime[0] * 1e3 + endTime[1] * 1e-6).toFixed(3);
+  const timeTaken = endTime[0] * 1e3 + endTime[1] * 1e-6;
   success(`Built successfull for package '@shadow-library/${name}' in ${formatTime(timeTaken)}`);
 }

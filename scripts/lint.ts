@@ -1,20 +1,24 @@
 /**
- * Importing npm packages.
+ * Importing npm packages
  */
-import path from 'path';
-import { spawnSync } from 'child_process';
+import { SpawnSyncOptions, spawnSync } from 'child_process';
+import { join } from 'path';
 
 /**
- * Importing user defined packages.
+ * Importing user defined packages
  */
 
 /**
- * Declaring the constants.
+ * Defining types
+ */
+
+/**
+ * Declaring the constants
  */
 const isFixEnabled = process.argv.includes('--fix');
 const fileGlob = '{packages,scripts}/**/*.ts';
-const cwd = path.join(import.meta.dirname, '..');
-const options = { cwd, stdio: 'inherit' };
+const cwd = join(import.meta.dirname, '..');
+const options = { cwd, stdio: 'inherit' } satisfies SpawnSyncOptions;
 
 if (isFixEnabled) {
   const prettierResult = spawnSync('pnpm', ['prettier', '--write', '--log-level', 'error', fileGlob], options);
