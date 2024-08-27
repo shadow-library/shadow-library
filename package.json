@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "clean": "rm -rf dist logs coverage",
-    "lint": "node scripts/lint.js",
-    "build": "node scripts/build.js",
+    "clean": "rm -rf dist logs coverage CHANGELOG.md packages/**/CHANGELOG.md",
+    "lint": "tsx scripts/lint.ts",
+    "build": "tsx scripts/build.ts",
     "test": "jest",
     "prepublishOnly": "pnpm run build"
   },
@@ -29,6 +29,7 @@
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.10",
     "tslib": "^2.6.2",
+    "tsx": "^4.18.0",
     "type-fest": "^4.25.0",
     "typescript": "^5.4.5"
   },

@@ -45,5 +45,5 @@
     /** Completeness */
     "skipLibCheck": true
   },
-  "include": ["packages/**/*.ts"]
+  "include": ["packages/**/*.ts", "scripts/**/*.ts"]
 }

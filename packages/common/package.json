@@ -1,5 +1,6 @@
 {
   "name": "@shadow-library/common",
+  "type": "module",
   "version": "0.0.1",
   "description": "A TypeScript package offering a comprehensive set of common utilities and services used across your applications.",
   "author": "Leander Paul",
