@@ -1,13 +1,13 @@
 /**
  * Importing npm packages
  */
+import { spawnSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Importing user defined packages
  */
-import { spawnSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
 
 /**
  * Defining types

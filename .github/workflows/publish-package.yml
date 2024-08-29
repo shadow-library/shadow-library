@@ -1,0 +1,54 @@
+name: Publish package to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        type: choice
+        description: 'Bump version'
+        default: 'patch'
+        options:
+          - 'patch'
+          - 'minor'
+          - 'major'
+          - 'premajor'
+          - 'preminor'
+          - 'prepatch'
+          - 'prerelease'
+
+jobs:
+  publish:
+    if: github.actor == 'leanderpaul' && github.triggering_actor == 'leanderpaul' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Git user config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Bump version
+        run: pnpm lerna publish ${{ github.event.inputs.bump }} -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
