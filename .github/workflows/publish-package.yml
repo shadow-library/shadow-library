@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Echo Actor
-        uses: echo "The actor username is ${{ github.actor }}"
+        run: echo "The actor username is ${{ github.actor }}"
 
       - name: Echo Triggering Actor
-        uses: echo "The triggering actor username is ${{ github.triggering_actor }}"
+        run: echo "The triggering actor username is ${{ github.triggering_actor }}"
 
       - name: Echo Repository Owner
         run: echo "The repository owner is ${{ github.repository_owner }}"
