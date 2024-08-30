@@ -17,6 +17,27 @@ on:
           - 'prerelease'
 
 jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo Actor
+        uses: echo "The actor username is ${{ github.actor }}"
+
+      - name: Echo Triggering Actor
+        uses: echo "The triggering actor username is ${{ github.triggering_actor }}"
+
+      - name: Echo Repository Owner
+        run: echo "The repository owner is ${{ github.repository_owner }}"
+
+      - name: Echo Result
+        run: echo "The result is ${{ github.actor == github.repository_owner && github.triggering_actor == github.repository_owner }}"
+
+      - name: Echo Ref
+        run: echo "The ref is ${{ github.ref }}"
+
+      - name: Echo
+        run: echo "Bump version to ${{ github.event.inputs.bump }}"
+
   publish:
     if: github.actor == github.repository_owner && github.triggering_actor == github.repository_owner
     runs-on: ubuntu-latest
