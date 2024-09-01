@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { red } from '@colors/colors';
+import colors from '@colors/colors';
 
 /**
  * Importing user defined packages
@@ -18,7 +18,7 @@ import { red } from '@colors/colors';
 /* istanbul ignore next */
 class InternalUtils {
   public exit(message: string): void {
-    console.error(red(message)); // eslint-disable-line no-console
+    console.error(colors.red(message)); // eslint-disable-line no-console
     process.exit(1);
   }
 }
