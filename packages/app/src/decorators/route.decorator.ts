@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { merge } from 'lodash';
+import merge from 'lodash/merge';
 
 /**
  * Importing user defined packages

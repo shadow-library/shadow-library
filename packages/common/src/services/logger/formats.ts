@@ -2,7 +2,7 @@
 /**
  * Importing npm packages
  */
-import { cyan, gray, yellow } from '@colors/colors/safe';
+import colors from '@colors/colors';
 import { Logform, format } from 'winston';
 
 /**
@@ -48,13 +48,13 @@ format.brief = function (opts: BriefFormatOptions = {}) {
     const level = info.level;
     const prevTime = timestamp;
     timestamp = Date.now();
-    const timeTaken = prevTime ? gray(` +${timestamp - prevTime}ms`) : '';
+    const timeTaken = prevTime ? colors.gray(` +${timestamp - prevTime}ms`) : '';
     const stack = info.stack ? '\n' + (Array.isArray(info.stack) ? info.stack.join('\n') : info.stack) : '';
 
-    if (level === 'http') return cyan(`${padLevel('HTTP')} [REST] ${info.method} ${info.url} - ${info.timeTaken}ms`);
+    if (level === 'http') return colors.cyan(`${padLevel('HTTP')} [REST] ${info.method} ${info.url} - ${info.timeTaken}ms`);
 
     const message = [padLevel(level)];
-    if (printLabel) message.push(yellow(`[${info.label || '-'}]`));
+    if (printLabel) message.push(colors.yellow(`[${info.label || '-'}]`));
     message.push(info.message);
     if (printTimestamp) message.push(timeTaken);
     if (printStack) message.push(stack);

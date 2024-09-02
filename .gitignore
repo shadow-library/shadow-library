@@ -8,6 +8,7 @@ node_modules/
 
 # build output
 dist
+CHANGELOG.md
 
 # misc
 .DS_Store
