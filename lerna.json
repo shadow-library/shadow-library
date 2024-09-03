@@ -2,7 +2,7 @@
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "packages": ["packages/*"],
   "npmClient": "pnpm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "allowBranch": ["release"],
   "commitHooks": false,
   "command": {
