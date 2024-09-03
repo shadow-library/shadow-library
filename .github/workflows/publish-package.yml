@@ -29,8 +29,10 @@ jobs:
 
       - name: Set Git user config
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b release
+          git push --set-upstream origin release
+          git config user.name "Leander Paul"
+          git config user.email "leanderpaul97@outlook.com"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -52,3 +54,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: PR to main
+        run: |
+          gh pr create -f
+          gh pr merge --auto -s
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
