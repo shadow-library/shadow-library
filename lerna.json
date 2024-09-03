@@ -3,7 +3,7 @@
   "packages": ["packages/*"],
   "npmClient": "pnpm",
   "version": "0.1.1",
-  "allowBranch": ["main"],
+  "allowBranch": ["release"],
   "commitHooks": false,
   "command": {
     "version": {
