@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { InternalError } from '@shadow-library/errors';
-import merge from 'lodash/merge';
+import merge from 'lodash/merge.js';
 import { Class } from 'type-fest';
 
 /**
