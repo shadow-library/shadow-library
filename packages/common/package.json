@@ -19,8 +19,11 @@
     "@aws-sdk/client-cloudwatch-logs": "^3.588.0",
     "@colors/colors": "^1.6.0",
     "@shadow-library/errors": "workspace:*",
-    "fast-safe-stringify": "^2.1.1",
+    "fast-redact": "^3.5.0",
     "winston": "^3.13.0",
     "winston-transport": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/fast-redact": "^3.0.4"
   }
 }

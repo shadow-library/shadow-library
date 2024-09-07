@@ -33,6 +33,7 @@ export interface ConfigRecords {
   /** Log configs */
   'log.level': LogLevel;
   'log.dir': string;
+  'log.buffer.size': number;
 
   /** AWS configs */
   'aws.region': string;
@@ -62,6 +63,7 @@ export class ConfigService<Configs extends ConfigRecords = ConfigRecords> {
 
     this.set('log.level', { allowedValues: logLevels, defaultValue: 'info' });
     this.set('log.dir', { defaultValue: 'logs' });
+    this.set('log.buffer.size', { defaultValue: '10000', validateType: 'number' });
 
     this.set('aws.region', { defaultValue: 'ap-south-1' });
     this.set('aws.cloudwatch.log-group', { defaultValue: defaultAppName });

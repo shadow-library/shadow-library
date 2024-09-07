@@ -1,6 +1,7 @@
 /**
  * Importing npm packages
  */
+import fastRedact from 'fast-redact';
 import { Logform, Logger as WinstonLogger, createLogger } from 'winston';
 import Transport from 'winston-transport';
 
@@ -32,22 +33,20 @@ const noop = new Transport({ log: () => {} });
 const logger = createLogger({ level: Config.get('log.level') });
 
 class LoggerStatic {
+  /** Returns the logger instance */
   private getInstance(): WinstonLogger {
     return logger;
   }
 
-  /** Mutates the input object to remove the sensitive fields that are present in it */
-  maskFields(data: Record<string, any>, fields: string[]): Record<string, any> {
-    for (const key in data) {
-      const value = data[key];
-      if (fields.includes(key)) data[key] = '****';
-      else if (typeof value === 'object') this.maskFields(value, fields);
-    }
-    return data;
+  /** Creates a redactor to remove sensitive fields. This mutates the original value. If no censor is given, the field is removed */
+  getRedactor(paths: string[], censor: string | ((value: any) => any) = 'xxxx'): fastRedact.redactFn {
+    return fastRedact({ paths, serialize: false, censor });
   }
 
   /** Adds a transport to the logger */
   addTransport(transport: Transport): this {
+    const index = logger.transports.findIndex(t => t === noop);
+    if (index >= 0) logger.remove(noop);
     logger.add(transport);
     return this;
   }
@@ -60,27 +59,29 @@ class LoggerStatic {
 
   /* istanbul ignore next */
   addDefaultTransports(format?: Logform.Format): this {
+    const env = Config.get('app.env');
     const baseFormats = [formats.errors({ stack: true })];
     if (format) baseFormats.unshift(format);
-    const jsonFormat = formats.combine(...baseFormats, formats.json());
-    const consoleFormat = formats.combine(...baseFormats, formats.colorize(), formats.brief());
 
-    if (Config.get('app.env') === 'development') {
-      const transport = new ConsoleTransport().addFormat(consoleFormat);
+    if (env === 'development') {
+      const format = formats.combine(...baseFormats, formats.colorize(), formats.brief());
+      const transport = new ConsoleTransport().addFormat(format);
       this.addTransport(transport);
     }
 
-    if (Config.get('app.env') === 'production') {
-      const transport = new CloudWatchTransport().addFormat(jsonFormat);
+    if (env === 'production') {
+      const format = formats.combine(...baseFormats);
+      const transport = new CloudWatchTransport().addFormat(format);
       this.addTransport(transport);
     }
 
-    const enableFileLog = Config.get('log.dir') !== 'false' && Config.get('app.env') !== 'test';
-    const isTestDebug = Config.get('app.env') === 'test' && !!process.env.TEST_DEBUG;
+    const enableFileLog = Config.get('log.dir') !== 'false' && env === 'development';
+    const isTestDebug = env === 'test' && !!process.env.TEST_DEBUG;
     if (enableFileLog || isTestDebug) {
       const dirname = Config.get('log.dir');
       const filename = Config.get('app.name');
-      const transport = new FileTransport({ dirname, filename }).addFormat(jsonFormat);
+      const format = formats.combine(...baseFormats, formats.json());
+      const transport = new FileTransport({ dirname, filename }).addFormat(format);
       this.addTransport(transport);
     }
 
