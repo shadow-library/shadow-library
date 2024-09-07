@@ -47,14 +47,13 @@ describe('ShadowServer', () => {
     const multiple = { method: HttpMethod.ALL, path: '/test-all' };
     router.register({ metadata: multiple, handler: mockHandler, paramtypes: [] });
 
-    class Middleware {
-      generate = () => mockMiddleware;
-    }
-    const middleware = { [MIDDLEWARE_WATERMARK]: true, target: Middleware } as const;
+    const middleware = { [MIDDLEWARE_WATERMARK]: true, target: Object } as const;
+    const unNeededMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object } as const;
     router.register({ metadata: middleware, handler: () => mockMiddleware, paramtypes: [] });
+    router.register({ metadata: unNeededMiddleware, handler: () => null, paramtypes: [] });
 
     expect(server['routes']).toHaveLength(2);
-    expect(server['middlewares']).toHaveLength(1);
+    expect(server['middlewares']).toHaveLength(2);
   });
 
   it('should start the server', async () => {

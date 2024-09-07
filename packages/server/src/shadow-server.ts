@@ -70,7 +70,7 @@ export class ShadowServer {
     const middlewares: RouteHandler[] = [];
     for (const middleware of this.middlewares) {
       const handler = await middleware.handler(route.metadata);
-      middlewares.push(handler as RouteHandler);
+      if (typeof handler === 'function') middlewares.push(handler as RouteHandler);
     }
 
     return async (request, response) => {
