@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { All, Delete, Get, Head, HttpMethod, HttpRoute, Options, Patch, Post, Put, Search } from '@shadow-library/server';
+import { All, Delete, Get, Head, HttpMethod, HttpRoute, Options, Patch, Post, Put } from '@shadow-library/server';
 
 import { Utils } from '../utils';
 
@@ -54,7 +54,7 @@ describe('HTTP Methods Decorators', () => {
     expect(route.path).toBe('/path');
   });
 
-  [All, Delete, Get, Head, Options, Patch, Post, Put, Search].forEach(Decorator => {
+  [All, Delete, Get, Head, Options, Patch, Post, Put].forEach(Decorator => {
     it(`should enhance the method with the request metadata for ${Decorator.name}`, () => {
       const path = '/data';
       class Controller {

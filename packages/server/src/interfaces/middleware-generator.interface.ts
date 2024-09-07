@@ -5,8 +5,8 @@
 /**
  * Importing user defined packages
  */
+import { Request, Response } from './route-handler.interface';
 import { RouteMetdata } from './server-metadata.interface';
-import { Request, Response } from '../classes';
 
 /**
  * Defining types

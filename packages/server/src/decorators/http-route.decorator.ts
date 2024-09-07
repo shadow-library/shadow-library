@@ -19,7 +19,6 @@ export enum HttpMethod {
   PATCH = 'PATCH',
   OPTIONS = 'OPTIONS',
   HEAD = 'HEAD',
-  SEARCH = 'SEARCH',
   ALL = 'ALL',
 }
 
@@ -51,7 +50,5 @@ export const Patch = (path?: string): MethodDecorator => HttpRoute({ method: Htt
 export const Options = (path?: string): MethodDecorator => HttpRoute({ method: HttpMethod.OPTIONS, path });
 
 export const Head = (path?: string): MethodDecorator => HttpRoute({ method: HttpMethod.HEAD, path });
-
-export const Search = (path?: string): MethodDecorator => HttpRoute({ method: HttpMethod.SEARCH, path });
 
 export const All = (path?: string): MethodDecorator => HttpRoute({ method: HttpMethod.ALL, path });
