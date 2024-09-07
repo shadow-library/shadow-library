@@ -19,18 +19,21 @@ const maskedValue = '****';
 
 describe('Logger Service', () => {
   it('should mask sensitive data', () => {
-    const inner = { password: 'secret', api: {} };
-    const array = [{ password: 'secret' }];
-    const data = { username: 'username', password: 'password', inner, array };
-    const value = Logger.maskFields(data, ['password', 'api']);
+    const redactor = Logger.getRedactor(['password']);
+    const data = { username: 'username', password: 'password' };
+    const value = redactor(data);
 
     expect(value).toBe(data);
-    expect(data).toStrictEqual({
-      username: 'username',
-      password: maskedValue,
-      inner: { password: maskedValue, api: maskedValue },
-      array: [{ password: maskedValue }],
-    });
+    expect(data).toStrictEqual({ username: 'username', password: 'xxxx' });
+  });
+
+  it('should mask sensitive data with provided censor', () => {
+    const redactor = Logger.getRedactor(['password'], maskedValue);
+    const data = { username: 'username', password: 'password' };
+    const value = redactor(data);
+
+    expect(value).toBe(data);
+    expect(data).toStrictEqual({ username: 'username', password: maskedValue });
   });
 
   it('should return the logger', () => {
@@ -41,16 +44,14 @@ describe('Logger Service', () => {
   });
 
   it('should add a dummy transport if no transport is provided', () => {
-    /** @ts-expect-error private property access */
-    const logger = Logger.getInstance();
+    const logger = Logger['getInstance']();
     expect(logger.transports).toHaveLength(1);
   });
 
-  it('should add a transport', () => {
+  it('should add a transport and remove dummy transports', () => {
     const transport = new ConsoleTransport();
-    /** @ts-expect-error private property access */
-    const instance = Logger.addTransport(transport).getInstance();
+    const instance = Logger.addTransport(transport)['getInstance']();
 
-    expect(instance.transports).toHaveLength(2);
+    expect(instance.transports).toHaveLength(1);
   });
 });

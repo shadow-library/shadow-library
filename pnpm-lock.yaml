@@ -102,15 +102,19 @@ importers:
       '@shadow-library/errors':
         specifier: workspace:*
         version: link:../errors
-      fast-safe-stringify:
-        specifier: ^2.1.1
-        version: 2.1.1
+      fast-redact:
+        specifier: ^3.5.0
+        version: 3.5.0
       winston:
         specifier: ^3.13.0
         version: 3.13.0
       winston-transport:
         specifier: ^4.7.0
         version: 4.7.0
+    devDependencies:
+      '@types/fast-redact':
+        specifier: ^3.0.4
+        version: 3.0.4
 
   packages/errors: {}
 
@@ -1264,6 +1268,9 @@ packages:
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
+  '@types/fast-redact@3.0.4':
+    resolution: {integrity: sha512-tgGJaXucrCH4Yx2l/AI6e/JQksZhKGIQsVwBMTh+nxUhQDv5tXScTs5DHTw+qSKDXnHL2dTAh1e2rd5pcFQyNQ==}
+
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
 
@@ -2279,9 +2286,6 @@ packages:
   fast-redact@3.5.0:
     resolution: {integrity: sha512-dwsoQlS7h9hMeYUq1W++23NDcBLV4KqONnITDV9DjfS3q1SgDGVrBdvvTLUotWtPSD7asWDV9/CmsZPy8Hf70A==}
     engines: {node: '>=6'}
-
-  fast-safe-stringify@2.1.1:
-    resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
   fast-uri@2.4.0:
     resolution: {integrity: sha512-ypuAmmMKInk5q7XcepxlnUWDLWv4GFtaJqAzWKqn62IpQ3pejtr5dTVbt3vwqVaMKmkNR55sTT+CqUKIaT21BA==}
@@ -6408,6 +6412,8 @@ snapshots:
 
   '@types/cookie@0.6.0': {}
 
+  '@types/fast-redact@3.0.4': {}
+
   '@types/graceful-fs@4.1.9':
     dependencies:
       '@types/node': 20.13.0
@@ -7617,8 +7623,6 @@ snapshots:
       fast-decode-uri-component: 1.0.1
 
   fast-redact@3.5.0: {}
-
-  fast-safe-stringify@2.1.1: {}
 
   fast-uri@2.4.0: {}
 

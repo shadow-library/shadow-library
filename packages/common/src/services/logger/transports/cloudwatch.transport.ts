@@ -2,7 +2,6 @@
  * Importing npm packages
  */
 import { CloudWatchLogs } from '@aws-sdk/client-cloudwatch-logs';
-import stringify from 'fast-safe-stringify';
 import { Logform, format } from 'winston';
 import Transport, { type TransportStreamOptions } from 'winston-transport';
 
@@ -30,6 +29,7 @@ export class CloudWatchTransport extends Transport {
   private readonly logGroupName: string;
   private readonly logStreamName: string;
   private readonly uploadRate: number;
+  private readonly bufferSize: number;
 
   private timeout: NodeJS.Timeout | null = null;
   private logEvents: LogEvent[] = [];
@@ -41,11 +41,13 @@ export class CloudWatchTransport extends Transport {
     this.logGroupName = Config.get('aws.cloudwatch.log-group');
     this.logStreamName = Config.get('aws.cloudwatch.log-stream');
     this.uploadRate = Config.get('aws.cloudwatch.upload-rate');
+    this.bufferSize = Config.get('log.buffer.size');
   }
 
   private add(log: any): void {
-    this.logEvents.push({ timestamp: Date.now(), message: stringify(log) });
+    this.logEvents.push({ timestamp: Date.now(), ...log });
     if (!this.timeout) this.timeout = setTimeout(() => this.flush(), this.uploadRate);
+    if (this.logEvents.length >= this.bufferSize) this.flush();
   }
 
   private async checkStream(): Promise<void> {
