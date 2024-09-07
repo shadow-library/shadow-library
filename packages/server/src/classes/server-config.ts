@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { Config, HTTPVersion } from 'find-my-way';
+import { FastifyHttpOptions } from 'fastify';
 
 /**
  * Importing user defined packages
@@ -12,12 +12,7 @@ import { ErrorHandler } from '../interfaces';
  * Defining types
  */
 
-type RouterConfig = Config<HTTPVersion.V2> | Config<HTTPVersion.V1>;
-
-interface HttpsCertificate {
-  key: string;
-  cert: string;
-}
+type ServerOptions = FastifyHttpOptions<any, any>;
 
 /**
  * Declaring the constants
@@ -26,20 +21,18 @@ interface HttpsCertificate {
 export class ServerConfig {
   private port = 8080;
   private hostname = '127.0.0.1';
-  private httpsCertificate?: HttpsCertificate;
 
-  private routerConfig = ServerConfig.getDefaultRouterConfig();
+  private options: ServerOptions = ServerConfig.getDefaultOptions();
   private errorHandler = ServerConfig.getDefaultErrorHandler();
 
-  private static getDefaultRouterConfig(): RouterConfig {
-    const config: RouterConfig = {};
+  private static getDefaultOptions(): ServerOptions {
+    const config: ServerOptions = {};
     config.ignoreTrailingSlash = true;
-    config.maxParamLength = 100;
-    return config as RouterConfig;
+    return config;
   }
 
   private static getDefaultErrorHandler(): ErrorHandler {
-    return { handle: (err, _req, res) => res.status(500).json(`{"message":"${(err as any)?.message ?? 'Unknown Error'}"}`) };
+    return (err, _req, res) => res.status(err.message === 'Not Found' ? 404 : 500).send(`{"message":"${(err as any)?.message ?? 'Unknown Error'}"}`);
   }
 
   getPort(): number {
@@ -60,21 +53,12 @@ export class ServerConfig {
     return this;
   }
 
-  getHttpsCertificate(): HttpsCertificate | undefined {
-    return this.httpsCertificate;
+  getServerConfig(): ServerOptions {
+    return this.options;
   }
 
-  setHttpsCertificate(httpsCertificate: HttpsCertificate): this {
-    this.httpsCertificate = httpsCertificate;
-    return this;
-  }
-
-  getRouterConfig(): RouterConfig {
-    return this.routerConfig;
-  }
-
-  setRouterConfig<T extends keyof RouterConfig>(key: T, value: Required<RouterConfig>[T]): this {
-    this.routerConfig[key] = value;
+  setServerConfig<T extends keyof ServerOptions>(key: T, value: Required<ServerOptions>[T]): this {
+    this.options[key] = value;
     return this;
   }
 

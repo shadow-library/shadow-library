@@ -16,10 +16,10 @@ import { CONTROLLER_WATERMARK, PARAMTYPES_METADATA } from '../constants';
  */
 type Func = (...args: any[]) => any | Promise<any>;
 
-export interface RouteController<T extends Record<string, any>> {
+export interface RouteController<T extends Record<string | symbol, any>> {
   metadata: T;
   handler: Func;
-  paramtypes: { name: string }[];
+  paramtypes: (string | Class<unknown>)[];
   returnType?: Class<unknown>;
 }
 
@@ -55,7 +55,7 @@ export class ControllerWrapper {
     const controllerMetadata = Extractor.getRouteMetadata(this.type);
     for (const method of methods) {
       const routeMetadata = Extractor.getRouteMetadata(method);
-      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as Class<unknown>[];
+      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as string[];
       const returnType = Reflect.getMetadata('design:returntype', this.instance, method.name);
       const metadata = merge({}, controllerMetadata, routeMetadata) as T;
       routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });

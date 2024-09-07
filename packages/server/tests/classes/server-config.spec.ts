@@ -18,7 +18,7 @@ import { ServerConfig } from '@shadow-library/server';
 
 describe('ServerConfig', () => {
   describe('ServerConfig', () => {
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
     let serverConfig: ServerConfig;
 
     it('should create a new instance', () => {
@@ -29,23 +29,23 @@ describe('ServerConfig', () => {
     it('should have default values', () => {
       expect(serverConfig.getPort()).toBe(8080);
       expect(serverConfig.getHostname()).toBe('127.0.0.1');
-      expect(serverConfig.getRouterConfig()).toStrictEqual({ ignoreTrailingSlash: true, maxParamLength: 100 });
+      expect(serverConfig.getServerConfig()).toStrictEqual({ ignoreTrailingSlash: true });
     });
 
     it('should have default error handler handle error', () => {
       /** @ts-expect-error test args */
-      serverConfig.getErrorHandler().handle(new Error('Test Error'), {}, res);
+      serverConfig.getErrorHandler()(new Error('Test Error'), {}, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith('{"message":"Test Error"}');
+      expect(res.send).toHaveBeenCalledWith('{"message":"Test Error"}');
     });
 
     it('should have default error handler handle unknown', () => {
       /** @ts-expect-error test args */
-      serverConfig.getErrorHandler().handle({}, {}, res);
+      serverConfig.getErrorHandler()({}, {}, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith('{"message":"Unknown Error"}');
+      expect(res.send).toHaveBeenCalledWith('{"message":"Unknown Error"}');
     });
 
     it('should set and get the port', () => {
@@ -61,20 +61,14 @@ describe('ServerConfig', () => {
     });
 
     it('should set and get the router config', () => {
-      serverConfig.setRouterConfig('ignoreDuplicateSlashes', true);
-      expect(serverConfig.getRouterConfig()).toHaveProperty('ignoreTrailingSlash', true);
+      serverConfig.setServerConfig('bodyLimit', 100);
+      expect(serverConfig.getServerConfig()).toHaveProperty('bodyLimit', 100);
     });
 
     it('should set and get the error handler', () => {
-      const errorHandler = jest.fn() as any;
+      const errorHandler = jest.fn();
       serverConfig.setErrorHandler(errorHandler);
       expect(serverConfig.getErrorHandler()).toBe(errorHandler);
-    });
-
-    it('should set and get the https certificate', () => {
-      const certificate = { key: 'private.key', cert: 'certificate.crt' };
-      serverConfig.setHttpsCertificate(certificate);
-      expect(serverConfig.getHttpsCertificate()).toBe(certificate);
     });
   });
 });

@@ -1,13 +1,11 @@
 /**
  * Importing npm packages
  */
-import { IncomingMessage, ServerResponse } from 'http';
-import { Http2ServerRequest, Http2ServerResponse } from 'http2';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 /**
  * Importing user defined packages
  */
-import { Request, Response } from '../classes';
 
 /**
  * Defining types
@@ -17,10 +15,10 @@ import { Request, Response } from '../classes';
  * Declaring the constants
  */
 
-export type RawRequest = IncomingMessage | Http2ServerRequest;
+export type Request = FastifyRequest;
 
-export type RawResponse = ServerResponse | Http2ServerResponse;
+export type Response = FastifyReply;
 
 export type RouteHandler = (req: Request, res: Response) => unknown | Promise<unknown>;
 
-export type RawRouteHandler = (req: RawRequest, res: RawResponse) => unknown | Promise<unknown>;
+export type ErrorHandler = (err: Error, req: Request, res: Response) => unknown | Promise<unknown>;

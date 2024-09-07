@@ -30,7 +30,7 @@ export function HttpInput<T extends ZodRawShape>(type: RouteInputType, schema?: 
   return (target, propertyKey, index) => {
     assert(propertyKey, 'Cannot apply decorator to a constructor parameter');
     const paramTypes = Reflect.getMetadata(PARAMTYPES_METADATA, target, propertyKey);
-    paramTypes[index] = { name: type };
+    paramTypes[index] = type;
 
     if (schema) {
       const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey);

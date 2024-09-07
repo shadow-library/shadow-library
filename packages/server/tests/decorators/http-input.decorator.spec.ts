@@ -42,17 +42,17 @@ describe('HTTP Input Decorators', () => {
     const paramtypes = Utils.getParamMetadata(Controller, 'single');
 
     expect(metadata).toStrictEqual({ schemas: { body: schema } });
-    expect(paramtypes).toStrictEqual([{ name: 'body' }]);
+    expect(paramtypes).toStrictEqual(['body']);
   });
 
   it(`should enhance the method with the Body input metadata`, () => {
     const paramtypes = Utils.getParamMetadata(Controller, 'body');
-    expect(paramtypes).toStrictEqual([String, { name: 'body' }]);
+    expect(paramtypes).toStrictEqual([String, 'body']);
   });
 
   it(`should enhance the method with the Params input metadata`, () => {
     const paramtypes = Utils.getParamMetadata(Controller, 'params');
-    expect(paramtypes).toStrictEqual([{ name: 'params' }]);
+    expect(paramtypes).toStrictEqual(['params']);
   });
 
   it(`should enhance the method with the Query input metadata`, () => {
@@ -60,7 +60,7 @@ describe('HTTP Input Decorators', () => {
     const paramtypes = Utils.getParamMetadata(Controller, 'query');
 
     expect(metadata).toStrictEqual({ schemas: { query: schema } });
-    expect(paramtypes).toStrictEqual([{ name: 'query' }]);
+    expect(paramtypes).toStrictEqual(['query']);
   });
 
   it(`should enhance the method with the multiple request input metadata`, () => {
@@ -68,6 +68,6 @@ describe('HTTP Input Decorators', () => {
     const paramtypes = Utils.getParamMetadata(Controller, 'multiple');
 
     expect(metadata).toStrictEqual({ schemas: { params: schema } });
-    expect(paramtypes).toStrictEqual([{ name: 'body' }, String, { name: 'params' }]);
+    expect(paramtypes).toStrictEqual(['body', String, 'params']);
   });
 });
