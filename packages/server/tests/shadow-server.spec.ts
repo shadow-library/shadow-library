@@ -41,7 +41,7 @@ describe('ShadowServer', () => {
     const router = server.getRouter();
     expect(router).toBeDefined();
 
-    const single = { method: HttpMethod.POST, path: '/test-single' };
+    const single = { method: HttpMethod.POST, basePath: '/api', path: '/test-single' };
     router.register({ metadata: single, handler: mockHandler, paramtypes: [Object, 'query', String, 'body'] });
 
     const multiple = { method: HttpMethod.ALL, path: '/test-all' };
@@ -72,7 +72,7 @@ describe('ShadowServer', () => {
   });
 
   it('should be able to access single method route', async () => {
-    const response = await server.mockRequest().post('/test-single?id=123').body(body);
+    const response = await server.mockRequest().post('/api/test-single?id=123').body(body);
     expect(response.statusCode).toBe(200);
     expect(response.json()).toStrictEqual(data);
 

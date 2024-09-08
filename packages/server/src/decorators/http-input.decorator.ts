@@ -18,6 +18,8 @@ export enum RouteInputType {
   BODY = 'body',
   PARAMS = 'params',
   QUERY = 'query',
+  REQUEST = 'request',
+  RESPONSE = 'response',
 }
 
 export type RouteInputSchemas = Partial<Record<RouteInputType, ZodObject<ZodRawShape>>>;
@@ -45,3 +47,7 @@ export const Body = <T extends ZodRawShape>(schema?: ZodObject<T>): ParameterDec
 export const Params = <T extends ZodRawShape>(schema?: ZodObject<T>): ParameterDecorator => HttpInput(RouteInputType.PARAMS, schema);
 
 export const Query = <T extends ZodRawShape>(schema?: ZodObject<T>): ParameterDecorator => HttpInput(RouteInputType.QUERY, schema);
+
+export const Req = (): ParameterDecorator => HttpInput(RouteInputType.REQUEST);
+
+export const Res = (): ParameterDecorator => HttpInput(RouteInputType.RESPONSE);

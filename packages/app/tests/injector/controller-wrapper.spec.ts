@@ -19,7 +19,7 @@ import { ControllerWrapper } from '@shadow-library/app/injector';
 
 describe('ControllerWrapper', () => {
   const controllerMetadata = { isPrivate: true };
-  const routeMetadata = { method: 'POST', path: '/test' };
+  const routeMetadata = { op: 'POST', path: '/test' };
   const mock = jest.fn();
   @Controller(controllerMetadata)
   class TestController {
@@ -30,7 +30,7 @@ describe('ControllerWrapper', () => {
       return this.mock(arg1, arg2, arg3) as any;
     }
 
-    @Route({ method: 'GET', path: '/test' })
+    @Route({ op: 'GET', path: '/test' })
     noParams(): void {}
   }
   const controller = new ControllerWrapper(TestController, []);

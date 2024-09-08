@@ -7,6 +7,7 @@ import merge from 'lodash/merge.js';
  * Importing user defined packages
  */
 import { ROUTE_METADATA, ROUTE_WATERMARK } from '../constants';
+import { RouteMetdata } from '../interfaces';
 
 /**
  * Defining types
@@ -16,7 +17,7 @@ import { ROUTE_METADATA, ROUTE_WATERMARK } from '../constants';
  * Declaring the constants
  */
 
-export function Route(metadata?: Record<string, any>): MethodDecorator {
+export function Route(metadata?: RouteMetdata): MethodDecorator {
   return (_target, _propertyKey, descriptor) => {
     Reflect.defineMetadata(ROUTE_WATERMARK, true, descriptor.value as object);
 

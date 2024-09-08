@@ -10,6 +10,7 @@ import { Class } from 'type-fest';
  */
 import { Extractor, Validator } from './helpers';
 import { CONTROLLER_WATERMARK, PARAMTYPES_METADATA } from '../constants';
+import { RouteMetdata } from '../interfaces';
 
 /**
  * Defining types
@@ -38,7 +39,7 @@ export class ControllerWrapper {
     this.instance = new Controller(...dependencies);
   }
 
-  getRoutes<T extends object>(): RouteController<T>[] {
+  getRoutes<T extends RouteMetdata>(): RouteController<T>[] {
     /* Extracting the route methods present in the instance */
     const methods = new Set<Func>();
     let prototype = this.instance;

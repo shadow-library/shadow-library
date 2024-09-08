@@ -18,7 +18,7 @@ import { ROUTE_METADATA, ROUTE_WATERMARK } from '@shadow-library/app/constants';
  */
 
 describe('RouteDecorator', () => {
-  const routeMetadataOne = { method: 'GET', auth: { jwt: true } };
+  const routeMetadataOne = { op: 'GET', auth: { jwt: true } };
   const routeMetadataTwo = { path: '/users', auth: { oauth: true } };
   class CatController {
     @Route(routeMetadataOne)
@@ -43,6 +43,6 @@ describe('RouteDecorator', () => {
 
   it('should append route metadata', () => {
     const metadata = Reflect.getMetadata(ROUTE_METADATA, controller.methodTwo);
-    expect(metadata).toStrictEqual({ method: 'GET', path: '/users', auth: { jwt: true, oauth: true } });
+    expect(metadata).toStrictEqual({ op: 'GET', path: '/users', auth: { jwt: true, oauth: true } });
   });
 });

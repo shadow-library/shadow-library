@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { Body, HttpInput, Params, Query, RouteInputType } from '@shadow-library/server';
+import { Body, HttpInput, Params, Query, Req, Res, RouteInputType } from '@shadow-library/server';
 
 import { Utils } from '../utils';
 
@@ -35,6 +35,12 @@ describe('HTTP Input Decorators', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static query(@Query(schema) _params: any) {}
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static req(@Req() _req: any) {}
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static res(@Res() _res: any) {}
   }
 
   it(`should enhance the method with the request input metadata`, () => {
@@ -61,6 +67,16 @@ describe('HTTP Input Decorators', () => {
 
     expect(metadata).toStrictEqual({ schemas: { query: schema } });
     expect(paramtypes).toStrictEqual(['query']);
+  });
+
+  it(`should enhance the method with the request input metadata`, () => {
+    const paramtypes = Utils.getParamMetadata(Controller, 'req');
+    expect(paramtypes).toStrictEqual(['request']);
+  });
+
+  it(`should enhance the method with the response input metadata`, () => {
+    const paramtypes = Utils.getParamMetadata(Controller, 'res');
+    expect(paramtypes).toStrictEqual(['response']);
   });
 
   it(`should enhance the method with the multiple request input metadata`, () => {

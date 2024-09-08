@@ -1,24 +1,26 @@
 /**
  * Importing npm packages
  */
+import { RouteMetdata } from '@shadow-library/app';
 
 /**
  * Importing user defined packages
  */
-import { HttpMethod, MiddlewareMetadata, RouteInputSchemas } from '../decorators';
+import { HttpMethod, RouteInputSchemas } from '../decorators';
 
 /**
  * Defining types
  */
 
-/**
- * Declaring the constants
- */
+declare module '@shadow-library/app' {
+  export interface RouteMetdata {
+    basePath?: string;
+    method?: HttpMethod;
+    path?: string;
+    schemas?: RouteInputSchemas;
 
-export interface RouteMetdata {
-  method: HttpMethod;
-  path: string;
-  schemas?: RouteInputSchemas;
+    bodyLimit?: number;
+  }
 }
 
-export type ServerMetadata = RouteMetdata | MiddlewareMetadata;
+export type ServerMetadata = RouteMetdata;
