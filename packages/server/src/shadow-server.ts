@@ -1,7 +1,9 @@
 /**
  * Importing npm packages
  */
-import { Router as AppRouter, RouteController } from '@shadow-library/app';
+import assert from 'assert';
+
+import { Router as AppRouter, RouteController, RouteMetdata } from '@shadow-library/app';
 import { FastifyInstance, HTTPMethods, fastify } from 'fastify';
 import { Chain as MockRequestChain, InjectOptions as MockRequestOptions, Response as MockResponse } from 'light-my-request';
 import { JsonObject } from 'type-fest';
@@ -12,7 +14,7 @@ import { JsonObject } from 'type-fest';
 import { ServerConfig } from './classes';
 import { MIDDLEWARE_WATERMARK } from './constants';
 import { HttpMethod, MiddlewareMetadata } from './decorators';
-import { type Request, type Response, RouteHandler, RouteMetdata, ServerMetadata } from './interfaces';
+import { type Request, type Response, RouteHandler, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
 
 /**
@@ -100,9 +102,14 @@ export class ShadowServer {
     this.inited = true;
     for (const route of this.routes) {
       const metadata = route.metadata;
+      assert(metadata.path, 'Route path is required');
+      assert(metadata.method, 'Route method is required');
+
+      const url = metadata.basePath ? metadata.basePath + metadata.path : metadata.path;
       const method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
       const handler = await this.generateRouteHandler(route);
-      this.server.route({ method, url: metadata.path, handler });
+
+      this.server.route({ method, url, handler, bodyLimit: metadata.bodyLimit });
     }
   }
 

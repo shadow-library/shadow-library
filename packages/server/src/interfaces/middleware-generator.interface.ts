@@ -1,12 +1,12 @@
 /**
  * Importing npm packages
  */
+import { RouteMetdata } from '@shadow-library/app';
 
 /**
  * Importing user defined packages
  */
 import { Request, Response } from './route-handler.interface';
-import { RouteMetdata } from './server-metadata.interface';
 
 /**
  * Defining types

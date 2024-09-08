@@ -6,6 +6,7 @@
  * Importing user defined packages
  */
 import { CONTROLLER_WATERMARK, ROUTE_METADATA } from '../constants';
+import { RouteMetdata } from '../interfaces';
 
 /**
  * Defining types
@@ -15,7 +16,7 @@ import { CONTROLLER_WATERMARK, ROUTE_METADATA } from '../constants';
  * Declaring the constants
  */
 
-export function Controller(metadata?: object): ClassDecorator {
+export function Controller(metadata?: RouteMetdata): ClassDecorator {
   return target => {
     Reflect.defineMetadata(CONTROLLER_WATERMARK, true, target);
     Reflect.defineMetadata(ROUTE_METADATA, metadata, target);
