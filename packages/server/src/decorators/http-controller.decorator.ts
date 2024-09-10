@@ -15,6 +15,6 @@ import { Controller } from '@shadow-library/app';
  * Declaring the constants
  */
 
-export function HTTPController(path: string): ClassDecorator {
+export function HttpController(path: string): ClassDecorator {
   return target => Controller({ basePath: path })(target);
 }

@@ -68,11 +68,13 @@ export class ShadowServer {
   }
 
   private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<RouteHandler> {
+    const metadata = route.metadata;
+    const statusCode = metadata.status ?? metadata.method === HttpMethod.POST ? 201 : 200;
     const argsOrder = route.paramtypes.map(p => (typeof p === 'string' ? p : null)) as (keyof RequestContext | null)[];
     const middlewares: RouteHandler[] = [];
     for (const middleware of this.middlewares) {
-      const handler = await middleware.handler(route.metadata);
-      if (typeof handler === 'function') middlewares.push(handler as RouteHandler);
+      const handler = await middleware.handler(metadata);
+      if (typeof handler === 'function') middlewares.push(handler);
     }
 
     return async (request, response) => {
@@ -87,10 +89,18 @@ export class ShadowServer {
           if (response.sent) return;
         }
 
+        /** Setting the status code and headers */
+        response.status(statusCode);
+        for (const [key, value] of Object.entries(metadata.headers ?? {})) {
+          response.header(key, typeof value === 'function' ? value() : value);
+        }
+
         /** Handling the actual route and serializing the output */
         const args = argsOrder.map(arg => arg && context[arg]);
-        const resBody = await route.handler(...args);
-        if (!response.sent && resBody) response.send(resBody);
+        const data = await route.handler(...args);
+        if (metadata.redirect) response.status(301).redirect(metadata.redirect);
+        else if (metadata.render) (response as any).viewAsync(metadata.render, data);
+        else if (!response.sent && data) response.send(data);
       } catch (err: unknown) {
         const handler = this.config.getErrorHandler();
         await handler(err as Error, request, response);
