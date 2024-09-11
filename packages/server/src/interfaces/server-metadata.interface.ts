@@ -20,6 +20,11 @@ declare module '@shadow-library/app' {
     schemas?: RouteInputSchemas;
 
     bodyLimit?: number;
+
+    status?: number;
+    headers?: Record<string, string | (() => string)>;
+    redirect?: string;
+    render?: string;
   }
 }
 

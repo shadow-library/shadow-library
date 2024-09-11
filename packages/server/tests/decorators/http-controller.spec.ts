@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { HTTPController } from '@shadow-library/server';
+import { HttpController } from '@shadow-library/server';
 
 import { Utils } from '../utils';
 
@@ -18,9 +18,9 @@ import { Utils } from '../utils';
  * Declaring the constants
  */
 
-describe('@HTTPController', () => {
+describe('@HttpController', () => {
   it(`should enhance the class with the base path metadata`, () => {
-    @HTTPController('/test')
+    @HttpController('/test')
     class TestController {}
     const metadata = Utils.getRouteMetadata(TestController);
     expect(metadata).toStrictEqual({ basePath: '/test' });
