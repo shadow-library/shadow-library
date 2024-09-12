@@ -14,7 +14,7 @@ import { JsonObject } from 'type-fest';
 import { ServerConfig } from './classes';
 import { MIDDLEWARE_WATERMARK } from './constants';
 import { HttpMethod, MiddlewareMetadata } from './decorators';
-import { type Request, type Response, RouteHandler, ServerMetadata } from './interfaces';
+import { type HttpRequest, type HttpResponse, RouteHandler, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
 
 /**
@@ -22,8 +22,8 @@ import { ServerError, ServerErrorCode } from './server.error';
  */
 
 export interface RequestContext {
-  request: Request;
-  response: Response;
+  request: HttpRequest;
+  response: HttpResponse;
   params: Record<string, string>;
   query: Record<string, string>;
   body: JsonObject;
