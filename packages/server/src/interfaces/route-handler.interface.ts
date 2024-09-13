@@ -15,10 +15,10 @@ import { FastifyReply, FastifyRequest } from 'fastify';
  * Declaring the constants
  */
 
-export type Request = FastifyRequest;
+export type HttpRequest = FastifyRequest;
 
-export type Response = FastifyReply;
+export type HttpResponse = FastifyReply;
 
-export type RouteHandler = (req: Request, res: Response) => unknown | Promise<unknown>;
+export type RouteHandler = (req: HttpRequest, res: HttpResponse) => unknown | Promise<unknown>;
 
-export type ErrorHandler = (err: Error, req: Request, res: Response) => unknown | Promise<unknown>;
+export type ErrorHandler = (err: Error, req: HttpRequest, res: HttpResponse) => unknown | Promise<unknown>;
