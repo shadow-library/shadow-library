@@ -22,8 +22,5 @@
     "fast-redact": "^3.5.0",
     "winston": "^3.13.0",
     "winston-transport": "^4.7.0"
-  },
-  "devDependencies": {
-    "@types/fast-redact": "^3.0.4"
   }
 }
