@@ -2,12 +2,11 @@
  * Importing npm packages
  */
 import { describe, expect, it, jest } from '@jest/globals';
-import { InternalError } from '@shadow-library/errors';
 
 /**
  * Importing user defined packages
  */
-import { LRUCache } from '@shadow-library/common';
+import { InternalError, LRUCache } from '@shadow-library/common';
 
 /**
  * Defining types

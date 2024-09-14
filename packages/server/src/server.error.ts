@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { AppError, ErrorCode, ErrorType } from '@shadow-library/errors';
+import { AppError, ErrorCode, ErrorType } from '@shadow-library/common';
 
 /**
  * Importing user defined packages

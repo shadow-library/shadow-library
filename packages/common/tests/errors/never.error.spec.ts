@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { NeverError } from '@shadow-library/errors';
+import { NeverError } from '@shadow-library/common';
 
 /**
  * Defining types

@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { ValidationError } from '@shadow-library/errors';
+import { ValidationError } from '@shadow-library/common';
 
 /**
  * Defining types

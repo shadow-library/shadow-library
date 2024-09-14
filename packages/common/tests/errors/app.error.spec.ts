@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { AppError, ErrorCode, ErrorType } from '@shadow-library/errors';
+import { AppError, ErrorCode, ErrorType } from '@shadow-library/common';
 
 /**
  * Defining types
