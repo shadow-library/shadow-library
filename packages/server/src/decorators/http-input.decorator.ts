@@ -22,7 +22,7 @@ export enum RouteInputType {
   RESPONSE = 'response',
 }
 
-export type RouteInputSchemas = Partial<Record<RouteInputType, TObject>>;
+export type RouteInputSchemas = Partial<Record<'body' | 'params' | 'query', TObject>>;
 
 /**
  * Declaring the constants

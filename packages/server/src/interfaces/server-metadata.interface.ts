@@ -19,6 +19,7 @@ declare module '@shadow-library/app' {
     path?: string;
     schemas?: RouteInputSchemas;
 
+    rawBody?: boolean;
     bodyLimit?: number;
 
     status?: number;
