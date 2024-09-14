@@ -1,6 +1,7 @@
 /**
  * Importing npm packages
  */
+import { TObject } from '@sinclair/typebox';
 import { FastifyHttpOptions } from 'fastify';
 
 /**
@@ -24,6 +25,7 @@ export class ServerConfig {
 
   private options: ServerOptions = ServerConfig.getDefaultOptions();
   private errorHandler = ServerConfig.getDefaultErrorHandler();
+  private responseSchemas: Record<number | string, TObject> = {};
 
   private static getDefaultOptions(): ServerOptions {
     const config: ServerOptions = {};
@@ -69,5 +71,16 @@ export class ServerConfig {
   setErrorHandler(errorHandler: ErrorHandler): this {
     this.errorHandler = errorHandler;
     return this;
+  }
+
+  addGlobalResponseSchema(statusCode: number | string, schema: TObject): this {
+    this.responseSchemas[statusCode] = schema;
+    return this;
+  }
+
+  getGlobalResponseSchema(): Record<number | string, TObject>;
+  getGlobalResponseSchema(statusCode: number | string): TObject | undefined;
+  getGlobalResponseSchema(statusCode?: number | string): Record<number | string, TObject> | TObject | undefined {
+    return statusCode ? this.responseSchemas[statusCode] : this.responseSchemas;
   }
 }

@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import { Router as AppRouter, RouteController, RouteMetdata } from '@shadow-library/app';
-import { FastifyInstance, HTTPMethods, fastify } from 'fastify';
+import { FastifyInstance, HTTPMethods, RouteOptions, fastify } from 'fastify';
 import { Chain as MockRequestChain, InjectOptions as MockRequestOptions, Response as MockResponse } from 'light-my-request';
 import { JsonObject } from 'type-fest';
 
@@ -20,6 +20,15 @@ import { ServerError, ServerErrorCode } from './server.error';
 /**
  * Defining types
  */
+declare module 'fastify' {
+  interface FastifyRequest {
+    rawBody?: Buffer;
+  }
+
+  interface FastifyContextConfig {
+    metadata: ServerMetadata;
+  }
+}
 
 export interface RequestContext {
   request: HttpRequest;
@@ -35,7 +44,7 @@ export interface RequestContext {
 const httpMethods = Object.values(HttpMethod).filter(m => m !== HttpMethod.ALL) as HTTPMethods[];
 
 export class ShadowServer {
-  private readonly server: FastifyInstance;
+  private readonly instance: FastifyInstance;
   private readonly config: ServerConfig;
 
   private readonly routes: RouteController<RouteMetdata>[] = [];
@@ -50,9 +59,9 @@ export class ShadowServer {
     const notFoundHandler = this.getDefaultRouteHandler();
     const errorHandler = config.getErrorHandler();
 
-    this.server = fastify(configs);
-    this.server.setNotFoundHandler(notFoundHandler);
-    this.server.setErrorHandler(errorHandler);
+    this.instance = fastify(configs);
+    this.instance.setNotFoundHandler(notFoundHandler);
+    this.instance.setErrorHandler(errorHandler);
   }
 
   private getDefaultRouteHandler(): RouteHandler {
@@ -65,6 +74,16 @@ export class ShadowServer {
     const isMiddleware = (route.metadata as any)[MIDDLEWARE_WATERMARK];
     if (isMiddleware) this.middlewares.push(route as RouteController<MiddlewareMetadata>);
     else this.routes.push(route as RouteController<RouteMetdata>);
+  }
+
+  private registerRawBody(): void {
+    const opts = { parseAs: 'buffer' as const };
+    const parser = this.instance.getDefaultJsonParser('error', 'error');
+    this.instance.addContentTypeParser<Buffer>('application/json', opts, (req, body, done) => {
+      const { metadata } = req.routeOptions.config;
+      if (metadata.rawBody) req.rawBody = body;
+      return parser(req, body.toString(), done);
+    });
   }
 
   private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<RouteHandler> {
@@ -108,18 +127,34 @@ export class ShadowServer {
     };
   }
 
+  getInstance(): FastifyInstance {
+    return this.instance;
+  }
+
   async init(): Promise<void> {
     this.inited = true;
+
+    const hasRawBody = this.routes.some(r => r.metadata.rawBody);
+    if (hasRawBody) this.registerRawBody();
+
     for (const route of this.routes) {
       const metadata = route.metadata;
       assert(metadata.path, 'Route path is required');
       assert(metadata.method, 'Route method is required');
 
-      const url = metadata.basePath ? metadata.basePath + metadata.path : metadata.path;
-      const method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
-      const handler = await this.generateRouteHandler(route);
+      const routeOptions = { config: { metadata } } as RouteOptions;
+      routeOptions.url = metadata.basePath ? metadata.basePath + metadata.path : metadata.path;
+      routeOptions.method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
+      routeOptions.handler = await this.generateRouteHandler(route);
 
-      this.server.route({ method, url, handler, bodyLimit: metadata.bodyLimit });
+      routeOptions.schema = {};
+      const response = this.config.getGlobalResponseSchema();
+      routeOptions.schema.response = { ...response };
+      if (metadata.schemas?.body) routeOptions.schema.body = metadata.schemas.body;
+      if (metadata.schemas?.params) routeOptions.schema.params = metadata.schemas.params;
+      if (metadata.schemas?.query) routeOptions.schema.querystring = metadata.schemas.query;
+
+      this.instance.route(routeOptions);
     }
   }
 
@@ -127,11 +162,11 @@ export class ShadowServer {
     if (!this.inited) await this.init();
     const port = this.config.getPort();
     const host = this.config.getHostname();
-    await this.server.listen({ port, host });
+    await this.instance.listen({ port, host });
   }
 
   stop(): Promise<void> {
-    return this.server.close();
+    return this.instance.close();
   }
 
   getRouter(): AppRouter<ServerMetadata> {
@@ -141,6 +176,6 @@ export class ShadowServer {
   mockRequest(): MockRequestChain;
   mockRequest(options: MockRequestOptions): MockRequestChain;
   mockRequest(options?: MockRequestOptions): MockRequestChain | Promise<MockResponse> {
-    return options ? this.server.inject(options) : this.server.inject();
+    return options ? this.instance.inject(options) : this.instance.inject();
   }
 }

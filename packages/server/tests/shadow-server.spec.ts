@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { Type } from '@sinclair/typebox';
 
 /**
  * Importing user defined packages
@@ -41,12 +42,14 @@ describe('ShadowServer', () => {
     const router = server.getRouter();
     expect(router).toBeDefined();
 
+    const schema = Type.Object({});
+    const schemas = { body: schema, query: schema, params: schema };
     const headers = { 'X-Header-One': 'Value One', 'X-Header-Two': () => Date.now().toString() };
-    const single = { method: HttpMethod.POST, basePath: '/api', path: '/test-single', headers };
-    router.register({ metadata: single, handler: mockHandler, paramtypes: [Object, 'query', String, 'body'] });
+    const single = { method: HttpMethod.POST, basePath: '/api', path: '/test-single', headers, rawBody: true, schemas };
+    router.register({ metadata: single, handler: mockHandler, paramtypes: ['request', 'query', String, 'body'] });
 
     const multiple = { method: HttpMethod.ALL, path: '/test-all' };
-    router.register({ metadata: multiple, handler: mockHandler, paramtypes: [] });
+    router.register({ metadata: multiple, handler: mockHandler, paramtypes: ['request'] });
 
     const redirect = { method: HttpMethod.GET, path: '/redirect', redirect: '/api/test-single' };
     router.register({ metadata: redirect, handler: mockHandler, paramtypes: [] });
@@ -62,7 +65,7 @@ describe('ShadowServer', () => {
     expect(server['routes']).toHaveLength(4);
     expect(server['middlewares']).toHaveLength(2);
 
-    server['server'].decorateReply('viewAsync', function (this: any, ...args: unknown[]) {
+    server.getInstance().decorateReply('viewAsync', function (this: any, ...args: unknown[]) {
       renderHandler(...args);
       return this.send('View');
     });
@@ -70,7 +73,7 @@ describe('ShadowServer', () => {
 
   it('should start the server', async () => {
     const mockFn = jest.fn() as any;
-    server['server'].listen = mockFn;
+    server.getInstance().listen = mockFn;
 
     await expect(server.start()).resolves.toBeUndefined();
     expect(mockFn).toBeCalledTimes(1);
@@ -90,7 +93,7 @@ describe('ShadowServer', () => {
 
     expect(mockHandler).toBeCalledTimes(1);
     expect(mockMiddleware).toBeCalledTimes(1);
-    expect(mockHandler).toBeCalledWith(null, { id: '123' }, null, body);
+    expect(mockHandler).toBeCalledWith(expect.objectContaining({ rawBody: expect.any(Buffer) }), { id: '123' }, null, body);
 
     expect(response.headers).toHaveProperty('x-header-one', 'Value One');
     expect(response.headers).toHaveProperty('x-header-two', expect.stringMatching(/^[0-9]{13}$/));
@@ -100,9 +103,11 @@ describe('ShadowServer', () => {
     const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const;
     for (const method of methods) {
       const response = await server.mockRequest({ method, url: '/test-all' });
+      const request = (mockHandler.mock.lastCall as any[])?.[0];
       expect(response.statusCode).toBe(200);
       expect(response.json()).toStrictEqual(data);
       expect(mockHandler).toBeCalledTimes(1);
+      expect(request).not.toHaveProperty('rawBody');
       mockHandler.mockClear();
     }
   });
@@ -150,7 +155,7 @@ describe('ShadowServer', () => {
 
   it('should stop the server', async () => {
     const mockFn = jest.fn(async () => {}) as any;
-    server['server'].close = mockFn;
+    server.getInstance().close = mockFn;
 
     await expect(server.stop()).resolves.toBeUndefined();
     expect(mockFn).toBeCalledTimes(1);
