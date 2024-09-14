@@ -1,13 +1,13 @@
 /**
  * Importing npm packages
  */
-import { InternalError, NeverError } from '@shadow-library/errors';
-
-import { Injectable } from '@shadow-library/app';
+import { InternalError, NeverError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
  */
+import { Injectable } from '@shadow-library/app';
+
 import { UserSessionService } from './user-session.service';
 import { users } from '../data';
 

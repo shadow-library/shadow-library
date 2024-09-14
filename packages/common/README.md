@@ -9,6 +9,7 @@ This TypeScript package offers a collection of essential services and utility fu
 - **Config Service:** A configuration management service for handling environment-specific settings and secrets.
 - **Consistent API:** Standardized APIs for all services and utilities to ensure ease of use and integration.
 - **TypeScript Support:** Fully typed interfaces and implementations for enhanced type safety and IntelliSense support.
+- **Standardized Errors**: Pre-defined and easily extendable error classes for common scenarios such as validation errors, and Server errors.
 
 ## Installation
 
@@ -26,7 +27,7 @@ pnpm add @shadow-library/common
 ## Usage
 
 ```ts
-import { InMemoryStore, Config, Logger } from '@shadow-library/common';
+import { InMemoryStore, Config, Logger, ValidationError } from '@shadow-library/common';
 
 const appName = Config.get('app.name');
 
@@ -35,6 +36,10 @@ logger.info('Application started');
 
 const cache = new InMemoryStore();
 cache.set('key', 'value');
+
+const validationError = new ValidationError('fieldOne', 'value');
+validationError.addFieldError('fieldTwo', 'value');
+throw validationError;
 ```
 
 ## License

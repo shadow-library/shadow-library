@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { NeverError } from '@shadow-library/errors';
+import { NeverError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages

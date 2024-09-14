@@ -11,7 +11,7 @@ type Project = string | { name: string; config: Config };
 /**
  * Declaring the constants.
  */
-const projects: Project[] = ['app', 'common', 'errors', 'server'];
+const projects: Project[] = ['app', 'common', 'server'];
 const generateProjectConfig = (project: Project): Config => {
   if (typeof project === 'string') project = { name: project, config: {} };
   const configs: Config = { displayName: project.name };

@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { describe, expect, it, jest } from '@jest/globals';
-import { NeverError } from '@shadow-library/errors';
+import { NeverError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages

@@ -29,8 +29,6 @@
       "@shadow-library/app/*": ["packages/app/src/*"],
       "@shadow-library/common": ["packages/common"],
       "@shadow-library/common/*": ["packages/common/src/*"],
-      "@shadow-library/errors": ["packages/errors"],
-      "@shadow-library/errors/*": ["packages/errors/src/*"],
       "@shadow-library/server": ["packages/server"],
       "@shadow-library/server/*": ["packages/server/src/*"]
     },

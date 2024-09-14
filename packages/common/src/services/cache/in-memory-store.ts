@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { InternalError } from '@shadow-library/errors';
+import { InternalError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
