@@ -16,6 +16,8 @@ import { Config } from '../config.service';
  * Defining types
  */
 
+export type redactFn = <T>(input: T) => string | T;
+
 export interface Logger {
   verbose(message: string, ...meta: any[]): void;
   debug(message: string, ...meta: any[]): void;
@@ -39,7 +41,7 @@ class LoggerStatic {
   }
 
   /** Creates a redactor to remove sensitive fields. This mutates the original value. If no censor is given, the field is removed */
-  getRedactor(paths: string[], censor: string | ((value: any) => any) = 'xxxx'): fastRedact.redactFn {
+  getRedactor(paths: string[], censor: string | ((value: any) => any) = 'xxxx'): redactFn {
     return fastRedact({ paths, serialize: false, censor });
   }
 

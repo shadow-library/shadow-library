@@ -19,12 +19,8 @@
     "@shadow-library/common": "workspace:*",
     "@shadow-library/errors": "workspace:*",
     "@sinclair/typebox": "^0.33.10",
-    "cookie": "^0.6.0",
     "fastify": "^4.28.1",
-    "reflect-metadata": "^0.2.2"
-  },
-  "devDependencies": {
-    "@types/cookie": "^0.6.0",
-    "light-my-request": "^6.0.0"
+    "reflect-metadata": "^0.2.2",
+    "type-fest": "^4.26.1"
   }
 }
