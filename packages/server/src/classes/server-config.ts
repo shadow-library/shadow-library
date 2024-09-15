@@ -7,6 +7,7 @@ import { FastifyHttpOptions } from 'fastify';
 /**
  * Importing user defined packages
  */
+import { DefaultErrorHandler } from './default-error-handler';
 import { ErrorHandler } from '../interfaces';
 
 /**
@@ -24,17 +25,13 @@ export class ServerConfig {
   private hostname = '127.0.0.1';
 
   private options: ServerOptions = ServerConfig.getDefaultOptions();
-  private errorHandler = ServerConfig.getDefaultErrorHandler();
+  private errorHandler = new DefaultErrorHandler();
   private responseSchemas: Record<number | string, TObject> = {};
 
   private static getDefaultOptions(): ServerOptions {
     const config: ServerOptions = {};
     config.ignoreTrailingSlash = true;
     return config;
-  }
-
-  private static getDefaultErrorHandler(): ErrorHandler {
-    return (err, _req, res) => res.status(err.message === 'Not Found' ? 404 : 500).send(`{"message":"${(err as any)?.message ?? 'Unknown Error'}"}`);
   }
 
   getPort(): number {
