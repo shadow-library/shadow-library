@@ -25,11 +25,11 @@
     "module": "ES2022",
     "moduleResolution": "node",
     "paths": {
-      "@shadow-library/app": ["packages/app"],
+      "@shadow-library/app": ["packages/app/src/index.ts"],
       "@shadow-library/app/*": ["packages/app/src/*"],
-      "@shadow-library/common": ["packages/common"],
+      "@shadow-library/common": ["packages/common/src/index.ts"],
       "@shadow-library/common/*": ["packages/common/src/*"],
-      "@shadow-library/server": ["packages/server"],
+      "@shadow-library/server": ["packages/server/src/index.ts"],
       "@shadow-library/server/*": ["packages/server/src/*"]
     },
     "resolveJsonModule": true,

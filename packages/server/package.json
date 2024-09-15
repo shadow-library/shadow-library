@@ -6,6 +6,7 @@
   "author": "Leander Paul",
   "homepage": "https://github.com/shadow-library/shadow-library#readme",
   "license": "MIT",
+  "main": "src/index.ts",
   "publishConfig": {
     "access": "public"
   },
