@@ -83,7 +83,7 @@ describe('ShadowServer', () => {
   it('should return the default route handler', async () => {
     const response = await server.mockRequest().get('/not-found');
     expect(response.statusCode).toBe(404);
-    expect(response.json()).toEqual({ message: 'Not Found' });
+    expect(response.json()).toEqual({ code: 'S002', message: 'Not Found', type: 'NOT_FOUND' });
   });
 
   it('should be able to access single method route', async () => {
@@ -142,8 +142,8 @@ describe('ShadowServer', () => {
   });
 
   it('should handle the route with error', async () => {
-    const errorHandler = jest.fn<ErrorHandler>((err, _req, res) => res.status(401).send({ message: err.message }));
-    config.setErrorHandler(errorHandler);
+    const errorHandler = jest.fn<ErrorHandler['handle']>((err, _req, res) => res.status(401).send({ message: err.message }));
+    config.setErrorHandler({ handle: errorHandler });
     mockHandler.mockRejectedValueOnce(error);
 
     const response = await server.mockRequest().put('/test-all').body(data);

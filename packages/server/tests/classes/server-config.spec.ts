@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 /**
  * Importing user defined packages
@@ -20,6 +20,11 @@ describe('ServerConfig', () => {
   const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
   let serverConfig: ServerConfig;
 
+  beforeEach(() => {
+    res.status.mockClear();
+    res.send.mockClear();
+  });
+
   it('should create a new instance', () => {
     serverConfig = new ServerConfig();
     expect(serverConfig).toBeInstanceOf(ServerConfig);
@@ -33,18 +38,18 @@ describe('ServerConfig', () => {
 
   it('should have default error handler handle error', () => {
     /** @ts-expect-error test args */
-    serverConfig.getErrorHandler()(new Error('Test Error'), {}, res);
+    serverConfig.getErrorHandler().handle(new Error('Test Error'), {}, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith('{"message":"Test Error"}');
+    expect(res.send).toHaveBeenCalledWith({ message: 'Test Error' });
   });
 
   it('should have default error handler handle unknown', () => {
     /** @ts-expect-error test args */
-    serverConfig.getErrorHandler()({}, {}, res);
+    serverConfig.getErrorHandler().handle({}, {}, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith('{"message":"Unknown Error"}');
+    expect(res.send).toHaveBeenCalledWith({ message: 'Internal Server Error' });
   });
 
   it('should set and get the port', () => {
@@ -65,7 +70,7 @@ describe('ServerConfig', () => {
   });
 
   it('should set and get the error handler', () => {
-    const errorHandler = jest.fn();
+    const errorHandler = { handle: jest.fn() };
     serverConfig.setErrorHandler(errorHandler);
     expect(serverConfig.getErrorHandler()).toBe(errorHandler);
   });

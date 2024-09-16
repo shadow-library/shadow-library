@@ -20,5 +20,3 @@ export type HttpRequest = FastifyRequest;
 export type HttpResponse = FastifyReply;
 
 export type RouteHandler = (req: HttpRequest, res: HttpResponse) => unknown | Promise<unknown>;
-
-export type ErrorHandler = (err: Error, req: HttpRequest, res: HttpResponse) => unknown | Promise<unknown>;

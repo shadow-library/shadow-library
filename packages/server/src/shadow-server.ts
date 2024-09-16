@@ -61,13 +61,13 @@ export class ShadowServer {
 
     this.instance = fastify(configs);
     this.instance.setNotFoundHandler(notFoundHandler);
-    this.instance.setErrorHandler(errorHandler);
+    this.instance.setErrorHandler(errorHandler.handle.bind(errorHandler));
   }
 
   private getDefaultRouteHandler(): RouteHandler {
     const handler = this.config.getErrorHandler();
     const notFoundError = new ServerError(ServerErrorCode.S002);
-    return (req, res) => handler(notFoundError, req, res);
+    return (req, res) => handler.handle(notFoundError, req, res);
   }
 
   private register(route: RouteController<ServerMetadata>): void {
@@ -122,7 +122,7 @@ export class ShadowServer {
         else if (!response.sent && data) response.send(data);
       } catch (err: unknown) {
         const handler = this.config.getErrorHandler();
-        await handler(err as Error, request, response);
+        await handler.handle(err as Error, request, response);
       }
     };
   }
