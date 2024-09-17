@@ -20,6 +20,9 @@ importers:
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
+      '@sinclair/typebox':
+        specifier: ^0.33.10
+        version: 0.33.10
       '@types/fast-redact':
         specifier: ^3.0.4
         version: 3.0.4

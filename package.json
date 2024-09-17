@@ -8,6 +8,7 @@
     "lint": "tsx scripts/lint.ts",
     "build": "tsx scripts/build.ts",
     "test": "jest",
+    "test:integration": "jest --config integration/jest.config.ts",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
@@ -15,6 +16,7 @@
     "@commitlint/config-conventional": "^19.2.2",
     "@commitlint/types": "^19.0.3",
     "@jest/globals": "^29.7.0",
+    "@sinclair/typebox": "^0.33.10",
     "@types/fast-redact": "^3.0.4",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.13.0",
