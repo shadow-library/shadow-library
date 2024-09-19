@@ -12,8 +12,12 @@ import { HttpRequest, HttpResponse } from './route-handler.interface';
  * Defining types
  */
 
-export type HttpMiddleware = (request: HttpRequest, response: HttpResponse) => any | Promise<any>;
+export type MiddlewareHandler = (request: HttpRequest, response: HttpResponse) => any | Promise<any>;
 
 export interface MiddlewareGenerator {
-  generate(metadata: RouteMetdata): HttpMiddleware;
+  generate(metadata: RouteMetdata): MiddlewareHandler;
+}
+
+export interface HttpMiddleware {
+  use(request: HttpRequest, response: HttpResponse): any | Promise<any>;
 }
