@@ -14,7 +14,7 @@ import { JsonObject } from 'type-fest';
 import { ServerConfig } from './classes';
 import { MIDDLEWARE_WATERMARK } from './constants';
 import { HttpMethod, MiddlewareMetadata } from './decorators';
-import { type HttpRequest, type HttpResponse, RouteHandler, ServerMetadata } from './interfaces';
+import { type HttpRequest, type HttpResponse, MiddlewareHandler, RouteHandler, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
 
 /**
@@ -86,13 +86,26 @@ export class ShadowServer {
     });
   }
 
+  private getSortedMiddlewares(): RouteController<MiddlewareMetadata>[] {
+    return this.middlewares.sort((a, b) => {
+      const aPriority = a.metadata.options.priority ?? 0;
+      const bPriority = b.metadata.options.priority ?? 0;
+      return aPriority - bPriority;
+    });
+  }
+
   private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<RouteHandler> {
     const metadata = route.metadata;
     const statusCode = metadata.status ?? metadata.method === HttpMethod.POST ? 201 : 200;
     const argsOrder = route.paramtypes.map(p => (typeof p === 'string' ? p : null)) as (keyof RequestContext | null)[];
-    const middlewares: RouteHandler[] = [];
-    for (const middleware of this.middlewares) {
-      const handler = await middleware.handler(metadata);
+
+    const middlewares = this.getSortedMiddlewares();
+    const preMiddlewares: MiddlewareHandler[] = [];
+    const postMiddlewares: MiddlewareHandler[] = [];
+    for (const middleware of middlewares) {
+      const { generates, options } = middleware.metadata;
+      const handler = generates ? await middleware.handler(metadata) : middleware.handler.bind(middleware);
+      const middlewares = options.type === 'after' ? postMiddlewares : preMiddlewares;
       if (typeof handler === 'function') middlewares.push(handler);
     }
 
@@ -103,7 +116,7 @@ export class ShadowServer {
       const context = { request, response, params, query, body };
       try {
         /** Running the middlewares */
-        for (const middleware of middlewares) {
+        for (const middleware of preMiddlewares) {
           await middleware(request, response);
           if (response.sent) return;
         }
@@ -123,6 +136,13 @@ export class ShadowServer {
       } catch (err: unknown) {
         const handler = this.config.getErrorHandler();
         await handler.handle(err as Error, request, response);
+      } finally {
+        /** Running the post middlewares */
+        for (const middleware of postMiddlewares) {
+          try {
+            await middleware(request, response);
+          } catch {} // eslint-disable-line no-empty
+        }
       }
     };
   }

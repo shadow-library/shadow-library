@@ -7,7 +7,7 @@ import { Type } from '@sinclair/typebox';
 /**
  * Importing user defined packages
  */
-import { ErrorHandler, HttpMethod, HttpMiddleware, ServerConfig, ShadowServer } from '@shadow-library/server';
+import { ErrorHandler, HttpMethod, MiddlewareHandler, ServerConfig, ShadowServer } from '@shadow-library/server';
 import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
 
 /**
@@ -20,17 +20,19 @@ import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
 const body = { search: 'test' };
 const data = { msg: 'Hello World' };
 const error = new Error('Stop Server Error');
-const mockMiddleware = jest.fn<HttpMiddleware>(() => {});
-const mockHandler = jest.fn(async () => data);
-const renderHandler = jest.fn();
+
+const renderer = jest.fn();
+const handler = jest.fn(async () => data);
+const middlewares = { before: jest.fn<MiddlewareHandler>(() => {}), after: jest.fn<MiddlewareHandler>(() => {}) };
 
 describe('ShadowServer', () => {
   const config = new ServerConfig();
   let server: ShadowServer;
 
   afterEach(() => {
-    mockHandler.mockClear();
-    mockMiddleware.mockClear();
+    handler.mockClear();
+    middlewares.before.mockClear();
+    middlewares.after.mockClear();
   });
 
   it('should create a http instance of ShadowServer', () => {
@@ -46,27 +48,29 @@ describe('ShadowServer', () => {
     const schemas = { body: schema, query: schema, params: schema };
     const headers = { 'X-Header-One': 'Value One', 'X-Header-Two': () => Date.now().toString() };
     const single = { method: HttpMethod.POST, basePath: '/api', path: '/test-single', headers, rawBody: true, schemas };
-    router.register({ metadata: single, handler: mockHandler, paramtypes: ['request', 'query', String, 'body'] });
+    router.register({ metadata: single, handler, paramtypes: ['request', 'query', String, 'body'] });
 
     const multiple = { method: HttpMethod.ALL, path: '/test-all' };
-    router.register({ metadata: multiple, handler: mockHandler, paramtypes: ['request'] });
+    router.register({ metadata: multiple, handler, paramtypes: ['request'] });
 
     const redirect = { method: HttpMethod.GET, path: '/redirect', redirect: '/api/test-single' };
-    router.register({ metadata: redirect, handler: mockHandler, paramtypes: [] });
+    router.register({ metadata: redirect, handler, paramtypes: [] });
 
     const render = { method: HttpMethod.GET, path: '/test-render', render: 'sample' };
-    router.register({ metadata: render, handler: mockHandler, paramtypes: [] });
+    router.register({ metadata: render, handler, paramtypes: [] });
 
-    const middleware = { [MIDDLEWARE_WATERMARK]: true, target: Object } as const;
-    const unNeededMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object } as const;
-    router.register({ metadata: middleware, handler: () => mockMiddleware, paramtypes: [] });
+    const beforeMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options: {} } as const;
+    const afterMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: false, options: { type: 'after' } } as const;
+    const unNeededMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options: {} } as const;
+    router.register({ metadata: beforeMiddleware, handler: () => middlewares.before, paramtypes: [] });
     router.register({ metadata: unNeededMiddleware, handler: () => null, paramtypes: [] });
+    router.register({ metadata: afterMiddleware, handler: middlewares.after, paramtypes: [] });
 
     expect(server['routes']).toHaveLength(4);
-    expect(server['middlewares']).toHaveLength(2);
+    expect(server['middlewares']).toHaveLength(3);
 
     server.getInstance().decorateReply('viewAsync', function (this: any, ...args: unknown[]) {
-      renderHandler(...args);
+      renderer(...args);
       return this.send('View');
     });
   });
@@ -91,9 +95,10 @@ describe('ShadowServer', () => {
     expect(response.statusCode).toBe(201);
     expect(response.json()).toStrictEqual(data);
 
-    expect(mockHandler).toBeCalledTimes(1);
-    expect(mockMiddleware).toBeCalledTimes(1);
-    expect(mockHandler).toBeCalledWith(expect.objectContaining({ rawBody: expect.any(Buffer) }), { id: '123' }, null, body);
+    expect(handler).toBeCalledTimes(1);
+    expect(middlewares.before).toBeCalledTimes(1);
+    expect(middlewares.after).toBeCalledTimes(1);
+    expect(handler).toBeCalledWith(expect.objectContaining({ rawBody: expect.any(Buffer) }), { id: '123' }, null, body);
 
     expect(response.headers).toHaveProperty('x-header-one', 'Value One');
     expect(response.headers).toHaveProperty('x-header-two', expect.stringMatching(/^[0-9]{13}$/));
@@ -103,12 +108,12 @@ describe('ShadowServer', () => {
     const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const;
     for (const method of methods) {
       const response = await server.mockRequest({ method, url: '/test-all' });
-      const request = (mockHandler.mock.lastCall as any[])?.[0];
+      const request = (handler.mock.lastCall as any[])?.[0];
       expect(response.statusCode).toBe(200);
       expect(response.json()).toStrictEqual(data);
-      expect(mockHandler).toBeCalledTimes(1);
+      expect(handler).toBeCalledTimes(1);
       expect(request).not.toHaveProperty('rawBody');
-      mockHandler.mockClear();
+      handler.mockClear();
     }
   });
 
@@ -116,7 +121,7 @@ describe('ShadowServer', () => {
     const response = await server.mockRequest().get('/redirect');
 
     expect(response.statusCode).toBe(301);
-    expect(mockHandler).toBeCalledTimes(1);
+    expect(handler).toBeCalledTimes(1);
     expect(response.headers).toHaveProperty('location', '/api/test-single');
   });
 
@@ -125,26 +130,27 @@ describe('ShadowServer', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toBe('View');
-    expect(mockHandler).toBeCalledTimes(1);
-    expect(renderHandler).toBeCalledTimes(1);
-    expect(renderHandler).toBeCalledWith('sample', data);
+    expect(handler).toBeCalledTimes(1);
+    expect(renderer).toBeCalledTimes(1);
+    expect(renderer).toBeCalledWith('sample', data);
   });
 
   it('should stop execution after response is sent', async () => {
     const data = { msg: 'Middleware' };
-    mockMiddleware.mockImplementationOnce((_, res) => res.status(400).send(data));
+    middlewares.before.mockImplementationOnce((_, res) => res.status(400).send(data));
     const response = await server.mockRequest().get('/test-all');
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toStrictEqual(data);
-    expect(mockMiddleware).toHaveBeenCalledTimes(1);
-    expect(mockHandler).not.toBeCalled();
+    expect(middlewares.before).toHaveBeenCalledTimes(1);
+    expect(middlewares.after).toHaveBeenCalledTimes(1);
+    expect(handler).not.toBeCalled();
   });
 
   it('should handle the route with error', async () => {
     const errorHandler = jest.fn<ErrorHandler['handle']>((err, _req, res) => res.status(401).send({ message: err.message }));
     config.setErrorHandler({ handle: errorHandler });
-    mockHandler.mockRejectedValueOnce(error);
+    handler.mockRejectedValueOnce(error);
 
     const response = await server.mockRequest().put('/test-all').body(data);
     expect(response.statusCode).toBe(401);
