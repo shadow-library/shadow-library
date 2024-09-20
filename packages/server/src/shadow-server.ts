@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import { Router as AppRouter, RouteController, RouteMetdata } from '@shadow-library/app';
+import { InternalError } from '@shadow-library/common';
 import { FastifyInstance, HTTPMethods, RouteOptions, fastify } from 'fastify';
 import { Chain as MockRequestChain, InjectOptions as MockRequestOptions, Response as MockResponse } from 'light-my-request';
 import { JsonObject } from 'type-fest';
@@ -71,6 +72,7 @@ export class ShadowServer {
   }
 
   private register(route: RouteController<ServerMetadata>): void {
+    if (this.inited) throw new InternalError('Cannot register routes after the server has been initialized');
     const isMiddleware = (route.metadata as any)[MIDDLEWARE_WATERMARK];
     if (isMiddleware) this.middlewares.push(route as RouteController<MiddlewareMetadata>);
     else this.routes.push(route as RouteController<RouteMetdata>);
@@ -86,23 +88,14 @@ export class ShadowServer {
     });
   }
 
-  private getSortedMiddlewares(): RouteController<MiddlewareMetadata>[] {
-    return this.middlewares.sort((a, b) => {
-      const aPriority = a.metadata.options.priority ?? 0;
-      const bPriority = b.metadata.options.priority ?? 0;
-      return aPriority - bPriority;
-    });
-  }
-
   private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<RouteHandler> {
     const metadata = route.metadata;
     const statusCode = metadata.status ?? metadata.method === HttpMethod.POST ? 201 : 200;
     const argsOrder = route.paramtypes.map(p => (typeof p === 'string' ? p : null)) as (keyof RequestContext | null)[];
 
-    const middlewares = this.getSortedMiddlewares();
     const preMiddlewares: MiddlewareHandler[] = [];
     const postMiddlewares: MiddlewareHandler[] = [];
-    for (const middleware of middlewares) {
+    for (const middleware of this.middlewares) {
       const { generates, options } = middleware.metadata;
       const handler = generates ? await middleware.handler(metadata) : middleware.handler.bind(middleware);
       const middlewares = options.type === 'after' ? postMiddlewares : preMiddlewares;
@@ -156,6 +149,8 @@ export class ShadowServer {
 
     const hasRawBody = this.routes.some(r => r.metadata.rawBody);
     if (hasRawBody) this.registerRawBody();
+
+    this.middlewares.sort((a, b) => b.metadata.options.weight - a.metadata.options.weight);
 
     for (const route of this.routes) {
       const metadata = route.metadata;

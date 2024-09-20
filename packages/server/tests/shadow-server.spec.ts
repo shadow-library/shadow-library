@@ -59,11 +59,11 @@ describe('ShadowServer', () => {
     const render = { method: HttpMethod.GET, path: '/test-render', render: 'sample' };
     router.register({ metadata: render, handler, paramtypes: [] });
 
-    const beforeMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options: {} } as const;
-    const afterMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: false, options: { type: 'after' } } as const;
-    const unNeededMiddleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options: {} } as const;
-    router.register({ metadata: beforeMiddleware, handler: () => middlewares.before, paramtypes: [] });
-    router.register({ metadata: unNeededMiddleware, handler: () => null, paramtypes: [] });
+    const options = { type: 'before', weight: 0 };
+    const middleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options } as const;
+    const afterMiddleware = { ...middleware, generates: false, options: { ...options, type: 'after' } } as const;
+    router.register({ metadata: middleware, handler: () => middlewares.before, paramtypes: [] });
+    router.register({ metadata: middleware, handler: () => null, paramtypes: [] });
     router.register({ metadata: afterMiddleware, handler: middlewares.after, paramtypes: [] });
 
     expect(server['routes']).toHaveLength(4);
@@ -82,6 +82,11 @@ describe('ShadowServer', () => {
     await expect(server.start()).resolves.toBeUndefined();
     expect(mockFn).toBeCalledTimes(1);
     expect(mockFn).toBeCalledWith({ port: config.getPort(), host: config.getHostname() });
+  });
+
+  it('should throw an error when adding a route after the server is inited', async () => {
+    const route = { metadata: {}, handler: () => {}, paramtypes: [] };
+    expect(() => server.getRouter().register(route)).toThrowError();
   });
 
   it('should return the default route handler', async () => {
