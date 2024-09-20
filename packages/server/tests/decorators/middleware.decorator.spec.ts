@@ -38,7 +38,12 @@ describe('@Middleware', () => {
     const metadata = Utils.getRouteMetadata(ValidMiddleware);
     const routeMetadata = Utils.getRouteMetadata(middleware.generate);
 
-    expect(metadata).toStrictEqual({ [MIDDLEWARE_WATERMARK]: true, target: ValidMiddleware, generates: true, options: {} });
     expect(routeMetadata).toStrictEqual({});
+    expect(metadata).toStrictEqual({
+      [MIDDLEWARE_WATERMARK]: true,
+      target: ValidMiddleware,
+      generates: true,
+      options: { type: 'before', weight: 0 },
+    });
   });
 });

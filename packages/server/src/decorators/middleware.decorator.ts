@@ -24,10 +24,10 @@ export interface MiddlewareMetadata {
 
 export interface MiddlewareOptions {
   /** Denotes whether to execute before or after the handler */
-  type?: 'before' | 'after';
+  type: 'before' | 'after';
 
-  /** Denotes the priority, the lower value gets executed first */
-  priority?: number;
+  /** Denotes the execution order, the higher value gets executed first */
+  weight: number;
 }
 
 /**
@@ -35,7 +35,10 @@ export interface MiddlewareOptions {
  */
 const propertyKeys = ['generate', 'use'] as const;
 
-export function Middleware(options: MiddlewareOptions = {}): ClassDecorator {
+export function Middleware(options: Partial<MiddlewareOptions> = {}): ClassDecorator {
+  if (!options.type) options.type = 'before';
+  if (!options.weight) options.weight = 0;
+
   return target => {
     const key = propertyKeys.find(key => key in target.prototype);
     assert(key, `Cannot apply @Middleware to a class without a 'generate()' or 'use()' method`);
