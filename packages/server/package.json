@@ -16,11 +16,24 @@
     "directory": "packages/server"
   },
   "dependencies": {
-    "@shadow-library/app": "workspace:*",
-    "@shadow-library/common": "workspace:*",
     "@sinclair/typebox": "^0.33.10",
     "fastify": "^4.28.1",
     "reflect-metadata": "^0.2.2",
     "type-fest": "^4.26.1"
+  },
+  "devDependencies": {
+    "@fastify/view": "^10.0.0",
+    "@shadow-library/app": "workspace:*",
+    "@shadow-library/common": "workspace:*"
+  },
+  "peerDependencies": {
+    "@fastify/view": "^10.0.0",
+    "@shadow-library/app": "workspace:*",
+    "@shadow-library/common": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@fastify/view": {
+      "optional": true
+    }
   }
 }

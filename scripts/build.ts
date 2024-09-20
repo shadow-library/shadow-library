@@ -43,7 +43,11 @@ async function buildPackage(name: string): Promise<void> {
   const packageJson = JSON.parse(packageJsonString);
 
   /** modifying package.json and saving to 'dist' */
-  const distPackageJson = { ...structuredClone(packageJson), main: 'index.js' };
+  const distPackageJson = structuredClone(packageJson);
+  distPackageJson.main = 'index.js';
+  delete distPackageJson.scripts;
+  delete distPackageJson.devDependencies;
+
   const distPackageJsonString = JSON.stringify(distPackageJson, null, 2);
   fs.writeFileSync(`${distDir}/package.json`, distPackageJsonString);
 

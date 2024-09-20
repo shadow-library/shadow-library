@@ -16,9 +16,14 @@
     "directory": "packages/app"
   },
   "dependencies": {
-    "@shadow-library/common": "workspace:*",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2",
     "type-fest": "^4.26.1"
+  },
+  "devDependencies": {
+    "@shadow-library/common": "workspace:*"
+  },
+  "peerDependencies": {
+    "@shadow-library/common": "workspace:*"
   }
 }
