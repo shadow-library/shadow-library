@@ -3,10 +3,12 @@
  */
 import { TObject, Type } from '@sinclair/typebox';
 import { FastifyHttpOptions } from 'fastify';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Importing user defined packages
  */
+import { Context } from './context';
 import { DefaultErrorHandler } from './default-error-handler';
 import { ErrorHandler } from '../interfaces';
 
@@ -34,10 +36,13 @@ export class ServerConfig {
   private errorHandler = new DefaultErrorHandler();
   private responseSchemas = {} as Record<number | string, TObject>;
 
+  private context?: Context;
+
   private static getDefaultOptions(): ServerOptions {
     const config: ServerOptions = {};
     config.ignoreTrailingSlash = true;
     config.ajv = { customOptions: { removeAdditional: true, useDefaults: true, allErrors: true } };
+    config.genReqId = () => uuid();
     return config;
   }
 
@@ -90,5 +95,14 @@ export class ServerConfig {
   getGlobalResponseSchema(statusCode: number | string): TObject | undefined;
   getGlobalResponseSchema(statusCode?: number | string): Record<number | string, TObject> | TObject | undefined {
     return statusCode ? this.responseSchemas[statusCode] : this.responseSchemas;
+  }
+
+  getContext(): Context | undefined {
+    return this.context;
+  }
+
+  setContext(context: Context): this {
+    this.context = context;
+    return this;
   }
 }

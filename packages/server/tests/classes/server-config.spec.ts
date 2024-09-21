@@ -21,8 +21,7 @@ describe('ServerConfig', () => {
   let serverConfig: ServerConfig;
 
   beforeEach(() => {
-    res.status.mockClear();
-    res.send.mockClear();
+    jest.clearAllMocks();
   });
 
   it('should create a new instance', () => {
@@ -35,6 +34,7 @@ describe('ServerConfig', () => {
     expect(serverConfig.getHostname()).toBe('127.0.0.1');
     expect(serverConfig.getServerOptions()).toStrictEqual({
       ignoreTrailingSlash: true,
+      genReqId: expect.any(Function),
       ajv: { customOptions: { allErrors: true, removeAdditional: true, useDefaults: true } },
     });
   });
@@ -84,5 +84,11 @@ describe('ServerConfig', () => {
 
     expect(serverConfig.getGlobalResponseSchema(200)).toBe(responseSchema);
     expect(serverConfig.getGlobalResponseSchema()).toStrictEqual({ 200: responseSchema });
+  });
+
+  it('should set and get the context', () => {
+    const context = { key: 'value' } as any;
+    serverConfig.setContext(context);
+    expect(serverConfig.getContext()).toBe(context);
   });
 });
