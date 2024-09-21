@@ -83,10 +83,6 @@ describe('ServerConfig', () => {
     serverConfig.addGlobalResponseSchema(200, responseSchema);
 
     expect(serverConfig.getGlobalResponseSchema(200)).toBe(responseSchema);
-    expect(serverConfig.getGlobalResponseSchema()).toStrictEqual({
-      200: responseSchema,
-      '4xx': expect.objectContaining({ type: 'object' }),
-      '5xx': expect.objectContaining({ type: 'object' }),
-    });
+    expect(serverConfig.getGlobalResponseSchema()).toStrictEqual({ 200: responseSchema });
   });
 });

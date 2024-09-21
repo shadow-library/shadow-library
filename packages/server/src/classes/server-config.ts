@@ -19,6 +19,12 @@ type ServerOptions = FastifyHttpOptions<any, any>;
 /**
  * Declaring the constants
  */
+const errorResponseSchema = Type.Object({
+  code: Type.String(),
+  type: Type.String(),
+  message: Type.String(),
+  fields: Type.Optional(Type.Array(Type.Object({ field: Type.String(), msg: Type.String() }))),
+});
 
 export class ServerConfig {
   private port = 8080;
@@ -26,24 +32,13 @@ export class ServerConfig {
 
   private options: ServerOptions = ServerConfig.getDefaultOptions();
   private errorHandler = new DefaultErrorHandler();
-  private responseSchemas = ServerConfig.getDefaultResponseSchemas();
+  private responseSchemas = {} as Record<number | string, TObject>;
 
   private static getDefaultOptions(): ServerOptions {
     const config: ServerOptions = {};
     config.ignoreTrailingSlash = true;
     config.ajv = { customOptions: { removeAdditional: true, useDefaults: true, allErrors: true } };
     return config;
-  }
-
-  private static getDefaultResponseSchemas(): Record<number | string, TObject> {
-    const schema = Type.Object({
-      code: Type.String(),
-      type: Type.String(),
-      message: Type.String(),
-      fields: Type.Optional(Type.Array(Type.Object({ field: Type.String(), msg: Type.String() }))),
-    });
-
-    return { '4xx': schema, '5xx': schema };
   }
 
   getPort(): number {
@@ -85,6 +80,10 @@ export class ServerConfig {
   addGlobalResponseSchema(statusCode: number | string, schema: TObject): this {
     this.responseSchemas[statusCode] = schema;
     return this;
+  }
+
+  addDefaultErrorSchema(statusCode: number | string): this {
+    return this.addGlobalResponseSchema(statusCode, errorResponseSchema);
   }
 
   getGlobalResponseSchema(): Record<number | string, TObject>;

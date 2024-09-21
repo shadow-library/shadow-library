@@ -37,6 +37,7 @@ describe('ShadowServer', () => {
   });
 
   it('should create a http instance of ShadowServer', () => {
+    config.addDefaultErrorSchema('4xx').addDefaultErrorSchema('5xx');
     server = new ShadowServer(config);
     expect(server).toBeInstanceOf(ShadowServer);
   });
