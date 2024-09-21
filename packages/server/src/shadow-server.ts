@@ -110,6 +110,8 @@ export class ShadowServer {
 
     const preMiddlewares: MiddlewareHandler[] = [];
     const postMiddlewares: MiddlewareHandler[] = [];
+    const context = this.config.getContext();
+    if (context) preMiddlewares.push(context.init());
     for (const middleware of this.middlewares) {
       const { generates, options } = middleware.metadata;
       const handler = generates ? await middleware.handler(metadata) : middleware.handler.bind(middleware);

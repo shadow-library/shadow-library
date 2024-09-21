@@ -22,6 +22,7 @@ const body = { search: 'test' };
 const data = { msg: 'Hello World' };
 const error = new AppError(ErrorCode.UNKNOWN);
 
+const contextFn = jest.fn();
 const renderer = jest.fn();
 const handler = jest.fn(async () => data);
 const middlewares = { before: jest.fn<MiddlewareHandler>(() => {}), after: jest.fn<MiddlewareHandler>(() => {}) };
@@ -31,13 +32,12 @@ describe('ShadowServer', () => {
   let server: ShadowServer;
 
   afterEach(() => {
-    handler.mockClear();
-    middlewares.before.mockClear();
-    middlewares.after.mockClear();
+    jest.clearAllMocks();
   });
 
   it('should create a http instance of ShadowServer', () => {
     config.addDefaultErrorSchema('4xx').addDefaultErrorSchema('5xx');
+    config.setContext({ init: () => contextFn } as any);
     server = new ShadowServer(config);
     expect(server).toBeInstanceOf(ShadowServer);
   });
@@ -113,6 +113,7 @@ describe('ShadowServer', () => {
     expect(response.statusCode).toBe(201);
     expect(response.json()).toStrictEqual(data);
 
+    expect(contextFn).toBeCalledTimes(1);
     expect(handler).toBeCalledTimes(1);
     expect(middlewares.before).toBeCalledTimes(1);
     expect(middlewares.after).toBeCalledTimes(1);
@@ -129,9 +130,10 @@ describe('ShadowServer', () => {
       const request = (handler.mock.lastCall as any[])?.[0];
       expect(response.statusCode).toBe(200);
       expect(response.json()).toStrictEqual(data);
+      expect(contextFn).toBeCalledTimes(1);
       expect(handler).toBeCalledTimes(1);
       expect(request).not.toHaveProperty('rawBody');
-      handler.mockClear();
+      jest.clearAllMocks();
     }
   });
 
