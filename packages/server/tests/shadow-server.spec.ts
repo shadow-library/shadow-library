@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { AppError, ErrorCode, ValidationError } from '@shadow-library/common';
 import { Type } from '@sinclair/typebox';
 
 /**
@@ -19,7 +20,7 @@ import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
  */
 const body = { search: 'test' };
 const data = { msg: 'Hello World' };
-const error = new Error('Stop Server Error');
+const error = new AppError(ErrorCode.UNKNOWN);
 
 const renderer = jest.fn();
 const handler = jest.fn(async () => data);
@@ -73,6 +74,17 @@ describe('ShadowServer', () => {
       renderer(...args);
       return this.send('View');
     });
+  });
+
+  it('should format the validation error', async () => {
+    const errors = [{ instancePath: '', message: "must have property 'password'" }, { instancePath: '/email' }];
+    const formattedError = server['formatSchemaErrors'](errors as any, 'body');
+
+    expect(formattedError).toBeInstanceOf(ValidationError);
+    expect(formattedError.getErrors()).toStrictEqual([
+      { field: 'body', msg: "must have property 'password'" },
+      { field: 'body.email', msg: 'Field validation failed' },
+    ]);
   });
 
   it('should start the server', async () => {
@@ -141,7 +153,7 @@ describe('ShadowServer', () => {
   });
 
   it('should stop execution after response is sent', async () => {
-    const data = { msg: 'Middleware' };
+    const data = new AppError(ErrorCode.UNEXPECTED).toObject();
     middlewares.before.mockImplementationOnce((_, res) => res.status(400).send(data));
     const response = await server.mockRequest().get('/test-all');
 
@@ -153,13 +165,13 @@ describe('ShadowServer', () => {
   });
 
   it('should handle the route with error', async () => {
-    const errorHandler = jest.fn<ErrorHandler['handle']>((err, _req, res) => res.status(401).send({ message: err.message }));
+    const errorHandler = jest.fn<ErrorHandler['handle']>((err: AppError, _req, res) => res.status(401).send(err.toObject()));
     config.setErrorHandler({ handle: errorHandler });
     handler.mockRejectedValueOnce(error);
 
     const response = await server.mockRequest().put('/test-all').body(data);
     expect(response.statusCode).toBe(401);
-    expect(response.json()).toEqual({ message: error.message });
+    expect(response.json()).toStrictEqual(error.toObject());
     expect(errorHandler).toBeCalledTimes(1);
     expect(errorHandler).toBeCalledWith(error, expect.anything(), expect.anything());
   });

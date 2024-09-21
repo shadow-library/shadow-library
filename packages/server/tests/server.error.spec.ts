@@ -24,8 +24,7 @@ describe('ServerError', () => {
     expect(error).toBeInstanceOf(ServerError);
   });
 
-  it('should serialize the error', () => {
-    const payload = error.serialize();
-    expect(payload).toBe('{"code":"S001","type":"SERVER_ERROR","message":"Unexpected Server Error"}');
+  it('should return the status code', () => {
+    expect(error.getStatusCode()).toBe(500);
   });
 });

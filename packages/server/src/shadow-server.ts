@@ -4,8 +4,9 @@
 import assert from 'assert';
 
 import { Router as AppRouter, RouteController, RouteMetdata } from '@shadow-library/app';
-import { InternalError } from '@shadow-library/common';
+import { InternalError, ValidationError } from '@shadow-library/common';
 import { FastifyInstance, HTTPMethods, RouteOptions, fastify } from 'fastify';
+import { FastifySchemaValidationError, SchemaErrorDataVar } from 'fastify/types/schema';
 import { Chain as MockRequestChain, InjectOptions as MockRequestOptions, Response as MockResponse } from 'light-my-request';
 import { JsonObject } from 'type-fest';
 
@@ -56,13 +57,17 @@ export class ShadowServer {
   constructor(config: ServerConfig) {
     this.config = config;
 
-    const configs = config.getServerConfig();
-    const notFoundHandler = this.getDefaultRouteHandler();
-    const errorHandler = config.getErrorHandler();
+    const options = config.getServerOptions();
+    this.instance = fastify(options);
 
-    this.instance = fastify(configs);
+    const notFoundHandler = this.getDefaultRouteHandler();
     this.instance.setNotFoundHandler(notFoundHandler);
+
+    const errorHandler = config.getErrorHandler();
     this.instance.setErrorHandler(errorHandler.handle.bind(errorHandler));
+
+    const schemaErrorFormatter = this.formatSchemaErrors.bind(this);
+    this.instance.setSchemaErrorFormatter(schemaErrorFormatter);
   }
 
   private getDefaultRouteHandler(): RouteHandler {
@@ -86,6 +91,16 @@ export class ShadowServer {
       if (metadata.rawBody) req.rawBody = body;
       return parser(req, body.toString(), done);
     });
+  }
+
+  private formatSchemaErrors(errors: FastifySchemaValidationError[], dataVar: SchemaErrorDataVar): ValidationError {
+    const validationError = new ValidationError();
+    for (const error of errors) {
+      let key = dataVar;
+      if (error.instancePath) key += error.instancePath.replaceAll('/', '.');
+      validationError.addFieldError(key, error.message ?? 'Field validation failed');
+    }
+    return validationError;
   }
 
   private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<RouteHandler> {
@@ -163,6 +178,7 @@ export class ShadowServer {
       routeOptions.handler = await this.generateRouteHandler(route);
 
       routeOptions.schema = {};
+      routeOptions.attachValidation = metadata.silentValidation ?? false;
       const response = this.config.getGlobalResponseSchema();
       routeOptions.schema.response = { ...response };
       if (metadata.schemas?.body) routeOptions.schema.body = metadata.schemas.body;

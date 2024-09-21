@@ -33,7 +33,10 @@ describe('ServerConfig', () => {
   it('should have default values', () => {
     expect(serverConfig.getPort()).toBe(8080);
     expect(serverConfig.getHostname()).toBe('127.0.0.1');
-    expect(serverConfig.getServerConfig()).toStrictEqual({ ignoreTrailingSlash: true });
+    expect(serverConfig.getServerOptions()).toStrictEqual({
+      ignoreTrailingSlash: true,
+      ajv: { customOptions: { allErrors: true, removeAdditional: true, useDefaults: true } },
+    });
   });
 
   it('should have default error handler handle error', () => {
@@ -65,8 +68,8 @@ describe('ServerConfig', () => {
   });
 
   it('should set and get the router config', () => {
-    serverConfig.setServerConfig('bodyLimit', 100);
-    expect(serverConfig.getServerConfig()).toHaveProperty('bodyLimit', 100);
+    serverConfig.setServerOption('bodyLimit', 100);
+    expect(serverConfig.getServerOptions()).toHaveProperty('bodyLimit', 100);
   });
 
   it('should set and get the error handler', () => {
@@ -76,10 +79,14 @@ describe('ServerConfig', () => {
   });
 
   it('should set and get the global response schema', () => {
-    const responseSchema = { schema: { type: 'object' } } as any;
+    const responseSchema = { type: 'object' } as any;
     serverConfig.addGlobalResponseSchema(200, responseSchema);
 
     expect(serverConfig.getGlobalResponseSchema(200)).toBe(responseSchema);
-    expect(serverConfig.getGlobalResponseSchema()).toStrictEqual({ 200: responseSchema });
+    expect(serverConfig.getGlobalResponseSchema()).toStrictEqual({
+      200: responseSchema,
+      '4xx': expect.objectContaining({ type: 'object' }),
+      '5xx': expect.objectContaining({ type: 'object' }),
+    });
   });
 });

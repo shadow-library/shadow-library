@@ -11,12 +11,18 @@ import { type ErrorCode, type ErrorType } from './error-code.error';
  * Defining types
  */
 
+export interface AppErrorObject {
+  code: string;
+  type: ErrorType;
+  message: string;
+}
+
 /**
  * Declaring the constants
  */
 
-export class AppError extends Error {
-  constructor(private readonly error: ErrorCode) {
+export class AppError<TErrorCode extends ErrorCode = ErrorCode> extends Error {
+  constructor(protected readonly error: TErrorCode) {
     super(error.getMessage());
     this.name = this.constructor.name;
   }
@@ -33,7 +39,7 @@ export class AppError extends Error {
     return this.error.getMessage();
   }
 
-  getStatusCode(): number {
-    return this.error.getStatusCode();
+  toObject(): AppErrorObject {
+    return { code: this.getCode(), type: this.getType(), message: this.getMessage() };
   }
 }
