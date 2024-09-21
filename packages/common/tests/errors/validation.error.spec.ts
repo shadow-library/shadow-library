@@ -21,6 +21,7 @@ describe('ValidationError', () => {
 
   it('should create an instance of ValidationError', () => {
     validationError = new ValidationError('fieldOne', 'value one');
+    expect(validationError.message).toBe('Validation Error');
     expect(validationError).toBeInstanceOf(ValidationError);
   });
 
@@ -31,22 +32,21 @@ describe('ValidationError', () => {
 
   it('should throw generic error for no error fields', () => {
     const error = new ValidationError();
-    expect(error.message).toBe('Validation failed');
+    expect(error.getSummary()).toBe('Validation failed');
   });
 
   it('should return the error message for single field', () => {
     const msg = 'Validation failed for fieldOne';
     const error = new ValidationError('fieldOne', 'value one');
 
-    expect(error.getMessage()).toBe(msg);
-    expect(error.message).toBe(msg);
+    expect(error.getSummary()).toBe(msg);
   });
 
   it('should return the error message for multiple fields', () => {
-    expect(validationError.getMessage()).toBe('Validation failed for fieldOne and fieldTwo');
+    expect(validationError.getSummary()).toBe('Validation failed for fieldOne and fieldTwo');
 
     const error = new ValidationError('fieldOne', 'value one').addFieldError('fieldTwo', 'value two').addFieldError('fieldThree', 'value three');
-    expect(error.getMessage()).toBe('Validation failed for fieldOne, fieldTwo and fieldThree');
+    expect(error.getSummary()).toBe('Validation failed for fieldOne, fieldTwo and fieldThree');
   });
 
   it('should return the errors', () => {
@@ -55,6 +55,19 @@ describe('ValidationError', () => {
       { field: 'fieldOne', msg: 'value one' },
       { field: 'fieldTwo', msg: 'value two' },
     ]);
+  });
+
+  it('should return the error object', () => {
+    const error = validationError.toObject();
+    expect(error).toStrictEqual({
+      code: 'VALIDATION_ERROR',
+      type: 'VALIDATION_ERROR',
+      message: 'Validation Error',
+      fields: [
+        { field: 'fieldOne', msg: 'value one' },
+        { field: 'fieldTwo', msg: 'value two' },
+      ],
+    });
   });
 
   it('should combine errors', () => {

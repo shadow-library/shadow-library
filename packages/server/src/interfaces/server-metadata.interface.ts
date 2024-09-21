@@ -18,6 +18,7 @@ declare module '@shadow-library/app' {
     method?: HttpMethod;
     path?: string;
     schemas?: RouteInputSchemas;
+    silentValidation?: boolean;
 
     rawBody?: boolean;
     bodyLimit?: number;

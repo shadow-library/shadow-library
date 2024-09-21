@@ -30,8 +30,4 @@ describe('ErrorCode', () => {
   it('should return the error message', () => {
     expect(errorCode.getMessage()).toBe('Unknown Error');
   });
-
-  it('should return the status code', () => {
-    expect(errorCode.getStatusCode()).toBe(500);
-  });
 });

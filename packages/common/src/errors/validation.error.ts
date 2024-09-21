@@ -5,6 +5,8 @@
 /**
  * Importing user defined packages
  */
+import { AppError, AppErrorObject } from './app.error';
+import { ErrorCode } from './error-code.error';
 
 /**
  * Defining types
@@ -15,17 +17,21 @@ export interface FieldError {
   msg: string;
 }
 
+export interface ValidationErrorObject extends AppErrorObject {
+  fields: FieldError[];
+}
+
 /**
  * Declaring the constants
  */
 
-export class ValidationError extends Error {
+export class ValidationError extends AppError {
   private errors: FieldError[] = [];
 
   constructor();
   constructor(field: string, message: string);
   constructor(field?: string, message?: string) {
-    super();
+    super(ErrorCode.VALIDATION_ERROR);
     this.name = this.constructor.name;
     if (field && message) this.addFieldError(field, message);
   }
@@ -53,7 +59,7 @@ export class ValidationError extends Error {
     return this.errors.length;
   }
 
-  getMessage(): string {
+  getSummary(): string {
     const errors = this.getErrors();
     if (errors.length === 0) return 'Validation failed';
     else if (errors.length === 1) return `Validation failed for ${errors[0]?.field}`;
@@ -63,7 +69,7 @@ export class ValidationError extends Error {
     return `Validation failed for ${fields.join(', ')} and ${lastField}`;
   }
 
-  override get message(): string {
-    return this.getMessage();
+  override toObject(): ValidationErrorObject {
+    return { ...super.toObject(), fields: this.getErrors() };
   }
 }

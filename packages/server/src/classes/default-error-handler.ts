@@ -18,7 +18,7 @@ import { ServerError } from '../server.error';
 
 export class DefaultErrorHandler implements ErrorHandler {
   handle(err: Error, _req: HttpRequest, res: HttpResponse): HttpResponse {
-    if (err instanceof ServerError) return res.status(err.getStatusCode()).send(err.serialize());
+    if (err instanceof ServerError) return res.status(err.getStatusCode()).send(err.toObject());
     return res.status(500).send({ message: err.message ?? 'Internal Server Error' });
   }
 }

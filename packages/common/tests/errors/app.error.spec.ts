@@ -37,7 +37,7 @@ describe('AppError', () => {
     expect(appError.getMessage()).toBe('Unknown Error');
   });
 
-  it('should return the status code', () => {
-    expect(appError.getStatusCode()).toBe(500);
+  it('should return the error object', () => {
+    expect(appError.toObject()).toStrictEqual({ code: 'UNKNOWN', type: 'SERVER_ERROR', message: 'Unknown Error' });
   });
 });

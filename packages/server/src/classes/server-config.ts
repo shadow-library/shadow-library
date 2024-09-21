@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { TObject } from '@sinclair/typebox';
+import { TObject, Type } from '@sinclair/typebox';
 import { FastifyHttpOptions } from 'fastify';
 
 /**
@@ -26,12 +26,24 @@ export class ServerConfig {
 
   private options: ServerOptions = ServerConfig.getDefaultOptions();
   private errorHandler = new DefaultErrorHandler();
-  private responseSchemas: Record<number | string, TObject> = {};
+  private responseSchemas = ServerConfig.getDefaultResponseSchemas();
 
   private static getDefaultOptions(): ServerOptions {
     const config: ServerOptions = {};
     config.ignoreTrailingSlash = true;
+    config.ajv = { customOptions: { removeAdditional: true, useDefaults: true, allErrors: true } };
     return config;
+  }
+
+  private static getDefaultResponseSchemas(): Record<number | string, TObject> {
+    const schema = Type.Object({
+      code: Type.String(),
+      type: Type.String(),
+      message: Type.String(),
+      fields: Type.Optional(Type.Array(Type.Object({ field: Type.String(), msg: Type.String() }))),
+    });
+
+    return { '4xx': schema, '5xx': schema };
   }
 
   getPort(): number {
@@ -52,11 +64,11 @@ export class ServerConfig {
     return this;
   }
 
-  getServerConfig(): ServerOptions {
+  getServerOptions(): ServerOptions {
     return this.options;
   }
 
-  setServerConfig<T extends keyof ServerOptions>(key: T, value: Required<ServerOptions>[T]): this {
+  setServerOption<T extends keyof ServerOptions>(key: T, value: Required<ServerOptions>[T]): this {
     this.options[key] = value;
     return this;
   }
