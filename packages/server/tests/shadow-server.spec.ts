@@ -19,7 +19,7 @@ import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
  * Declaring the constants
  */
 const body = { search: 'test' };
-const data = { msg: 'Hello World' };
+const data = { template: 'sample', data: { msg: 'Hello World' } };
 const error = new AppError(ErrorCode.UNKNOWN);
 
 const contextFn = jest.fn();
@@ -58,7 +58,7 @@ describe('ShadowServer', () => {
     const redirect = { method: HttpMethod.GET, path: '/redirect', redirect: '/api/test-single' };
     router.register({ metadata: redirect, handler, paramtypes: [] });
 
-    const render = { method: HttpMethod.GET, path: '/test-render', render: 'sample' };
+    const render = { method: HttpMethod.GET, path: '/test-render', render: true } as const;
     router.register({ metadata: render, handler, paramtypes: [] });
 
     const options = { type: 'before', weight: 0 };
@@ -152,7 +152,7 @@ describe('ShadowServer', () => {
     expect(response.body).toBe('View');
     expect(handler).toBeCalledTimes(1);
     expect(renderer).toBeCalledTimes(1);
-    expect(renderer).toBeCalledWith('sample', data);
+    expect(renderer).toBeCalledWith(data.template, data.data);
   });
 
   it('should stop execution after response is sent', async () => {
