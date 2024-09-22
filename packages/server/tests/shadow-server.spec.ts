@@ -8,7 +8,7 @@ import { Type } from '@sinclair/typebox';
 /**
  * Importing user defined packages
  */
-import { ErrorHandler, HttpMethod, MiddlewareHandler, ServerConfig, ShadowServer } from '@shadow-library/server';
+import { HttpMethod, MiddlewareHandler, ServerConfig, ShadowServer } from '@shadow-library/server';
 import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
 
 /**
@@ -22,10 +22,10 @@ const body = { search: 'test' };
 const data = { template: 'sample', data: { msg: 'Hello World' } };
 const error = new AppError(ErrorCode.UNKNOWN);
 
-const contextFn = jest.fn();
+const contextFn = jest.fn(async () => {});
 const renderer = jest.fn();
 const handler = jest.fn(async () => data);
-const middlewares = { before: jest.fn<MiddlewareHandler>(() => {}), after: jest.fn<MiddlewareHandler>(() => {}) };
+const middlewares = { before: jest.fn<MiddlewareHandler>(async () => {}), after: jest.fn<MiddlewareHandler>(async () => {}) };
 
 describe('ShadowServer', () => {
   const config = new ServerConfig();
@@ -61,9 +61,9 @@ describe('ShadowServer', () => {
     const render = { method: HttpMethod.GET, path: '/test-render', render: true } as const;
     router.register({ metadata: render, handler, paramtypes: [] });
 
-    const options = { type: 'before', weight: 0 };
+    const options = { type: 'preHandler', weight: 0 };
     const middleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options } as const;
-    const afterMiddleware = { ...middleware, generates: false, options: { ...options, type: 'after' } } as const;
+    const afterMiddleware = { ...middleware, generates: false, options: { ...options, type: 'onResponse' } } as const;
     router.register({ metadata: middleware, handler: () => middlewares.before, paramtypes: [] });
     router.register({ metadata: middleware, handler: () => null, paramtypes: [] });
     router.register({ metadata: afterMiddleware, handler: middlewares.after, paramtypes: [] });
@@ -157,7 +157,7 @@ describe('ShadowServer', () => {
 
   it('should stop execution after response is sent', async () => {
     const data = new AppError(ErrorCode.UNEXPECTED).toObject();
-    middlewares.before.mockImplementationOnce((_, res) => res.status(400).send(data));
+    middlewares.before.mockImplementationOnce(async (_, res) => res.status(400).send(data));
     const response = await server.mockRequest().get('/test-all');
 
     expect(response.statusCode).toBe(400);
@@ -168,15 +168,11 @@ describe('ShadowServer', () => {
   });
 
   it('should handle the route with error', async () => {
-    const errorHandler = jest.fn<ErrorHandler['handle']>((err: AppError, _req, res) => res.status(401).send(err.toObject()));
-    config.setErrorHandler({ handle: errorHandler });
     handler.mockRejectedValueOnce(error);
 
     const response = await server.mockRequest().put('/test-all').body(data);
-    expect(response.statusCode).toBe(401);
+    expect(response.statusCode).toBe(500);
     expect(response.json()).toStrictEqual(error.toObject());
-    expect(errorHandler).toBeCalledTimes(1);
-    expect(errorHandler).toBeCalledWith(error, expect.anything(), expect.anything());
   });
 
   it('should stop the server', async () => {

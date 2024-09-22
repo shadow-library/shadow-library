@@ -27,7 +27,7 @@ export class Context {
   private readonly storage = new AsyncLocalStorage<Map<Key, unknown>>();
 
   init(): MiddlewareHandler {
-    return (req, res) => {
+    return async (req, res) => {
       const store = new Map<Key, unknown>();
       store.set(REQUEST, req);
       store.set(RESPONSE, res);

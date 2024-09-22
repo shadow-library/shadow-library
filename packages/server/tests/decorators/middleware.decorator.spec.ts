@@ -43,7 +43,7 @@ describe('@Middleware', () => {
       [MIDDLEWARE_WATERMARK]: true,
       target: ValidMiddleware,
       generates: true,
-      options: { type: 'before', weight: 0 },
+      options: { type: 'preHandler', weight: 0 },
     });
   });
 });
