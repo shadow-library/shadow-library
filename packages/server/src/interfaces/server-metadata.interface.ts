@@ -26,7 +26,7 @@ declare module '@shadow-library/app' {
     status?: number;
     headers?: Record<string, string | (() => string)>;
     redirect?: string;
-    render?: string;
+    render?: string | true;
   }
 }
 

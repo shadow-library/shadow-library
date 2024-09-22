@@ -140,9 +140,21 @@ export class ShadowServer {
         /** Handling the actual route and serializing the output */
         const args = argsOrder.map(arg => arg && context[arg]);
         const data = await route.handler(...args);
-        if (metadata.redirect) response.status(301).redirect(metadata.redirect);
-        else if (metadata.render) (response as any).viewAsync(metadata.render, data);
-        else if (!response.sent && data) response.send(data);
+
+        if (metadata.redirect) return response.status(301).redirect(metadata.redirect);
+
+        if (metadata.render) {
+          let template = metadata.render;
+          let templateData = data;
+          if (template === true) {
+            template = data.template;
+            templateData = data.data;
+          }
+
+          return (response as any).viewAsync(template, templateData);
+        }
+
+        if (!response.sent && data) return response.send(data);
       } catch (err: unknown) {
         const handler = this.config.getErrorHandler();
         await handler.handle(err as Error, request, response);

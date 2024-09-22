@@ -58,4 +58,14 @@ describe('HTTP Output Decorators', () => {
     const metadata = Utils.getRouteMetadata(Controller.single);
     expect(metadata).toStrictEqual({ render: 'view' });
   });
+
+  it(`should enhance the method with the render metadata with default data`, () => {
+    class Controller {
+      @Render()
+      static single() {}
+    }
+
+    const metadata = Utils.getRouteMetadata(Controller.single);
+    expect(metadata).toStrictEqual({ render: true });
+  });
 });
