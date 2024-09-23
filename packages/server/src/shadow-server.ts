@@ -15,7 +15,7 @@ import { JsonObject } from 'type-fest';
  */
 import { ServerConfig } from './classes';
 import { MIDDLEWARE_WATERMARK } from './constants';
-import { HttpMethod, MiddlewareMetadata } from './decorators';
+import { HttpMethod, MiddlewareMetadata, MiddlewareType } from './decorators';
 import { type HttpRequest, type HttpResponse, MiddlewareHandler, RouteHandler, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
 
@@ -108,64 +108,36 @@ export class ShadowServer {
     const statusCode = metadata.status ?? metadata.method === HttpMethod.POST ? 201 : 200;
     const argsOrder = route.paramtypes.map(p => (typeof p === 'string' ? p : null)) as (keyof RequestContext | null)[];
 
-    const preMiddlewares: MiddlewareHandler[] = [];
-    const postMiddlewares: MiddlewareHandler[] = [];
-    const context = this.config.getContext();
-    if (context) preMiddlewares.push(context.init());
-    for (const middleware of this.middlewares) {
-      const { generates, options } = middleware.metadata;
-      const handler = generates ? await middleware.handler(metadata) : middleware.handler.bind(middleware);
-      const middlewares = options.type === 'after' ? postMiddlewares : preMiddlewares;
-      if (typeof handler === 'function') middlewares.push(handler);
-    }
-
     return async (request, response) => {
       const params = request.params as Record<string, string>;
       const query = request.query as Record<string, string>;
       const body = request.body as JsonObject;
       const context = { request, response, params, query, body };
-      try {
-        /** Running the middlewares */
-        for (const middleware of preMiddlewares) {
-          await middleware(request, response);
-          if (response.sent) return;
-        }
 
-        /** Setting the status code and headers */
-        response.status(statusCode);
-        for (const [key, value] of Object.entries(metadata.headers ?? {})) {
-          response.header(key, typeof value === 'function' ? value() : value);
-        }
-
-        /** Handling the actual route and serializing the output */
-        const args = argsOrder.map(arg => arg && context[arg]);
-        const data = await route.handler(...args);
-
-        if (metadata.redirect) return response.status(301).redirect(metadata.redirect);
-
-        if (metadata.render) {
-          let template = metadata.render;
-          let templateData = data;
-          if (template === true) {
-            template = data.template;
-            templateData = data.data;
-          }
-
-          return (response as any).viewAsync(template, templateData);
-        }
-
-        if (!response.sent && data) return response.send(data);
-      } catch (err: unknown) {
-        const handler = this.config.getErrorHandler();
-        await handler.handle(err as Error, request, response);
-      } finally {
-        /** Running the post middlewares */
-        for (const middleware of postMiddlewares) {
-          try {
-            await middleware(request, response);
-          } catch {} // eslint-disable-line no-empty
-        }
+      /** Setting the status code and headers */
+      response.status(statusCode);
+      for (const [key, value] of Object.entries(metadata.headers ?? {})) {
+        response.header(key, typeof value === 'function' ? value() : value);
       }
+
+      /** Handling the actual route and serializing the output */
+      const args = argsOrder.map(arg => arg && context[arg]);
+      const data = await route.handler(...args);
+
+      if (metadata.redirect) return response.status(metadata.status ?? 301).redirect(metadata.redirect);
+
+      if (metadata.render) {
+        let template = metadata.render;
+        let templateData = data;
+        if (template === true) {
+          template = data.template;
+          templateData = data.data;
+        }
+
+        return (response as any).viewAsync(template, templateData);
+      }
+
+      if (!response.sent && data) return response.send(data);
     };
   }
 
@@ -179,6 +151,8 @@ export class ShadowServer {
     const hasRawBody = this.routes.some(r => r.metadata.rawBody);
     if (hasRawBody) this.registerRawBody();
 
+    const context = this.config.getContext();
+    if (context) this.instance.addHook('onRequest', context.init());
     this.middlewares.sort((a, b) => b.metadata.options.weight - a.metadata.options.weight);
 
     for (const route of this.routes) {
@@ -190,6 +164,20 @@ export class ShadowServer {
       routeOptions.url = metadata.basePath ? metadata.basePath + metadata.path : metadata.path;
       routeOptions.method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
       routeOptions.handler = await this.generateRouteHandler(route);
+
+      /** Applying middlewares */
+      const middlewares: Partial<Record<MiddlewareType, MiddlewareHandler[]>> = {};
+      for (const middleware of this.middlewares) {
+        const { generates, options } = middleware.metadata;
+        const handler = generates ? await middleware.handler(metadata) : middleware.handler.bind(middleware);
+        if (typeof handler === 'function') {
+          if (!middlewares[options.type]) middlewares[options.type] = [];
+          const handlers = middlewares[options.type];
+          assert(handlers, 'Impossible state');
+          handlers.push(handler);
+        }
+      }
+      for (const [type, handlers] of Object.entries(middlewares)) routeOptions[type as MiddlewareType] = handlers;
 
       routeOptions.schema = {};
       routeOptions.attachValidation = metadata.silentValidation ?? false;

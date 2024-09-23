@@ -15,6 +15,8 @@ import { MIDDLEWARE_WATERMARK } from '../constants';
  * Defining types
  */
 
+export type MiddlewareType = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler' | 'preSerialization' | 'onSend' | 'onResponse' | 'onError';
+
 export interface MiddlewareMetadata {
   [MIDDLEWARE_WATERMARK]: true;
   target: Class<unknown>;
@@ -23,8 +25,11 @@ export interface MiddlewareMetadata {
 }
 
 export interface MiddlewareOptions {
-  /** Denotes whether to execute before or after the handler */
-  type: 'before' | 'after';
+  /**
+   * Denotes when to execute the middleware. default value is `preHandler`.
+   * see https://fastify.dev/docs/latest/Reference/Lifecycle for more information
+   */
+  type: MiddlewareType;
 
   /** Denotes the execution order, the higher value gets executed first */
   weight: number;
@@ -36,7 +41,7 @@ export interface MiddlewareOptions {
 const propertyKeys = ['generate', 'use'] as const;
 
 export function Middleware(options: Partial<MiddlewareOptions> = {}): ClassDecorator {
-  if (!options.type) options.type = 'before';
+  if (!options.type) options.type = 'preHandler';
   if (!options.weight) options.weight = 0;
 
   return target => {
