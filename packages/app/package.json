@@ -16,7 +16,7 @@
     "directory": "packages/app"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "deepmerge": "^4.3.1",
     "reflect-metadata": "^0.2.2",
     "type-fest": "^4.26.1"
   },

@@ -45,6 +45,7 @@ describe('ShadowServer', () => {
   it('should register all the middleware and routes', async () => {
     const router = server.getRouter();
     expect(router).toBeDefined();
+    expect(router.identifier.toString()).toBe('Symbol(http-route)');
 
     const schema = Type.Object({});
     const schemas = { body: schema, query: schema, params: schema };

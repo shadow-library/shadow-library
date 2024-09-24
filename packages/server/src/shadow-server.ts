@@ -14,7 +14,7 @@ import { JsonObject } from 'type-fest';
  * Importing user defined packages
  */
 import { ServerConfig } from './classes';
-import { MIDDLEWARE_WATERMARK } from './constants';
+import { HTTP_ROUTE, MIDDLEWARE_WATERMARK } from './constants';
 import { HttpMethod, MiddlewareMetadata, MiddlewareType } from './decorators';
 import { type HttpRequest, type HttpResponse, MiddlewareHandler, RouteHandler, ServerMetadata } from './interfaces';
 import { ServerError, ServerErrorCode } from './server.error';
@@ -203,7 +203,7 @@ export class ShadowServer {
   }
 
   getRouter(): AppRouter<ServerMetadata> {
-    return { register: this.register.bind(this) };
+    return { register: this.register.bind(this), identifier: HTTP_ROUTE };
   }
 
   mockRequest(): MockRequestChain;
