@@ -15,3 +15,5 @@
  */
 
 export const MIDDLEWARE_WATERMARK = Symbol('middleware');
+
+export const HTTP_ROUTE = Symbol('http-route');

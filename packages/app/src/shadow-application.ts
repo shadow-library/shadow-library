@@ -80,13 +80,20 @@ export class ShadowApplication {
     const sortedModules = dependencyGraph.getSortedNodes();
 
     const router = this.config.router;
+    const routers = Array.isArray(router) ? router : router !== undefined ? [router] : [];
     for (const module of sortedModules) {
       const moduleInstance = this.modules.get(module) as ModuleWrapper;
       await moduleInstance.init();
       const controllers = moduleInstance.getControllers();
-      if (!router) continue;
+      if (routers.length === 0) continue;
+
       const routes = controllers.flatMap(controller => controller.getRoutes());
-      for (const route of routes) await router.register(route);
+      for (const router of routers) {
+        for (const route of routes) {
+          const valid = route.metadata[router.identifier] === true;
+          if (valid) await router.register(route);
+        }
+      }
     }
 
     this.logger.debug('Application initialized');

@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { InternalError } from '@shadow-library/common';
-import merge from 'lodash/merge.js';
+import merge from 'deepmerge';
 import { Class } from 'type-fest';
 
 /**
@@ -58,7 +58,7 @@ export class ControllerWrapper {
       const routeMetadata = Extractor.getRouteMetadata(method);
       const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as string[];
       const returnType = Reflect.getMetadata('design:returntype', this.instance, method.name);
-      const metadata = merge({}, controllerMetadata, routeMetadata) as T;
+      const metadata = merge(controllerMetadata, routeMetadata) as T;
       routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });
     }
 

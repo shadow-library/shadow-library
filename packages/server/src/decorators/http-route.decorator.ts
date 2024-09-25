@@ -6,6 +6,7 @@ import { Route } from '@shadow-library/app';
 /**
  * Importing user defined packages
  */
+import { HTTP_ROUTE } from '../constants';
 
 /**
  * Defining types
@@ -34,7 +35,7 @@ export interface RouteOptions {
 export function HttpRoute(options: RouteOptions): MethodDecorator {
   if (!options.path) options.path = '/';
   if (!options.path.startsWith('/')) options.path = '/' + options.path;
-  return Route(options);
+  return Route({ ...options, [HTTP_ROUTE]: true });
 }
 
 export const Get = (path?: string): MethodDecorator => HttpRoute({ method: HttpMethod.GET, path });

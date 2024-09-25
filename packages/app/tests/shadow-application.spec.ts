@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it, jest } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { InternalError } from '@shadow-library/common';
 
 /**
@@ -16,11 +16,16 @@ import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route
 /**
  * Declaring the constants
  */
+const ROUTER_KEY = Symbol('router');
 const globalProvider = { name: 'CONFIG', useValue: 'CONFIG_VALUE' };
-const router: Router = { register: jest.fn<() => void>() };
+const router: Router = { register: jest.fn<() => void>(), identifier: ROUTER_KEY };
 
 describe('Shadow Application', () => {
   const executableMock = jest.fn(() => {});
+
+  afterEach(() => {
+    (router.register as jest.Mock).mockClear();
+  });
 
   @Injectable()
   class ProviderOne {
@@ -29,7 +34,7 @@ describe('Shadow Application', () => {
 
   @Controller()
   class ControllerOne {
-    @Route()
+    @Route({ [ROUTER_KEY]: true, key: ROUTER_KEY })
     method() {}
   }
 
@@ -100,6 +105,12 @@ describe('Shadow Application', () => {
     debugMock.mockClear();
     await application.init();
     expect(debugMock).toBeCalledTimes(0);
+  });
+
+  it('should initialize the application with router array', async () => {
+    const application = new ShadowApplication(AppModule, { router: [router] });
+    await application.init();
+    expect(router.register).toBeCalledTimes(1);
   });
 
   it('should execute the main module', async () => {

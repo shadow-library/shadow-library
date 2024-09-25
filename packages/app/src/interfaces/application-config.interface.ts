@@ -12,5 +12,5 @@ import { Router } from './router.interface';
  */
 
 export interface ApplicationConfig {
-  router?: Router;
+  router?: Router | Router[];
 }

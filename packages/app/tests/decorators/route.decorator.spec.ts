@@ -27,6 +27,9 @@ describe('RouteDecorator', () => {
     @Route(routeMetadataOne)
     @Route(routeMetadataTwo)
     methodTwo() {}
+
+    @Route()
+    methodThree() {}
   }
 
   const controller = new CatController();
@@ -39,6 +42,11 @@ describe('RouteDecorator', () => {
   it('should set route metadata', () => {
     const metadata = Reflect.getMetadata(ROUTE_METADATA, controller.methodOne);
     expect(metadata).toEqual(routeMetadataOne);
+  });
+
+  it('should set default route metadata', () => {
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, controller.methodThree);
+    expect(metadata).toStrictEqual({});
   });
 
   it('should append route metadata', () => {
