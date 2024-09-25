@@ -88,7 +88,10 @@ export class ShadowApplication {
       if (routers.length === 0) continue;
 
       const routes = controllers.flatMap(controller => controller.getRoutes());
+      if (routes.length === 0) continue;
+
       for (const router of routers) {
+        this.logger.debug(`Registering routes for router '${router.constructor.name}'`);
         for (const route of routes) {
           const valid = route.metadata[router.identifier] === true;
           if (valid) await router.register(route);

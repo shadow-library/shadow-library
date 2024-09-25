@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { InternalError } from '@shadow-library/common';
 
 /**
@@ -16,15 +16,16 @@ import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route
 /**
  * Declaring the constants
  */
-const ROUTER_KEY = Symbol('router');
-const globalProvider = { name: 'CONFIG', useValue: 'CONFIG_VALUE' };
-const router: Router = { register: jest.fn<() => void>(), identifier: ROUTER_KEY };
 
-describe('Shadow Application', () => {
-  const executableMock = jest.fn(() => {});
+describe('ShadowApplication', () => {
+  const ROUTER_KEY = Symbol('router');
+  const globalProvider = { name: 'CONFIG', useValue: 'CONFIG_VALUE' };
+  const router: Router = { register: jest.fn<() => void>(), identifier: ROUTER_KEY };
+  const executable = jest.fn(() => {});
+  const logger = { debug: jest.fn() };
 
   afterEach(() => {
-    (router.register as jest.Mock).mockClear();
+    jest.clearAllMocks();
   });
 
   @Injectable()
@@ -46,102 +47,157 @@ describe('Shadow Application', () => {
 
   @Module({ imports: [DependencyOne, GlobalDependency] })
   class AppModule implements Executable {
-    execute = executableMock;
+    execute = executable;
   }
 
-  const application = new ShadowApplication(AppModule, { router });
-  const debugMock = jest.fn().mockReturnThis();
-  /** @ts-expect-error Accessing private member */
-  application.logger.debug = debugMock;
+  describe('object creation', () => {
+    it('should throw an error if the module is not a module', () => {
+      class InvalidModule {}
+      const error = new InternalError(`Class '${InvalidModule.name}' is not a module`);
+      expect(() => new ShadowApplication(InvalidModule)).toThrowError(error);
+    });
 
-  it('should throw an error if the module is not a module', () => {
-    class InvalidModule {}
-    const error = new InternalError(`Class '${InvalidModule.name}' is not a module`);
-    expect(() => new ShadowApplication(InvalidModule)).toThrowError(error);
+    it('should throw error if there are more than one global modules', () => {
+      @GlobalModule()
+      class GlobalModuleOne {}
+
+      @GlobalModule()
+      class GlobalModuleTwo {}
+
+      @Module({ imports: [GlobalModuleOne, GlobalModuleTwo] })
+      class AppModule {}
+
+      expect(() => new ShadowApplication(AppModule)).toThrowError('There can only be one global module');
+    });
+
+    it('should throw error if a global module is imported in a non-main module', () => {
+      @GlobalModule({})
+      class GlobalTestModule {}
+
+      @Module({ imports: [GlobalTestModule] })
+      class TestModule {}
+
+      @Module({ imports: [TestModule] })
+      class AppModule {}
+
+      expect(() => new ShadowApplication(AppModule)).toThrowError(`Global module '${GlobalTestModule.name}' can only be imported in main module`);
+    });
   });
 
-  it('should throw error if there are more than one global modules', () => {
-    @GlobalModule({})
-    class GlobalModuleOne {}
+  describe('application initialization', () => {
+    it('should initialize the application', async () => {
+      const application = new ShadowApplication(AppModule, { router });
+      expect(application.isInited()).toBe(false);
 
-    @GlobalModule({})
-    class GlobalModuleTwo {}
+      await application.init();
+      expect(application.isInited()).toBe(true);
+    });
 
-    @Module({ imports: [GlobalModuleOne, GlobalModuleTwo] })
-    class AppModule {}
+    it('should initialize the application with router array', async () => {
+      const application = new ShadowApplication(AppModule, { router: [router] });
+      application['logger'].debug = logger.debug;
+      await application.init();
 
-    expect(() => new ShadowApplication(AppModule)).toThrowError('There can only be one global module');
+      expect(router.register).toBeCalledTimes(1);
+      expect(logger.debug).toBeCalledTimes(3);
+      expect(logger.debug).toBeCalledWith(expect.stringContaining('Registering routes for router'));
+    });
+
+    it('should return the instance if the application is already initialized', async () => {
+      const application = new ShadowApplication(AppModule, { router });
+      await application.init();
+
+      application['logger'].debug = logger.debug;
+      await application.init();
+
+      expect(logger.debug).not.toBeCalled();
+    });
+
+    it('should not register the routes if there are no routers', async () => {
+      const application = new ShadowApplication(AppModule);
+      application['logger'].debug = logger.debug;
+      await application.init();
+
+      expect(logger.debug).not.toBeCalledWith(expect.stringContaining('Registering routes for router'));
+    });
   });
 
-  it('should throw error if a global module is imported in a non-main module', () => {
-    @GlobalModule({})
-    class GlobalTestModule {}
+  describe('application execution', () => {
+    let application: ShadowApplication;
 
-    @Module({ imports: [GlobalTestModule] })
-    class TestModule {}
+    beforeEach(async () => {
+      application = new ShadowApplication(AppModule, { router });
+      application.init = jest.fn(application.init);
+    });
 
-    @Module({ imports: [TestModule] })
-    class AppModule {}
+    it('should init the application if not inited', async () => {
+      await application.start();
+      expect(application.init).toBeCalled();
+    });
 
-    expect(() => new ShadowApplication(AppModule)).toThrowError(`Global module '${GlobalTestModule.name}' can only be imported in main module`);
+    it('should execute the main module', async () => {
+      await application.start();
+      expect(application.init).toBeCalled();
+      expect(executable).toBeCalled();
+    });
+
+    it('should not execute the main module if it is not executable', async () => {
+      application['main'].getInstance = jest.fn(() => ({ execute: 'one' }));
+      await expect(application.start()).resolves.toBe(application);
+    });
   });
 
-  it('should initialize the application', async () => {
-    expect(application.isInited()).toBe(false);
-    await application.init();
-    expect(application.isInited()).toBe(true);
+  describe('application termination', () => {
+    let application: ShadowApplication;
+
+    beforeEach(async () => {
+      application = new ShadowApplication(AppModule, { router });
+    });
+
+    it('should stop the application', async () => {
+      await application.start();
+
+      application['logger'].debug = logger.debug;
+      application['modules'].clear = jest.fn(application['modules'].clear);
+      await application.stop();
+
+      expect(application.isInited()).toBe(false);
+      expect(application['modules'].clear).toBeCalled();
+      expect(logger.debug).toBeCalledWith('Application stopped');
+    });
+
+    it('should do nothing if the application is not initialized', async () => {
+      application['logger'].debug = logger.debug;
+      await application.stop();
+
+      expect(logger.debug).not.toBeCalled();
+    });
   });
 
-  it('should initialize the application on start if not inited', async () => {
-    @Module({ imports: [DependencyOne, GlobalDependency] })
-    class AppModule {}
-    const application = new ShadowApplication(AppModule);
-    await application.start();
+  describe('application providers', () => {
+    let application: ShadowApplication;
 
-    expect(application.isInited()).toBe(true);
-  });
+    beforeEach(async () => {
+      application = new ShadowApplication(AppModule, { router });
+      await application.start();
+    });
 
-  it('should only initialize the application once', async () => {
-    debugMock.mockClear();
-    await application.init();
-    expect(debugMock).toBeCalledTimes(0);
-  });
+    it('should get the provider instance', async () => {
+      const provider = application.get(ProviderOne);
+      expect(provider).toBeInstanceOf(ProviderOne);
+    });
 
-  it('should initialize the application with router array', async () => {
-    const application = new ShadowApplication(AppModule, { router: [router] });
-    await application.init();
-    expect(router.register).toBeCalledTimes(1);
-  });
+    it('should throw an error if the provider is not found', () => {
+      class NotFound {}
+      const error = new InternalError(`Provider '${NotFound.name}' not found or exported`);
+      expect(() => application.get(NotFound)).toThrowError(error);
+      expect(() => application.get('NotFound')).toThrowError(error);
+    });
 
-  it('should execute the main module', async () => {
-    await application.start();
-    expect(debugMock).toBeCalledTimes(0);
-    expect(executableMock).toBeCalledTimes(1);
-  });
-
-  it('should get the provider instance', async () => {
-    const provider = application.get(ProviderOne);
-    expect(provider).toBeInstanceOf(ProviderOne);
-  });
-
-  it('should throw an error if the provider is not found', () => {
-    class NotFound {}
-    const error = new InternalError(`Provider '${NotFound.name}' not found or exported`);
-    expect(() => application.get(NotFound)).toThrowError(error);
-    expect(() => application.get('NotFound')).toThrowError(error);
-  });
-
-  it('should stop the application', async () => {
-    await application.stop();
-    const error = new InternalError(`Application not yet initialized`);
-    expect(application.isInited()).toBe(false);
-    expect(executableMock).toBeCalledTimes(1);
-    expect(() => application.get(ProviderOne)).toThrowError(error);
-  });
-
-  it('should do nothing when stop() is called if the application is not initialized', async () => {
-    debugMock.mockClear();
-    await application.stop();
-    expect(debugMock).toBeCalledTimes(0);
+    it('should throw an error if the application is not initialized', () => {
+      application.isInited = jest.fn(() => false);
+      const error = new InternalError(`Application not yet initialized`);
+      expect(() => application.get(ProviderOne)).toThrowError(error);
+    });
   });
 });
