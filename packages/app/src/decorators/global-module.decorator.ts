@@ -20,7 +20,7 @@ export type GlobalModuleMetadata = Pick<ModuleMetadata, 'providers' | 'exports'>
  */
 const invalidMetadataKeys = [MODULE_METADATA.CONTROLLERS, MODULE_METADATA.IMPORTS] as string[];
 
-export function GlobalModule(metadata: GlobalModuleMetadata): ClassDecorator {
+export function GlobalModule(metadata: GlobalModuleMetadata = {}): ClassDecorator {
   const properties = Object.keys(metadata);
   for (const property of properties) {
     const invalid = invalidMetadataKeys.includes(property);
