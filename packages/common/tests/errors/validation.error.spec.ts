@@ -17,17 +17,15 @@ import { ValidationError } from '@shadow-library/common';
  */
 
 describe('ValidationError', () => {
-  let validationError: ValidationError;
-
   it('should create an instance of ValidationError', () => {
-    validationError = new ValidationError('fieldOne', 'value one');
-    expect(validationError.message).toBe('Validation Error');
-    expect(validationError).toBeInstanceOf(ValidationError);
+    const error = new ValidationError('fieldOne', 'value one');
+    expect(error.message).toBe('Validation Error');
+    expect(error).toBeInstanceOf(ValidationError);
   });
 
   it('should add a field error', () => {
-    validationError.addFieldError('fieldTwo', 'value two');
-    expect(validationError.getErrorCount()).toBe(2);
+    const error = new ValidationError('fieldOne', 'value one').addFieldError('fieldTwo', 'value two');
+    expect(error.getErrorCount()).toBe(2);
   });
 
   it('should throw generic error for no error fields', () => {
@@ -43,14 +41,16 @@ describe('ValidationError', () => {
   });
 
   it('should return the error message for multiple fields', () => {
-    expect(validationError.getSummary()).toBe('Validation failed for fieldOne and fieldTwo');
+    const error = new ValidationError('fieldOne', 'value one').addFieldError('fieldTwo', 'value two');
+    expect(error.getSummary()).toBe('Validation failed for fieldOne and fieldTwo');
 
-    const error = new ValidationError('fieldOne', 'value one').addFieldError('fieldTwo', 'value two').addFieldError('fieldThree', 'value three');
+    error.addFieldError('fieldThree', 'value three');
     expect(error.getSummary()).toBe('Validation failed for fieldOne, fieldTwo and fieldThree');
   });
 
   it('should return the errors', () => {
-    const errors = validationError.getErrors();
+    const error = new ValidationError('fieldOne', 'value one').addFieldError('fieldTwo', 'value two');
+    const errors = error.getErrors();
     expect(errors).toStrictEqual([
       { field: 'fieldOne', msg: 'value one' },
       { field: 'fieldTwo', msg: 'value two' },
@@ -58,8 +58,8 @@ describe('ValidationError', () => {
   });
 
   it('should return the error object', () => {
-    const error = validationError.toObject();
-    expect(error).toStrictEqual({
+    const error = new ValidationError('fieldOne', 'value one').addFieldError('fieldTwo', 'value two');
+    expect(error.toObject()).toStrictEqual({
       code: 'VALIDATION_ERROR',
       type: 'VALIDATION_ERROR',
       message: 'Validation Error',

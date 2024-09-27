@@ -17,27 +17,41 @@ import { AppError, ErrorCode, ErrorType } from '@shadow-library/common';
  */
 
 describe('AppError', () => {
-  let appError: AppError;
-
   it('should create an instance of AppError', () => {
-    appError = new AppError(ErrorCode.UNKNOWN);
-    expect(appError.name).toBe('AppError');
-    expect(appError).toBeInstanceOf(AppError);
+    const error = new AppError(ErrorCode.UNKNOWN);
+    expect(error.name).toBe('AppError');
+    expect(error).toBeInstanceOf(AppError);
   });
 
   it('should return the error type', () => {
-    expect(appError.getType()).toBe(ErrorType.SERVER_ERROR);
+    const errorOne = new AppError(ErrorCode.UNKNOWN);
+    const erroTwo = new AppError(ErrorCode.VALIDATION_ERROR);
+
+    expect(errorOne.getType()).toBe(ErrorType.SERVER_ERROR);
+    expect(erroTwo.getType()).toBe(ErrorType.VALIDATION_ERROR);
   });
 
   it('should return the error code', () => {
-    expect(appError.getCode()).toBe('UNKNOWN');
+    const errorOne = new AppError(ErrorCode.UNKNOWN);
+    const errorTwo = new AppError(ErrorCode.VALIDATION_ERROR);
+
+    expect(errorOne.getCode()).toBe('UNKNOWN');
+    expect(errorTwo.getCode()).toBe('VALIDATION_ERROR');
   });
 
   it('should return the error message', () => {
-    expect(appError.getMessage()).toBe('Unknown Error');
+    const errorOne = new AppError(ErrorCode.UNKNOWN);
+    const errorTwo = new AppError(ErrorCode.VALIDATION_ERROR);
+
+    expect(errorOne.getMessage()).toBe('Unknown Error');
+    expect(errorTwo.getMessage()).toBe('Validation Error');
   });
 
   it('should return the error object', () => {
-    expect(appError.toObject()).toStrictEqual({ code: 'UNKNOWN', type: 'SERVER_ERROR', message: 'Unknown Error' });
+    const errorOne = new AppError(ErrorCode.UNKNOWN);
+    const errorTwo = new AppError(ErrorCode.VALIDATION_ERROR);
+
+    expect(errorOne.toObject()).toStrictEqual({ code: 'UNKNOWN', type: 'SERVER_ERROR', message: 'Unknown Error' });
+    expect(errorTwo.toObject()).toStrictEqual({ code: 'VALIDATION_ERROR', type: 'VALIDATION_ERROR', message: 'Validation Error' });
   });
 });
