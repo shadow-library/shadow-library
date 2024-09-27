@@ -1,12 +1,12 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
 
 /**
  * Importing user defined packages
  */
-import { InMemoryStore } from '@shadow-library/common';
+import { InMemoryStore, InternalError } from '@shadow-library/common';
 
 /**
  * Defining types
@@ -19,63 +19,112 @@ import { InMemoryStore } from '@shadow-library/common';
 describe('InMemoryStore', () => {
   let store: InMemoryStore;
 
-  it('should initialize the store', () => {
+  beforeEach(() => {
     store = new InMemoryStore();
-    expect(store).toBeInstanceOf(InMemoryStore);
   });
 
-  it('should set and get a value', () => {
-    const actualValue = 'value';
-    store.set('key', actualValue);
-    const value = store.get('key');
-    expect(value).toBe(actualValue);
+  describe('get()', () => {
+    it('should return undefined if the key does not exist', () => {
+      expect(store.get('non-existent-key')).toBeUndefined();
+    });
+
+    it('should return default value if the key does not exist and a default is provided', () => {
+      expect(store.get('non-existent-key', 'default')).toBe('default');
+    });
+
+    it('should return the stored value if the key exists', () => {
+      store.set('key', 'value');
+      expect(store.get('key')).toBe('value');
+    });
   });
 
-  it('should get a default value if key not present', () => {
-    const defaultValue = 'default-value';
-    const value = store.get('random-key', defaultValue);
-    expect(value).toBe(defaultValue);
+  describe('set()', () => {
+    it('should store a value by key', () => {
+      store.set('key', 'value');
+      expect(store.get('key')).toBe('value');
+    });
+
+    it('should return the InMemoryStore instance for chaining', () => {
+      expect(store.set('key', 'value')).toBeInstanceOf(InMemoryStore);
+    });
   });
 
-  it('should delete a key', () => {
-    store.del('key');
-    const value = store.get('key');
-    expect(value).toBeUndefined();
+  describe('del()', () => {
+    it('should delete a key from the store', () => {
+      store.set('key', 'value');
+      store.del('key');
+      expect(store.get('key')).toBeUndefined();
+    });
+
+    it('should return the InMemoryStore instance for chaining', () => {
+      expect(store.del('key')).toBeInstanceOf(InMemoryStore);
+    });
   });
 
-  it('should throw an error if value is not an array', () => {
-    const key = 'invalid-array';
-    store.set(key, 'value');
+  describe('insert()', () => {
+    it('should insert a value into an array if the key exists and contains an array', () => {
+      store.set('key', [1, 2]);
+      store.insert('key', 3);
+      expect(store.get('key')).toEqual([1, 2, 3]);
+    });
 
-    expect(() => store.insert(key, 'value')).toThrowError(`The value at key '${key}' is not an array`);
+    it('should create a new array if the key does not exist', () => {
+      store.insert('key', 1);
+      expect(store.get('key')).toEqual([1]);
+    });
+
+    it('should throw an error if the existing value is not an array', () => {
+      store.set('key', 'not-an-array');
+      expect(() => store.insert('key', 1)).toThrowError(InternalError);
+    });
   });
 
-  it('should insert a value in an array', () => {
-    store.insert('key', 'value1');
-    store.insert('key', 'value2');
-    const values = store.get('key');
-    expect(values).toStrictEqual(['value1', 'value2']);
+  describe('remove()', () => {
+    it('should remove a value from an array if the key exists and contains an array', () => {
+      store.set('key', [1, 2, 3]);
+      store.remove('key', 2);
+      expect(store.get('key')).toEqual([1, 3]);
+    });
+
+    it('should do nothing if the key does not exist', () => {
+      store.remove('key', 1);
+      expect(store.get('key')).toBeUndefined();
+    });
+
+    it('should throw an error if the existing value is not an array', () => {
+      store.set('key', 'not-an-array');
+      expect(() => store.remove('key', 1)).toThrowError(InternalError);
+    });
   });
 
-  it('should remove a value from an array', () => {
-    store.remove('key', 'value1');
-    const values = store.get('key');
-    expect(values).toStrictEqual(['value2']);
+  describe('inc()', () => {
+    it('should increment the value of the key by the provided value', () => {
+      store.set('counter', 5);
+      const result = store.inc('counter', 3);
+      expect(result).toBe(8);
+      expect(store.get('counter')).toBe(8);
+    });
+
+    it('should initialize the key to 0 if it does not exist and increment from there', () => {
+      const result = store.inc('counter', 5);
+      expect(result).toBe(5);
+      expect(store.get('counter')).toBe(5);
+    });
+
+    it('should throw an error if the value is not a number', () => {
+      store.set('counter', 'not-a-number');
+      expect(() => store.inc('counter', 5)).toThrowError(InternalError);
+    });
   });
 
-  it('should throw an error if value is not a number', () => {
-    store.set('key', 'value');
-    expect(() => store.inc('key', 1)).toThrow();
-  });
+  describe('getOptionalArray()', () => {
+    it('should return undefined if the key does not exist', () => {
+      expect(store['getOptionalArray']('non-existent-key')).toBeUndefined();
+    });
 
-  it('should increment a number if key is present', () => {
-    store.set('number', 5);
-    const value = store.inc('number', -1);
-    expect(value).toBe(4);
-  });
-
-  it('should set a number if key is not present', () => {
-    const value = store.inc('new-number', 1);
-    expect(value).toBe(1);
+    it('should throw an error if the value is not an array', () => {
+      store.set('key', 'not-an-array');
+      expect(() => (store as any).getOptionalArray('key')).toThrowError(InternalError);
+    });
   });
 });

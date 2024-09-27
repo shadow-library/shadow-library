@@ -23,24 +23,34 @@ const MAX_16BIT_INTEGER = Math.pow(2, 16);
 const MAX_32BIT_INTEGER = Math.pow(2, 32);
 
 export class LRUCache {
-  private head: number = 0;
-  private tail: number = 0;
-  private size: number = 0;
-  private deletedSize: number = 0;
+  /*!
+   * The cache is a stack where recently used items are moved to the top of the stack.
+   *
+   * `top` - The most recently used item in the cache
+   * `bottom` - The least recently used item in the cache
+   * `downward` - The earlier item in the cache
+   * `upward` - The recent item in the cache
+   */
 
-  private items: Record<string, number> = {};
-  private forward: UintArray;
-  private backward: UintArray;
+  private top: number = 0;
+  private bottom: number = 0;
+  private downward: UintArray;
+  private upward: UintArray;
+
+  private deletedSize: number = 0;
   private deleted: UintArray;
+
+  private size: number = 0;
   private keys: string[];
   private values: any[];
+  private items: Record<string, number> = {};
 
   constructor(private readonly capacity: number) {
     if (capacity <= 0) throw new InternalError('Cache capacity must be a positive number greater than 0');
 
     const TypedArray = LRUCache.getTypedArray(capacity);
-    this.forward = new TypedArray(capacity);
-    this.backward = new TypedArray(capacity);
+    this.downward = new TypedArray(capacity);
+    this.upward = new TypedArray(capacity);
     this.deleted = new TypedArray(capacity);
 
     this.keys = new Array(capacity);
@@ -55,33 +65,33 @@ export class LRUCache {
   }
 
   private splayOnTop(pointer: number): LRUCache {
-    const oldHead = this.head;
-    if (this.head === pointer) return this;
+    const oldHead = this.top;
+    if (this.top === pointer) return this;
 
-    const previous = this.backward[pointer] as number;
-    const next = this.forward[pointer] as number;
+    const previous = this.upward[pointer] as number;
+    const next = this.downward[pointer] as number;
 
-    if (this.tail === pointer) this.tail = previous;
-    else this.backward[next] = previous;
+    if (this.bottom === pointer) this.bottom = previous;
+    else this.upward[next] = previous;
 
-    this.forward[previous] = next;
+    this.downward[previous] = next;
 
-    this.backward[oldHead] = pointer;
-    this.head = pointer;
-    this.forward[pointer] = oldHead;
+    this.upward[oldHead] = pointer;
+    this.top = pointer;
+    this.downward[pointer] = oldHead;
 
     return this;
   }
 
   clear(): void {
-    this.head = 0;
-    this.tail = 0;
+    this.top = 0;
+    this.bottom = 0;
     this.size = 0;
     this.deletedSize = 0;
     this.items = {};
 
-    this.forward.fill(0);
-    this.backward.fill(0);
+    this.downward.fill(0);
+    this.upward.fill(0);
     this.deleted.fill(0);
 
     this.keys = new Array(this.capacity);
@@ -102,8 +112,8 @@ export class LRUCache {
       else pointer = this.size;
       this.size++;
     } else {
-      pointer = this.tail;
-      this.tail = this.backward[pointer] as number;
+      pointer = this.bottom;
+      this.bottom = this.upward[pointer] as number;
       const key = this.keys[pointer] as string;
       delete this.items[key];
     }
@@ -114,9 +124,9 @@ export class LRUCache {
     this.values[pointer] = value;
 
     /** Updating the pointers */
-    this.forward[pointer] = this.head;
-    this.backward[this.head] = pointer;
-    this.head = pointer;
+    this.downward[pointer] = this.top;
+    this.upward[this.top] = pointer;
+    this.top = pointer;
 
     return this;
   }
@@ -151,14 +161,14 @@ export class LRUCache {
       return deletedValue;
     }
 
-    const previous = this.backward[pointer] as number;
-    const next = this.forward[pointer] as number;
+    const previous = this.upward[pointer] as number;
+    const next = this.downward[pointer] as number;
 
-    if (this.head === pointer) this.head = next;
-    else if (this.tail === pointer) this.tail = previous;
+    if (this.top === pointer) this.top = next;
+    else if (this.bottom === pointer) this.bottom = previous;
 
-    this.forward[previous] = next;
-    this.backward[next] = previous;
+    this.downward[previous] = next;
+    this.upward[next] = previous;
 
     this.size--;
     this.deleted[this.deletedSize++] = pointer;
