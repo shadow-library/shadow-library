@@ -15,19 +15,19 @@ import { NeverError } from '@shadow-library/common';
 /**
  * Declaring the constants
  */
-const msg = 'Error that should not happen';
 
 describe('NeverError', () => {
-  let neverError: NeverError;
+  const msg = 'Error that should not happen';
 
   it('should create an instance of NeverError', () => {
-    neverError = new NeverError(msg);
+    const neverError = new NeverError(msg);
     expect(neverError).toBeInstanceOf(Error);
     expect(neverError).toBeInstanceOf(NeverError);
     expect(neverError.name).toBe(NeverError.name);
   });
 
   it('should return the error message', () => {
+    const neverError = new NeverError(msg);
     expect(neverError.getMessage()).toBe(msg);
   });
 });
