@@ -15,9 +15,10 @@ import { ConsoleTransport, Logger } from '@shadow-library/common';
 /**
  * Declaring the constants
  */
-const maskedValue = '****';
 
 describe('Logger Service', () => {
+  const maskedValue = '****';
+
   it('should mask sensitive data', () => {
     const redactor = Logger.getRedactor(['password']);
     const data = { username: 'username', password: 'password' };

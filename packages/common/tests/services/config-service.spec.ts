@@ -1,13 +1,14 @@
 /**
  * Importing npm packages
  */
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 
 /**
  * Importing user defined packages
  */
 import { Config, type ConfigRecords, ConfigService } from '@shadow-library/common';
 import { Utils } from '@shadow-library/common/internal.utils';
+import { throwError } from '@shadow-library/common/shorthands';
 
 /**
  * Defining types
@@ -26,13 +27,6 @@ interface CustomConfigRecords extends ConfigRecords {
 /**
  * Declaring the constants
  */
-const setNodeEnv = (env: string): void => {
-  process.env.NODE_ENV = env;
-};
-const throwError = (err: string | Error) => {
-  if (typeof err === 'string') err = new Error(err);
-  throw err;
-};
 
 describe('Config Service', () => {
   class CustomConfig extends ConfigService<CustomConfigRecords> {
@@ -46,8 +40,8 @@ describe('Config Service', () => {
 
   let config: CustomConfig;
 
-  beforeAll(() => {
-    Utils.exit = throwError;
+  beforeEach(() => {
+    Utils.exit = (err: string | Error) => throwError(err instanceof Error ? err : new Error(err));
     config = new CustomConfig();
   });
 
@@ -78,8 +72,8 @@ describe('Config Service', () => {
   });
 
   describe('invalid initialization', () => {
-    beforeAll(() => setNodeEnv('production'));
-    afterAll(() => setNodeEnv('test'));
+    beforeAll(() => ((process.env.NODE_ENV = 'production'), void 0));
+    afterAll(() => ((process.env.NODE_ENV = 'test'), void 0));
 
     it("should exit if 'custom.key' is not provided in production", () => {
       class CustomConfigService extends ConfigService<CustomConfigRecords> {
