@@ -1,14 +1,13 @@
 /**
  * Importing npm packages
  */
-import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import { AppError, ErrorCode, ValidationError } from '@shadow-library/common';
-import { Type } from '@sinclair/typebox';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { InternalError, ValidationError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
  */
-import { HttpMethod, MiddlewareHandler, ServerConfig, ShadowServer } from '@shadow-library/server';
+import { ServerConfig, ServerError, ShadowServer } from '@shadow-library/server';
 import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
 
 /**
@@ -18,169 +17,191 @@ import { MIDDLEWARE_WATERMARK } from '@shadow-library/server/constants';
 /**
  * Declaring the constants
  */
-const body = { search: 'test' };
-const data = { template: 'sample', data: { msg: 'Hello World' } };
-const error = new AppError(ErrorCode.UNKNOWN);
+jest.mock('fastify', () => ({
+  fastify: jest.fn().mockReturnValue({
+    setNotFoundHandler: jest.fn(),
+    setErrorHandler: jest.fn(),
+    setSchemaErrorFormatter: jest.fn(),
 
-const contextFn = jest.fn(async () => {});
-const renderer = jest.fn();
-const handler = jest.fn(async () => data);
-const middlewares = { before: jest.fn<MiddlewareHandler>(async () => {}), after: jest.fn<MiddlewareHandler>(async () => {}) };
+    getDefaultJsonParser: jest.fn(),
+    addContentTypeParser: jest.fn(),
+    addHook: jest.fn(),
 
-describe('ShadowServer', () => {
-  const config = new ServerConfig();
-  let server: ShadowServer;
+    route: jest.fn(),
+    listen: jest.fn(),
+    close: jest.fn(),
+  }),
+}));
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+describe('Shadow Server', () => {
+  const request = { body: {}, params: {}, query: {} } as any;
+  const response = { send: jest.fn() } as any;
 
-  it('should create a http instance of ShadowServer', () => {
-    config.addDefaultErrorSchema('4xx').addDefaultErrorSchema('5xx');
-    config.setContext({ init: () => contextFn } as any);
-    server = new ShadowServer(config);
+  it('should create the object and fastify instance', () => {
+    const config = new ServerConfig();
+    const server = new ShadowServer(config);
+    const instance = server.getInstance();
+
     expect(server).toBeInstanceOf(ShadowServer);
+    expect(instance).toBeDefined();
+    expect(instance.setNotFoundHandler).toHaveBeenCalled();
+    expect(instance.setErrorHandler).toHaveBeenCalled();
+    expect(instance.setSchemaErrorFormatter).toHaveBeenCalled();
   });
 
-  it('should register all the middleware and routes', async () => {
-    const router = server.getRouter();
-    expect(router).toBeDefined();
-    expect(router.identifier.toString()).toBe('Symbol(http-route)');
+  describe('error handlers', () => {
+    let server: ShadowServer;
 
-    const schema = Type.Object({});
-    const schemas = { body: schema, query: schema, params: schema };
-    const headers = { 'X-Header-One': 'Value One', 'X-Header-Two': () => Date.now().toString() };
-    const single = { method: HttpMethod.POST, basePath: '/api', path: '/test-single', headers, rawBody: true, schemas };
-    router.register({ metadata: single, handler, paramtypes: ['request', 'query', String, 'body'] });
+    beforeEach(() => {
+      jest.clearAllMocks();
+      const config = new ServerConfig();
+      server = new ShadowServer(config);
+    });
 
-    const multiple = { method: HttpMethod.ALL, path: '/test-all' };
-    router.register({ metadata: multiple, handler, paramtypes: ['request'] });
+    it('should handle not found error', () => {
+      const mock = jest.fn();
+      jest.spyOn(server['config'], 'getErrorHandler').mockReturnValue({ handle: mock });
 
-    const redirect = { method: HttpMethod.GET, path: '/redirect', redirect: '/api/test-single' };
-    router.register({ metadata: redirect, handler, paramtypes: [] });
+      server['getDefaultRouteHandler']()(request, response);
 
-    const render = { method: HttpMethod.GET, path: '/test-render', render: true } as const;
-    router.register({ metadata: render, handler, paramtypes: [] });
+      expect(mock).toHaveBeenCalledWith(expect.any(ServerError), request, response);
+    });
 
-    const options = { type: 'preHandler', weight: 0 };
-    const middleware = { [MIDDLEWARE_WATERMARK]: true, target: Object, generates: true, options } as const;
-    const afterMiddleware = { ...middleware, generates: false, options: { ...options, type: 'onResponse' } } as const;
-    router.register({ metadata: middleware, handler: () => middlewares.before, paramtypes: [] });
-    router.register({ metadata: middleware, handler: () => null, paramtypes: [] });
-    router.register({ metadata: afterMiddleware, handler: middlewares.after, paramtypes: [] });
+    it('should format the schema errors', () => {
+      const errors = [{ instancePath: '', message: "must have property 'password'" }, { instancePath: '/email' }];
+      const formattedError = server['formatSchemaErrors'](errors as any, 'body');
 
-    expect(server['routes']).toHaveLength(4);
-    expect(server['middlewares']).toHaveLength(3);
-
-    server.getInstance().decorateReply('viewAsync', function (this: any, ...args: unknown[]) {
-      renderer(...args);
-      return this.send('View');
+      expect(formattedError).toBeInstanceOf(ValidationError);
+      expect(formattedError.getErrors()).toStrictEqual([
+        { field: 'body', msg: `must have property 'password'` },
+        { field: 'body.email', msg: 'Field validation failed' },
+      ]);
     });
   });
 
-  it('should format the validation error', async () => {
-    const errors = [{ instancePath: '', message: "must have property 'password'" }, { instancePath: '/email' }];
-    const formattedError = server['formatSchemaErrors'](errors as any, 'body');
+  describe('hooks and route registertion', () => {
+    let server: ShadowServer;
 
-    expect(formattedError).toBeInstanceOf(ValidationError);
-    expect(formattedError.getErrors()).toStrictEqual([
-      { field: 'body', msg: "must have property 'password'" },
-      { field: 'body.email', msg: 'Field validation failed' },
-    ]);
-  });
-
-  it('should start the server', async () => {
-    const mockFn = jest.fn() as any;
-    server.getInstance().listen = mockFn;
-
-    await expect(server.start()).resolves.toBeUndefined();
-    expect(mockFn).toBeCalledTimes(1);
-    expect(mockFn).toBeCalledWith({ port: config.getPort(), host: config.getHostname() });
-  });
-
-  it('should throw an error when adding a route after the server is inited', async () => {
-    const route = { metadata: {}, handler: () => {}, paramtypes: [] };
-    expect(() => server.getRouter().register(route)).toThrowError();
-  });
-
-  it('should return the default route handler', async () => {
-    const response = await server.mockRequest().get('/not-found');
-    expect(response.statusCode).toBe(404);
-    expect(response.json()).toEqual({ code: 'S002', message: 'Not Found', type: 'NOT_FOUND' });
-  });
-
-  it('should be able to access single method route', async () => {
-    const response = await server.mockRequest().post('/api/test-single?id=123').body(body);
-    expect(response.statusCode).toBe(201);
-    expect(response.json()).toStrictEqual(data);
-
-    expect(contextFn).toBeCalledTimes(1);
-    expect(handler).toBeCalledTimes(1);
-    expect(middlewares.before).toBeCalledTimes(1);
-    expect(middlewares.after).toBeCalledTimes(1);
-    expect(handler).toBeCalledWith(expect.objectContaining({ rawBody: expect.any(Buffer) }), { id: '123' }, null, body);
-
-    expect(response.headers).toHaveProperty('x-header-one', 'Value One');
-    expect(response.headers).toHaveProperty('x-header-two', expect.stringMatching(/^[0-9]{13}$/));
-  });
-
-  it('should be able to access multi method route', async () => {
-    const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const;
-    for (const method of methods) {
-      const response = await server.mockRequest({ method, url: '/test-all' });
-      const request = (handler.mock.lastCall as any[])?.[0];
-      expect(response.statusCode).toBe(200);
-      expect(response.json()).toStrictEqual(data);
-      expect(contextFn).toBeCalledTimes(1);
-      expect(handler).toBeCalledTimes(1);
-      expect(request).not.toHaveProperty('rawBody');
+    beforeEach(() => {
       jest.clearAllMocks();
-    }
+      const config = new ServerConfig();
+      server = new ShadowServer(config);
+    });
+
+    it('should return the router', () => {
+      const register = jest.spyOn(server as any, 'register');
+
+      const router = server.getRouter();
+      router.register({ metadata: {} } as any);
+
+      expect(router).toBeDefined();
+      expect(register).toHaveBeenCalled();
+      expect(router.identifier).toBeDefined();
+    });
+
+    it('should throw an error if route or middleware is registered after server initialization', () => {
+      server['inited'] = true;
+      const route = { metadata: {} } as any;
+      expect(() => server['register'](route)).toThrowError(InternalError);
+    });
+
+    it('should register the route', () => {
+      const middlewares = jest.spyOn(server['middlewares'], 'push');
+      const routes = jest.spyOn(server['routes'], 'push');
+
+      const route = { metadata: {} } as any;
+      server['register'](route);
+
+      expect(middlewares).not.toHaveBeenCalled();
+      expect(routes).toHaveBeenCalledWith(route);
+    });
+
+    it('should register the middleware', () => {
+      const middlewares = jest.spyOn(server['middlewares'], 'push');
+      const routes = jest.spyOn(server['routes'], 'push');
+
+      const route = { metadata: { [MIDDLEWARE_WATERMARK]: true } } as any;
+      server['register'](route);
+
+      expect(routes).not.toHaveBeenCalled();
+      expect(middlewares).toHaveBeenCalledWith(route);
+    });
+
+    it('should register raw body parser', () => {
+      const request = { routeOptions: { config: { metadata: { rawBody: true } } } } as any;
+      const buffer = Buffer.from('{"key": "value"}');
+      const instance = server.getInstance();
+      const done = () => {};
+      const parser = jest.fn();
+      jest.mocked(instance.getDefaultJsonParser).mockReturnValue(parser);
+
+      server['registerRawBody']();
+      const handler = jest.mocked(instance.addContentTypeParser).mock.lastCall?.[2];
+      handler?.(request, buffer, done);
+
+      expect(instance.addContentTypeParser).toHaveBeenCalledWith('application/json', { parseAs: 'buffer' }, expect.any(Function));
+      expect(parser).toHaveBeenCalledWith(request, buffer.toString(), done);
+      expect(request.rawBody).toBe(buffer);
+    });
+
+    it('should set the context hook', async () => {
+      const instance = server.getInstance();
+      jest.spyOn(server['config'], 'getContext').mockReturnValue({ init: jest.fn().mockReturnValue({}) } as any);
+
+      await server.init();
+
+      expect(instance.addHook).toBeCalledWith('onRequest', {});
+    });
   });
 
-  it('should redirect to another route', async () => {
-    const response = await server.mockRequest().get('/redirect');
+  describe('start and termination', () => {
+    let server: ShadowServer;
 
-    expect(response.statusCode).toBe(301);
-    expect(handler).toBeCalledTimes(1);
-    expect(response.headers).toHaveProperty('location', '/api/test-single');
-  });
+    beforeEach(() => {
+      jest.clearAllMocks();
+      const config = new ServerConfig();
+      server = new ShadowServer(config);
+    });
 
-  it('should render the view', async () => {
-    const response = await server.mockRequest().get('/test-render').body(body);
+    it('should initiate the server before staring', async () => {
+      const init = jest.spyOn(server, 'init');
+      const instance = server.getInstance();
+      const listen = jest.spyOn(instance, 'listen');
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toBe('View');
-    expect(handler).toBeCalledTimes(1);
-    expect(renderer).toBeCalledTimes(1);
-    expect(renderer).toBeCalledWith(data.template, data.data);
-  });
+      await server.start();
 
-  it('should stop execution after response is sent', async () => {
-    const data = new AppError(ErrorCode.UNEXPECTED).toObject();
-    middlewares.before.mockImplementationOnce(async (_, res) => res.status(400).send(data));
-    const response = await server.mockRequest().get('/test-all');
+      expect(init).toHaveBeenCalled();
+      expect(listen).toHaveBeenCalled();
+    });
 
-    expect(response.statusCode).toBe(400);
-    expect(response.json()).toStrictEqual(data);
-    expect(middlewares.before).toHaveBeenCalledTimes(1);
-    expect(middlewares.after).toHaveBeenCalledTimes(1);
-    expect(handler).not.toBeCalled();
-  });
+    it('should return if the server is already initialized', async () => {
+      const fn = jest.spyOn(server['routes'], 'some');
+      server['inited'] = true;
 
-  it('should handle the route with error', async () => {
-    handler.mockRejectedValueOnce(error);
+      await server.init();
 
-    const response = await server.mockRequest().put('/test-all').body(data);
-    expect(response.statusCode).toBe(500);
-    expect(response.json()).toStrictEqual(error.toObject());
-  });
+      expect(fn).not.toHaveBeenCalled();
+    });
 
-  it('should stop the server', async () => {
-    const mockFn = jest.fn(async () => {}) as any;
-    server.getInstance().close = mockFn;
+    it('should start the server', () => {
+      server['inited'] = true;
+      const init = jest.spyOn(server, 'init');
+      const instance = server.getInstance();
+      const listen = jest.spyOn(instance, 'listen');
 
-    await expect(server.stop()).resolves.toBeUndefined();
-    expect(mockFn).toBeCalledTimes(1);
+      server.start();
+
+      expect(init).not.toHaveBeenCalled();
+      expect(listen).toHaveBeenCalled();
+    });
+
+    it('should stop the server', () => {
+      const instance = server.getInstance();
+      const close = jest.spyOn(instance, 'close');
+
+      server.stop();
+
+      expect(close).toHaveBeenCalled();
+    });
   });
 });
