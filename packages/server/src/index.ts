@@ -9,5 +9,6 @@ import 'reflect-metadata';
 export * from './classes';
 export * from './decorators';
 export * from './interfaces';
+export * from './services';
 export * from './server.error';
 export * from './shadow-server';

@@ -3,6 +3,7 @@
  */
 import { AsyncLocalStorage } from 'async_hooks';
 
+import { Injectable } from '@shadow-library/app';
 import { InternalError } from '@shadow-library/common';
 
 /**
@@ -23,6 +24,7 @@ const REQUEST = Symbol('request');
 const RESPONSE = Symbol('response');
 const RID = Symbol('rid');
 
+@Injectable()
 export class Context {
   private readonly storage = new AsyncLocalStorage<Map<Key, unknown>>();
 
@@ -36,9 +38,9 @@ export class Context {
     };
   }
 
-  get<T>(key: Key, throwOnMissing: true): T;
-  get<T>(key: Key, throwOnMissing?: false): T | null;
-  get<T>(key: Key, throwOnMissing?: boolean): T | null {
+  protected get<T>(key: Key, throwOnMissing: true): T;
+  protected get<T>(key: Key, throwOnMissing?: false): T | null;
+  protected get<T>(key: Key, throwOnMissing?: boolean): T | null {
     const store = this.storage.getStore();
     if (!store) throw new InternalError('Context not yet initialized');
     const value = store.get(key) as T | undefined;
@@ -48,7 +50,7 @@ export class Context {
     return value ?? null;
   }
 
-  set<T>(key: Key, value: T): this {
+  protected set<T>(key: Key, value: T): this {
     const store = this.storage.getStore();
     if (!store) throw new InternalError('Context not yet initialized');
     store.set(key, value);

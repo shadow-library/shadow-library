@@ -90,10 +90,4 @@ describe('ServerConfig', () => {
     serverConfig.addDefaultErrorSchema(500);
     expect(fn).toBeCalledWith(500, expect.any(Object));
   });
-
-  it('should set and get the context', () => {
-    const context = { key: 'value' } as any;
-    serverConfig.setContext(context);
-    expect(serverConfig.getContext()).toBe(context);
-  });
 });
