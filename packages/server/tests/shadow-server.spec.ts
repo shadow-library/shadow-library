@@ -143,15 +143,6 @@ describe('Shadow Server', () => {
       expect(parser).toHaveBeenCalledWith(request, buffer.toString(), done);
       expect(request.rawBody).toBe(buffer);
     });
-
-    it('should set the context hook', async () => {
-      const instance = server.getInstance();
-      jest.spyOn(server['config'], 'getContext').mockReturnValue({ init: jest.fn().mockReturnValue({}) } as any);
-
-      await server.init();
-
-      expect(instance.addHook).toBeCalledWith('onRequest', {});
-    });
   });
 
   describe('start and termination', () => {

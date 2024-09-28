@@ -39,11 +39,11 @@ describe('Context', () => {
   describe('set()', () => {
     it('should throw an error if context is not inited', () => {
       storage.getStore.mockReturnValueOnce(undefined);
-      expect(() => context.set('key', 'value')).toThrowError('Context not yet initialized');
+      expect(() => context['set']('key', 'value')).toThrowError('Context not yet initialized');
     });
 
     it('should set the context value', () => {
-      context.set('key', 'value');
+      context['set']('key', 'value');
       expect(store.set).toHaveBeenCalledWith('key', 'value');
     });
   });
@@ -67,7 +67,7 @@ describe('Context', () => {
 
     it('should return null if value not present when throwIfMissing is false', () => {
       store.get.mockReturnValueOnce(undefined);
-      expect(context.get('random')).toBeNull();
+      expect(context['get']('random')).toBeNull();
     });
   });
 });

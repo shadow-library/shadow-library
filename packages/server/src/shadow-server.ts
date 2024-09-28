@@ -152,8 +152,6 @@ export class ShadowServer {
     const hasRawBody = this.routes.some(r => r.metadata.rawBody);
     if (hasRawBody) this.registerRawBody();
 
-    const context = this.config.getContext();
-    if (context) this.instance.addHook('onRequest', context.init());
     this.middlewares.sort((a, b) => b.metadata.options.weight - a.metadata.options.weight);
 
     for (const route of this.routes) {
