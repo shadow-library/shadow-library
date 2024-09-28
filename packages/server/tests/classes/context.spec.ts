@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 /**
  * Importing user defined packages
@@ -15,29 +15,30 @@ import { Context } from '@shadow-library/server';
 /**
  * Declaring the constants
  */
-const data = { req: { id: 1 }, res: {}, get: 'GET', set: 'SET' };
-const store = { get: jest.fn().mockReturnValue(data.get), set: jest.fn().mockReturnValue(data.set) };
-const getStore = jest.fn().mockReturnValue(store);
 
 describe('Context', () => {
-  const context = new Context();
-  context['storage'].getStore = getStore as any;
+  let context: Context;
+  const data = { req: { id: 1 }, res: {}, get: 'GET', set: 'SET' };
+  const store = { get: jest.fn().mockReturnValue(data.get), set: jest.fn().mockReturnValue(data.set) };
+  const storage = { enterWith: jest.fn(), getStore: jest.fn().mockReturnValue(store) };
 
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
+    context = new Context();
+    // @ts-expect-error setting private readonly storage
+    context['storage'] = storage;
   });
 
   it('should initialize the context', () => {
-    const fn = jest.spyOn(context['storage'], 'enterWith');
     const middleware = context.init();
     middleware(data.req as any, data.res as any);
 
-    expect(fn).toHaveBeenCalledWith(expect.any(Map));
+    expect(storage.enterWith).toHaveBeenCalledWith(expect.any(Map));
   });
 
-  describe('set', () => {
+  describe('set()', () => {
     it('should throw an error if context is not inited', () => {
-      getStore.mockReturnValueOnce(undefined);
+      storage.getStore.mockReturnValueOnce(undefined);
       expect(() => context.set('key', 'value')).toThrowError('Context not yet initialized');
     });
 
@@ -55,7 +56,7 @@ describe('Context', () => {
     });
 
     it('should throw an error if context is not inited', () => {
-      getStore.mockReturnValueOnce(undefined);
+      storage.getStore.mockReturnValueOnce(undefined);
       expect(() => context.getResponse()).toThrowError('Context not yet initialized');
     });
 

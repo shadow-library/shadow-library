@@ -146,6 +146,7 @@ export class ShadowServer {
   }
 
   async init(): Promise<void> {
+    if (this.inited) return;
     this.inited = true;
 
     const hasRawBody = this.routes.some(r => r.metadata.rawBody);
