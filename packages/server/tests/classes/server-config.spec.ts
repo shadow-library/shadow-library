@@ -15,18 +15,15 @@ import { ServerConfig } from '@shadow-library/server';
 /**
  * Declaring the constants
  */
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 describe('ServerConfig', () => {
   const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
   let serverConfig: ServerConfig;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should create a new instance', () => {
     serverConfig = new ServerConfig();
-    expect(serverConfig).toBeInstanceOf(ServerConfig);
+    jest.clearAllMocks();
   });
 
   it('should have default values', () => {
@@ -37,6 +34,8 @@ describe('ServerConfig', () => {
       genReqId: expect.any(Function),
       ajv: { customOptions: { allErrors: true, removeAdditional: true, useDefaults: true } },
     });
+
+    expect(serverConfig.getServerOptions()?.genReqId?.({} as any)).toMatch(uuidRegex);
   });
 
   it('should have default error handler handle error', () => {
@@ -84,6 +83,12 @@ describe('ServerConfig', () => {
 
     expect(serverConfig.getGlobalResponseSchema(200)).toBe(responseSchema);
     expect(serverConfig.getGlobalResponseSchema()).toStrictEqual({ 200: responseSchema });
+  });
+
+  it('should add default error schema', () => {
+    const fn = jest.spyOn(serverConfig, 'addGlobalResponseSchema');
+    serverConfig.addDefaultErrorSchema(500);
+    expect(fn).toBeCalledWith(500, expect.any(Object));
   });
 
   it('should set and get the context', () => {
