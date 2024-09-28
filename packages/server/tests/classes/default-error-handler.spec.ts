@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { AppError } from '@shadow-library/common';
+import { AppError, ValidationError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
@@ -33,6 +33,19 @@ describe('DefaultErrorHandler', () => {
 
     expect(response.status).toHaveBeenCalledWith(ServerErrorCode.S001.getStatusCode());
     expect(response.send).toHaveBeenCalledWith(body);
+  });
+
+  it('should handle validation error', () => {
+    const error = new ValidationError('name', 'Invalid Name');
+    errorHandler.handle(error, request, response);
+
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(response.send).toHaveBeenCalledWith({
+      code: 'VALIDATION_ERROR',
+      type: 'VALIDATION_ERROR',
+      message: 'Validation Error',
+      fields: [{ field: 'name', msg: 'Invalid Name' }],
+    });
   });
 
   it('should handle app error', () => {
