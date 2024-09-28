@@ -25,4 +25,11 @@ describe('@HttpController', () => {
     const metadata = Utils.getRouteMetadata(TestController);
     expect(metadata).toStrictEqual({ basePath: '/test' });
   });
+
+  it(`should enhance the class with the default path metadata`, () => {
+    @HttpController()
+    class TestController {}
+    const metadata = Utils.getRouteMetadata(TestController);
+    expect(metadata).toStrictEqual({ basePath: '' });
+  });
 });
