@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { RouteMetdata } from '@shadow-library/app';
+import { RouteShorthandOptions } from 'fastify';
 
 /**
  * Importing user defined packages
@@ -13,15 +14,13 @@ import { HttpMethod, RouteInputSchemas } from '../decorators';
  */
 
 declare module '@shadow-library/app' {
-  export interface RouteMetdata {
+  export interface RouteMetdata extends Omit<RouteShorthandOptions, 'config'> {
     basePath?: string;
     method?: HttpMethod;
     path?: string;
     schemas?: RouteInputSchemas;
-    silentValidation?: boolean;
 
     rawBody?: boolean;
-    bodyLimit?: number;
 
     status?: number;
     headers?: Record<string, string | (() => string)>;
