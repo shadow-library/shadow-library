@@ -53,8 +53,16 @@ describe('ShadowApplication', () => {
   describe('object creation', () => {
     it('should throw an error if the module is not a module', () => {
       class InvalidModule {}
-      const error = new InternalError(`Class '${InvalidModule.name}' is not a module`);
-      expect(() => new ShadowApplication(InvalidModule)).toThrowError(error);
+      expect(() => new ShadowApplication(InvalidModule)).toThrowError(InternalError);
+    });
+
+    it('should throw an error if the module import is undefined', () => {
+      @Module({ imports: [undefined as any] })
+      class InvalidModule {}
+      @Module({ imports: [DependencyOne, InvalidModule] })
+      class AppModule {}
+
+      expect(() => new ShadowApplication(AppModule)).toThrowError(InternalError);
     });
 
     it('should throw error if there are more than one global modules', () => {
