@@ -7,7 +7,7 @@ import { InternalError } from '@shadow-library/common';
 /**
  * Importing user defined packages
  */
-import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route, Router, ShadowApplication } from '@shadow-library/app';
+import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route, Router, ShadowApplication, forwardRef } from '@shadow-library/app';
 
 /**
  * Defining types
@@ -45,7 +45,7 @@ describe('ShadowApplication', () => {
   @GlobalModule({ providers: [globalProvider], exports: [globalProvider.name] })
   class GlobalDependency {}
 
-  @Module({ imports: [DependencyOne, GlobalDependency] })
+  @Module({ imports: [DependencyOne, forwardRef(() => GlobalDependency)] })
   class AppModule implements Executable {
     execute = executable;
   }

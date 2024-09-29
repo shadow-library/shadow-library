@@ -8,6 +8,7 @@ import 'reflect-metadata';
  */
 export * from './decorators';
 export * from './interfaces';
+export * from './utils';
 
 export { PARAMTYPES_METADATA, RETURN_TYPE_METADATA } from './constants';
 export * from './shadow-application';
