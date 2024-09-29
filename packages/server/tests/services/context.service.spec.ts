@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { InternalError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
@@ -39,7 +40,7 @@ describe('Context', () => {
   describe('set()', () => {
     it('should throw an error if context is not inited', () => {
       storage.getStore.mockReturnValueOnce(undefined);
-      expect(() => context['set']('key', 'value')).toThrowError('Context not yet initialized');
+      expect(() => context['set']('key', 'value')).toThrowError(InternalError);
     });
 
     it('should set the context value', () => {
@@ -57,12 +58,12 @@ describe('Context', () => {
 
     it('should throw an error if context is not inited', () => {
       storage.getStore.mockReturnValueOnce(undefined);
-      expect(() => context.getResponse()).toThrowError('Context not yet initialized');
+      expect(() => context.getResponse()).toThrowError(InternalError);
     });
 
     it('should throw an error if value not present when throwIfMissing is true', () => {
       store.get.mockReturnValueOnce(undefined);
-      expect(() => context.getRID()).toThrowError("Key 'Symbol(rid)' not found in the context");
+      expect(() => context.getRID()).toThrowError(InternalError);
     });
 
     it('should return null if value not present when throwIfMissing is false', () => {

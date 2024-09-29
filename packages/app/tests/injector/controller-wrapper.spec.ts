@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { describe, expect, it, jest } from '@jest/globals';
+import { InternalError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
@@ -38,7 +39,7 @@ describe('ControllerWrapper', () => {
 
   it('should throw an error if the class is not a controller', () => {
     class Test {}
-    expect(() => new ControllerWrapper(Test, [])).toThrowError(`Class 'Test' is not a controller`);
+    expect(() => new ControllerWrapper(Test, [])).toThrowError(InternalError);
   });
 
   it('should return the routes of the controller', () => {

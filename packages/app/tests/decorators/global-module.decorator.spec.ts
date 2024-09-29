@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { describe, expect, it } from '@jest/globals';
+import { InternalError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
@@ -22,8 +23,8 @@ describe('@GlobalModule', () => {
     const propsOne = { providers: ['Test'], imports: ['Test'] };
     const propsTwo = { providers: ['Test'], controllers: ['Test'] };
 
-    expect(GlobalModule.bind(null, propsOne as any)).toThrowError(`Invalid property 'imports' passed into the @GlobalModule() decorator.`);
-    expect(GlobalModule.bind(null, propsTwo as any)).toThrowError(`Invalid property 'controllers' passed into the @GlobalModule() decorator.`);
+    expect(GlobalModule.bind(null, propsOne as any)).toThrowError(InternalError);
+    expect(GlobalModule.bind(null, propsTwo as any)).toThrowError(InternalError);
   });
 
   it('should enhance class with expected global module metadata', () => {
