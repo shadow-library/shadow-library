@@ -55,6 +55,11 @@ export class ShadowApplication {
 
     const dependencies = Extractor.getMetadata<Class<unknown>>(MODULE_METADATA.IMPORTS, module);
     if (this.globalModuleType && !dependencies.includes(this.globalModuleType)) dependencies.unshift(this.globalModuleType);
+    if (dependencies.some(m => m === undefined)) {
+      const missingModules = dependencies.filter(m => m === undefined).map((_, i) => i);
+      throw new InternalError(`Module '${module.name}' has missing dependencies at index: ${missingModules.join(', ')}. This might be due to circular dependency`);
+    }
+
     const dependentModules = dependencies.map(m => this.scanForModules(m));
     const moduleInstance = new ModuleWrapper(module, dependentModules);
     this.modules.set(module, moduleInstance);
