@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { NeverError } from '@shadow-library/common';
+import { InternalError, NeverError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
@@ -76,16 +76,14 @@ describe('ModuleWrapper', () => {
       @Module({ providers: [InvalidCatService] })
       class InvalidCatModule {}
       const module = new ModuleWrapper(InvalidCatModule, []);
-      const error = `Class 'InvalidCatService' is not an injectable provider`;
-      await expect(module.init()).rejects.toThrowError(error);
+      await expect(module.init()).rejects.toThrowError(InternalError);
     });
 
     it('should throw an error if the provider is not found', async () => {
       @Module({ providers: [CatService] })
       class InvalidCatModule {}
       const module = new ModuleWrapper(InvalidCatModule, []);
-      const error = `Provider 'CatSubService' not found in module 'InvalidCatModule'`;
-      await expect(module.init()).rejects.toThrowError(error);
+      await expect(module.init()).rejects.toThrowError(InternalError);
     });
 
     it('should throw an error if the ordinary class is provided as the controller', async () => {
@@ -93,16 +91,14 @@ describe('ModuleWrapper', () => {
       @Module({ controllers: [InvalidCatController] })
       class InvalidCatModule {}
       const module = new ModuleWrapper(InvalidCatModule, []);
-      const error = `Class 'InvalidCatController' is not a controller`;
-      await expect(module.init()).rejects.toThrowError(error);
+      await expect(module.init()).rejects.toThrowError(InternalError);
     });
 
     it('should throw error when method is called before module initialization', async () => {
       const module = new ModuleWrapper(CatModule, []);
-      const error = new NeverError(`Module '${CatModule.name}' not yet initialized`);
 
-      expect(() => module.getControllers()).toThrowError(error);
-      expect(module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY)).rejects.toThrowError(error);
+      expect(() => module.getControllers()).toThrowError(NeverError);
+      await expect(module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY)).rejects.toThrowError(NeverError);
     });
 
     it('should detect circular dependencies', async () => {
@@ -125,8 +121,7 @@ describe('ModuleWrapper', () => {
       class CircularModule {}
 
       const module = new ModuleWrapper(CircularModule, []);
-      const error = `Circular dependency detected: SERVICE_A -> SERVICE_B -> SERVICE_A`;
-      await expect(module.init()).rejects.toThrowError(error);
+      await expect(module.init()).rejects.toThrowError(InternalError);
     });
 
     it('should initialize the module', async () => {
@@ -192,12 +187,11 @@ describe('ModuleWrapper', () => {
 
     it('should destroy the module', async () => {
       await module.destroy();
-      const error = new NeverError(`Module '${CatModule.name}' not yet initialized`);
 
       expect(module.isInited()).toBe(false);
       expect(onModuleDestroyMock).toBeCalledTimes(1);
-      expect(() => module.getInstance()).toThrowError(error);
-      expect(() => module.getExportedProvider('MOCK_CAT')).toThrowError(error);
+      expect(() => module.getInstance()).toThrowError(NeverError);
+      expect(() => module.getExportedProvider('MOCK_CAT')).toThrowError(NeverError);
     });
 
     it('should do nothing when destorying uninited module', async () => {

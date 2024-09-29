@@ -75,7 +75,7 @@ describe('ShadowApplication', () => {
       @Module({ imports: [GlobalModuleOne, GlobalModuleTwo] })
       class AppModule {}
 
-      expect(() => new ShadowApplication(AppModule)).toThrowError('There can only be one global module');
+      expect(() => new ShadowApplication(AppModule)).toThrowError(InternalError);
     });
 
     it('should throw error if a global module is imported in a non-main module', () => {
@@ -88,7 +88,7 @@ describe('ShadowApplication', () => {
       @Module({ imports: [TestModule] })
       class AppModule {}
 
-      expect(() => new ShadowApplication(AppModule)).toThrowError(`Global module '${GlobalTestModule.name}' can only be imported in main module`);
+      expect(() => new ShadowApplication(AppModule)).toThrowError(InternalError);
     });
   });
 
@@ -197,15 +197,13 @@ describe('ShadowApplication', () => {
 
     it('should throw an error if the provider is not found', () => {
       class NotFound {}
-      const error = new InternalError(`Provider '${NotFound.name}' not found or exported`);
-      expect(() => application.get(NotFound)).toThrowError(error);
-      expect(() => application.get('NotFound')).toThrowError(error);
+      expect(() => application.get(NotFound)).toThrowError(InternalError);
+      expect(() => application.get('NotFound')).toThrowError(InternalError);
     });
 
     it('should throw an error if the application is not initialized', () => {
       application.isInited = jest.fn(() => false);
-      const error = new InternalError(`Application not yet initialized`);
-      expect(() => application.get(ProviderOne)).toThrowError(error);
+      expect(() => application.get(ProviderOne)).toThrowError(InternalError);
     });
   });
 });

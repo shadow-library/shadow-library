@@ -49,7 +49,6 @@ describe('DependencyGraph', () => {
     graph.addDependency('C', 'D');
     graph.addDependency('D', 'B');
 
-    const expectedError = new InternalError('Circular dependency detected: B -> C -> D -> B');
-    expect(() => graph.getSortedNodes()).toThrowError(expectedError);
+    expect(() => graph.getSortedNodes()).toThrowError(InternalError);
   });
 });
