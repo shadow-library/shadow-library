@@ -9,6 +9,7 @@ import { Class } from 'type-fest';
  */
 import { MODULE_METADATA, MODULE_WATERMARK } from '../constants';
 import { InjectionName, Provider } from '../interfaces';
+import { ForwardReference } from '../utils';
 
 /**
  * Defining types
@@ -17,7 +18,7 @@ export interface ModuleMetadata {
   /**
    * List of imported modules that export the providers which are required in this module.
    */
-  imports?: Class<unknown>[];
+  imports?: (Class<unknown> | ForwardReference<Class<unknown>>)[];
 
   /**
    * List of controllers defined in this module which have to be instantiated.
