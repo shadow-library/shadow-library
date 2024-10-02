@@ -11,32 +11,92 @@ import { Class } from 'type-fest';
  * Defining types
  */
 
-export type InjectionName = string | symbol | Class<unknown>;
+export type InjectionToken = string | symbol | Class<unknown>;
 
-export interface ClassProvider {
-  name: InjectionName;
-  useClass: Class<unknown>;
+export type FactoryDependency = {
+  token: InjectionToken;
+  optional: boolean;
+};
+
+export type Provider<T = any> = Class<T> | ClassProvider<T> | ValueProvider<T> | FactoryProvider<T>;
+
+export interface ClassProvider<T = any> {
+  /**
+   * Injection token
+   */
+  token: InjectionToken;
+
+  /**
+   * Type (class name) of provider (instance to be injected).
+   */
+  useClass: Class<T>;
+
+  /**
+   * This option is only available on value providers!
+   */
   useValue?: never;
+
+  /**
+   * This option is only available on factory providers!
+   */
   inject?: never;
+
+  /**
+   * This option is only available on factory providers!
+   */
   useFactory?: never;
 }
 
-export interface ValueProvider {
-  name: InjectionName;
-  useValue: any;
+export interface ValueProvider<T = any> {
+  /**
+   * Injection token
+   */
+  token: InjectionToken;
+
+  /**
+   * Instance of a provider to be injected.
+   */
+  useValue: T;
+
+  /**
+   * This option is only available on class providers!
+   */
   useClass?: never;
+
+  /**
+   * This option is only available on factory providers!
+   */
   inject?: never;
+
+  /**
+   * This option is only available on factory providers!
+   */
   useFactory?: never;
 }
 
-export type FactoryProviderInject = InjectionName | { name: InjectionName; optional?: boolean };
+export interface FactoryProvider<T = any> {
+  /**
+   * Injection token
+   */
+  token: InjectionToken;
 
-export interface FactoryProvider {
-  name: InjectionName;
-  inject?: FactoryProviderInject[];
-  useFactory: (...args: any[]) => any | Promise<any>;
+  /**
+   * Optional list of providers to be injected into the context of the Factory function.
+   */
+  inject?: Array<InjectionToken | FactoryDependency>;
+
+  /**
+   * Factory function that returns an instance of the provider to be injected.
+   */
+  useFactory: (...args: any[]) => T | Promise<T>;
+
+  /**
+   * This option is only available on class providers!
+   */
   useClass?: never;
+
+  /**
+   * This option is only available on value providers!
+   */
   useValue?: never;
 }
-
-export type Provider = Class<unknown> | ClassProvider | ValueProvider | FactoryProvider;

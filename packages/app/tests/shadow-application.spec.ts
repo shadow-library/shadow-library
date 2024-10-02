@@ -19,7 +19,7 @@ import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route
 
 describe('ShadowApplication', () => {
   const ROUTER_KEY = Symbol('router');
-  const globalProvider = { name: 'CONFIG', useValue: 'CONFIG_VALUE' };
+  const globalProvider = { token: 'CONFIG', useValue: 'CONFIG_VALUE' };
   const router: Router = { register: jest.fn<() => void>(), identifier: ROUTER_KEY };
   const executable = jest.fn(() => {});
   const logger = { debug: jest.fn() };
@@ -30,7 +30,7 @@ describe('ShadowApplication', () => {
 
   @Injectable()
   class ProviderOne {
-    constructor(@Inject(globalProvider.name) public config: string) {}
+    constructor(@Inject(globalProvider.token) public config: string) {}
   }
 
   @Controller()
@@ -42,7 +42,7 @@ describe('ShadowApplication', () => {
   @Module({ providers: [ProviderOne], exports: [ProviderOne], controllers: [ControllerOne] })
   class DependencyOne {}
 
-  @GlobalModule({ providers: [globalProvider], exports: [globalProvider.name] })
+  @GlobalModule({ providers: [globalProvider], exports: [globalProvider.token] })
   class GlobalDependency {}
 
   @Module({ imports: [DependencyOne, forwardRef(() => GlobalDependency)] })

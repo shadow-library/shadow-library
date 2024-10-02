@@ -2,27 +2,28 @@
  * Importing npm packages
  */
 import { InternalError } from '@shadow-library/common';
+import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
  */
-import { Extractor } from './extractor.helper';
+import { isClassProvider, isFactoryProvider, isValueProvider } from './provider-classifier';
 import { Validator } from './validator.helper';
 import { OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '../../constants';
 import { InjectMetadata } from '../../decorators';
-import { FactoryProviderInject, InjectionName, Provider } from '../../interfaces';
+import { FactoryDependency, InjectionToken, Provider } from '../../interfaces';
 
 /**
  * Defining types
  */
 
 interface ParsedInjection {
-  name: InjectionName;
+  name: InjectionToken;
   optional: boolean;
 }
 
 interface ParsedProvider {
-  name: InjectionName;
+  name: InjectionToken;
   useFactory: (...args: any[]) => any | Promise<any>;
   inject: ParsedInjection[];
 }
@@ -32,30 +33,32 @@ interface ParsedProvider {
  */
 
 class ParserStatic {
-  parseInjection(injection: FactoryProviderInject): ParsedInjection {
-    if (typeof injection === 'object' && 'name' in injection) return { name: injection.name, optional: !!injection.optional };
-    return { name: injection, optional: false };
+  parseInjection(injection: FactoryDependency | InjectionToken): ParsedInjection {
+    if (typeof injection === 'object' && 'token' in injection) return { name: injection.token, optional: injection.optional };
+    return { name: injection, optional: true };
   }
 
   parseProvider(provider: Provider): ParsedProvider {
-    if ('useValue' in provider) return { name: provider.name, useFactory: () => provider.useValue, inject: [] };
+    if (isValueProvider(provider)) return { name: provider.token, useFactory: () => provider.useValue, inject: [] };
 
-    if (Validator.isFactoryProvider(provider)) {
+    if (isFactoryProvider(provider) && Validator.isFactoryProvider(provider)) {
       const inject = provider.inject ?? [];
-      return { name: provider.name, useFactory: provider.useFactory, inject: inject.map(i => this.parseInjection(i)) };
+      return { name: provider.token, useFactory: provider.useFactory, inject: inject.map(i => this.parseInjection(i)) };
     }
 
-    const classProvider = typeof provider === 'function' ? { name: provider, useClass: provider } : provider;
-    const injectable = Validator.isInjectable(classProvider.useClass);
-    if (!injectable) throw new InternalError(`Class '${classProvider.useClass.name}' is not an injectable provider`);
-    const dependencies = Extractor.getMetadata<FactoryProviderInject>(PARAMTYPES_METADATA, classProvider.useClass);
-    const selfDependencies = Extractor.getMetadata<InjectMetadata>(SELF_DECLARED_DEPS_METADATA, classProvider.useClass);
-    for (const dependency of selfDependencies) dependencies[dependency.index] = dependency.name;
-    const optionalDependencies = Extractor.getMetadata<number>(OPTIONAL_DEPS_METADATA, classProvider.useClass);
-    for (const index of optionalDependencies) dependencies[index] = { name: dependencies[index] as InjectionName, optional: true };
+    const { token, useClass: Class } = isClassProvider(provider) ? provider : { token: provider, useClass: provider };
+    const injectable = Validator.isInjectable(Class);
+    if (!injectable) throw new InternalError(`Class '${Class.name}' is not an injectable provider`);
+    const dependencies = [] as FactoryDependency[];
+    const paramtypes: Class<unknown>[] = Reflect.getMetadata(PARAMTYPES_METADATA, Class);
+    const selfDependencies: InjectMetadata[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, Class) ?? [];
+    const optionalDependencies: number[] = Reflect.getMetadata(OPTIONAL_DEPS_METADATA, Class) ?? [];
+    for (const dependency of paramtypes) dependencies.push({ token: dependency, optional: false });
+    for (const dependency of selfDependencies) dependencies[dependency.index] = { token: dependency.token, optional: false };
+    for (const index of optionalDependencies) dependencies[index]!.optional = true;
 
     const inject = dependencies.map(d => this.parseInjection(d));
-    return { name: classProvider.name, useFactory: (...args: any) => new classProvider.useClass(...args), inject };
+    return { name: token, useFactory: (...args: any) => new Class(...args), inject };
   }
 }
 

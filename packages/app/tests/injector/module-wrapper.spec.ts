@@ -51,10 +51,10 @@ describe('ModuleWrapper', () => {
   @Module({
     providers: [
       CatService,
-      { name: 'CONFIG', useValue: 'CONFIG_VALUE' },
-      { name: 'MOCK_CAT', useClass: MockCatService },
-      { name: testConfig, useFactory: (config: string) => `TEST_${config}`, inject: ['CONFIG'] },
-      { name: 'NO_INJECT', useFactory: (config: string) => `NO_INJECT_${config}` },
+      { token: 'CONFIG', useValue: 'CONFIG_VALUE' },
+      { token: 'MOCK_CAT', useClass: MockCatService },
+      { token: testConfig, useFactory: (config: string) => `TEST_${config}`, inject: ['CONFIG'] },
+      { token: 'NO_INJECT', useFactory: (config: string) => `NO_INJECT_${config}` },
       CatSubService,
     ],
     controllers: [CatController],
@@ -114,8 +114,8 @@ describe('ModuleWrapper', () => {
 
       @Module({
         providers: [
-          { name: 'SERVICE_A', useClass: ServiceA },
-          { name: 'SERVICE_B', useClass: ServiceB },
+          { token: 'SERVICE_A', useClass: ServiceA },
+          { token: 'SERVICE_B', useClass: ServiceB },
         ],
       })
       class CircularModule {}
