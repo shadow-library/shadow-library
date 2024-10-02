@@ -159,7 +159,7 @@ export class ShadowServer {
       assert(metadata.path, 'Route path is required');
       assert(metadata.method, 'Route method is required');
 
-      const routeOptions = { config: { metadata } } as RouteOptions;
+      const routeOptions = { ...metadata, config: { metadata } } as RouteOptions;
       routeOptions.url = metadata.basePath ? metadata.basePath + metadata.path : metadata.path;
       routeOptions.method = metadata.method === HttpMethod.ALL ? httpMethods : [metadata.method];
       routeOptions.handler = await this.generateRouteHandler(route);
