@@ -6,14 +6,14 @@
  * Importing user defined packages
  */
 import { SELF_DECLARED_DEPS_METADATA } from '../constants';
-import { InjectionName } from '../interfaces';
+import { InjectionToken } from '../interfaces';
 
 /**
  * Defining types
  */
 
 export interface InjectMetadata {
-  name: InjectionName;
+  token: InjectionToken;
   index: number;
 }
 
@@ -21,10 +21,10 @@ export interface InjectMetadata {
  * Declaring the constants
  */
 
-export function Inject(name: InjectionName): ParameterDecorator {
+export function Inject(token: InjectionToken): ParameterDecorator {
   return (target, _key, index) => {
     let dependencies = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, target) ?? [];
-    dependencies = [...dependencies, { index, name }];
+    dependencies = [...dependencies, { index, token }];
     Reflect.defineMetadata(SELF_DECLARED_DEPS_METADATA, dependencies, target);
   };
 }

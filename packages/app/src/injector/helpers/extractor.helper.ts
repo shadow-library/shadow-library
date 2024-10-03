@@ -7,7 +7,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { ROUTE_METADATA } from '../../constants';
-import { InjectionName } from '../../interfaces';
+import { InjectionToken } from '../../interfaces';
 
 /**
  * Defining types
@@ -22,7 +22,7 @@ class ExtractorStatic {
     return Reflect.getMetadata(key, target) ?? [];
   }
 
-  getProviderName(provider: InjectionName): string {
+  getProviderName(provider: InjectionToken): string {
     if (typeof provider === 'function') return provider.name;
     return provider.toString();
   }

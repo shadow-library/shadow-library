@@ -32,9 +32,9 @@ describe('@Inject', () => {
     const metadata = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, Test);
 
     const expectedMetadata = [
-      { index: 2, name: Token },
-      { index: 1, name: symbol },
-      { index: 0, name: 'test' },
+      { index: 2, token: Token },
+      { index: 1, token: symbol },
+      { index: 0, token: 'test' },
     ];
     expect(metadata).toStrictEqual(expectedMetadata);
   });

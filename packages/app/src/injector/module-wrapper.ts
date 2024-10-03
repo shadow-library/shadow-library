@@ -11,7 +11,7 @@ import { ControllerWrapper } from './controller-wrapper';
 import { DependencyGraph } from './dependency-graph';
 import { Extractor, Parser } from './helpers';
 import { MODULE_METADATA, PARAMTYPES_METADATA } from '../constants';
-import { InjectionName, Provider } from '../interfaces';
+import { InjectionToken, Provider } from '../interfaces';
 
 /**
  * Defining types
@@ -34,8 +34,8 @@ export class ModuleWrapper {
   private readonly imports: ModuleWrapper[];
 
   private readonly controllers = new Array<ControllerWrapper>();
-  private readonly providers = new Map<InjectionName, object>();
-  private readonly exports = new Set<InjectionName>();
+  private readonly providers = new Map<InjectionToken, object>();
+  private readonly exports = new Set<InjectionToken>();
 
   private instance?: object;
 
@@ -43,14 +43,14 @@ export class ModuleWrapper {
     this.metatype = metatype;
     this.imports = imports;
 
-    const exports = Extractor.getMetadata<InjectionName>(MODULE_METADATA.EXPORTS, metatype);
+    const exports = Extractor.getMetadata<InjectionToken>(MODULE_METADATA.EXPORTS, metatype);
     this.exports = new Set(exports);
     this.logger.debug(`Module '${metatype.name}' created`);
   }
 
-  private getProvider<T = object>(name: InjectionName): T;
-  private getProvider<T = object>(name: InjectionName, optional: boolean): T | undefined;
-  private getProvider<T = object>(name: InjectionName, optional?: boolean): T | undefined {
+  private getProvider<T = object>(name: InjectionToken): T;
+  private getProvider<T = object>(name: InjectionToken, optional: boolean): T | undefined;
+  private getProvider<T = object>(name: InjectionToken, optional?: boolean): T | undefined {
     const provider = this.providers.get(name) as T | undefined;
     if (provider) return provider;
 
@@ -89,7 +89,7 @@ export class ModuleWrapper {
     return this.instance;
   }
 
-  getExportedProvider<T = object>(name: InjectionName): T | undefined {
+  getExportedProvider<T = object>(name: InjectionToken): T | undefined {
     if (!this.isInited()) throw new NeverError(`Module '${this.metatype.name}' not yet initialized`);
     const isExported = this.exports.has(name);
     if (!isExported) return;
@@ -115,7 +115,7 @@ export class ModuleWrapper {
     this.logger.debug(`Determining the order to initialize providers for module '${this.metatype.name}'`);
     const providers = Extractor.getMetadata<Provider>(MODULE_METADATA.PROVIDERS, this.metatype);
     const parsedProviders = providers.map(p => Parser.parseProvider(p));
-    const dependencyGraph = new DependencyGraph<InjectionName>();
+    const dependencyGraph = new DependencyGraph<InjectionToken>();
     for (const provider of parsedProviders) {
       dependencyGraph.addNode(provider.name);
       for (const injection of provider.inject) {

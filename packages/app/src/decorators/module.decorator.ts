@@ -8,7 +8,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { MODULE_METADATA, MODULE_WATERMARK } from '../constants';
-import { InjectionName, Provider } from '../interfaces';
+import { InjectionToken, Provider } from '../interfaces';
 import { ForwardReference } from '../utils';
 
 /**
@@ -35,7 +35,7 @@ export interface ModuleMetadata {
    * List of the subset of providers that are provided by this module and should be available
    * in other modules which import this module.
    */
-  exports?: InjectionName[];
+  exports?: InjectionToken[];
 }
 
 /**
