@@ -1,11 +1,12 @@
 /**
  * Importing npm packages
  */
-import { InternalError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
  */
+import { errors } from './helpers';
+import { InjectionToken } from '../interfaces';
 
 /**
  * Defining types
@@ -15,7 +16,7 @@ import { InternalError } from '@shadow-library/common';
  * Declaring the constants
  */
 
-export class DependencyGraph<T> {
+export class DependencyGraph<T extends InjectionToken> {
   private readonly graph = new Map<T, Set<T>>();
 
   getNodes(): T[] {
@@ -44,9 +45,9 @@ export class DependencyGraph<T> {
    * Dependent nodes are loaded first.
    *
    * @returns {T[]} The sorted array of nodes.
-   * @throws {Error} If a circular dependency is detected.
+   * @throws {InternalError} If a circular dependency is detected.
    */
-  getSortedNodes(): T[] {
+  getSortedNodes(allowCircularDeps = false): T[] {
     const nodes = this.getNodes();
     const visited = new Set<T>();
     const visiting = new Set<T>();
@@ -54,10 +55,12 @@ export class DependencyGraph<T> {
 
     const visitNode = (node: T) => {
       if (visited.has(node)) return;
+      if (visiting.has(node) && allowCircularDeps) return;
+
       if (visiting.has(node)) {
         const circularArr = [...visiting, node];
-        const circularPath = circularArr.slice(circularArr.indexOf(node)).join(' -> ');
-        throw new InternalError(`Circular dependency detected: ${circularPath}`);
+        const circularPath = circularArr.slice(circularArr.indexOf(node)).map(n => n.toString());
+        throw errors.getCircularDependencyError(circularPath);
       }
 
       visiting.add(node);

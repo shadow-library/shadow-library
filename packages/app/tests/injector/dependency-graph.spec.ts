@@ -19,9 +19,8 @@ import { DependencyGraph } from '@shadow-library/app/injector';
 
 describe('DependencyGraph', () => {
   it('should add a node to the graph', () => {
-    const graph = new DependencyGraph<number>();
-    graph.addNode(1);
-    expect(graph.getNodes()).toContain(1);
+    const graph = new DependencyGraph<string>().addNode('A');
+    expect(graph.getNodes()).toEqual(['A']);
   });
 
   it('should add a dependency between two nodes', () => {
@@ -50,5 +49,16 @@ describe('DependencyGraph', () => {
     graph.addDependency('D', 'B');
 
     expect(() => graph.getSortedNodes()).toThrowError(InternalError);
+  });
+
+  it(`should not throw an error when a circular dependency is detected and 'allowCircularDeps' is true`, () => {
+    const graph = new DependencyGraph<string>();
+    graph.addNode('A').addNode('B').addNode('C').addNode('D');
+    graph.addDependency('A', 'B');
+    graph.addDependency('B', 'C');
+    graph.addDependency('C', 'D');
+    graph.addDependency('D', 'B');
+
+    expect(() => graph.getSortedNodes(true)).not.toThrowError();
   });
 });
