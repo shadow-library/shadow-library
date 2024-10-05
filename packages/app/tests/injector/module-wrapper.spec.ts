@@ -101,6 +101,14 @@ describe('ModuleWrapper', () => {
       await expect(module.runLifecycleMethod(LifecycleMethods.ON_APPLICATION_READY)).rejects.toThrowError(NeverError);
     });
 
+    it('should throw an error if an unknown provider is exported', async () => {
+      @Module({ exports: ['UNKNOWN_PROVIDER'] })
+      class InvalidModule {}
+
+      const module = new ModuleWrapper(InvalidModule, []);
+      await expect(module.init()).rejects.toThrowError(InternalError);
+    });
+
     it('should detect circular dependencies', async () => {
       @Injectable()
       class ServiceA {

@@ -8,7 +8,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { MODULE_METADATA, MODULE_WATERMARK } from './constants';
-import { DependencyGraph, Extractor, LifecycleMethods, ModuleWrapper } from './injector';
+import { DIErrors, DependencyGraph, Extractor, LifecycleMethods, ModuleWrapper } from './injector';
 import { ApplicationConfig } from './interfaces';
 import { ForwardReference } from './utils';
 
@@ -36,8 +36,8 @@ export class ShadowApplication {
   private getImports(module: Class<unknown>): Class<unknown>[] {
     const imports = Extractor.getMetadata<Class<unknown> | ForwardReference<Class<unknown>>>(MODULE_METADATA.IMPORTS, module);
     if (imports.some(m => m === undefined)) {
-      const missingModules = imports.filter(m => m === undefined).map((_, i) => i);
-      throw new InternalError(`Module '${module.name}' has missing dependencies at index: ${missingModules.join(', ')}. This might be due to circular dependency`);
+      const index = imports.findIndex(m => m === undefined);
+      return DIErrors.undefinedDependency(module, index);
     }
 
     return imports.map(m => ('forwardRef' in m ? m.forwardRef() : m));
