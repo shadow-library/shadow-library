@@ -7,7 +7,7 @@ import { Class } from 'type-fest';
 /**
  * Importing user defined packages
  */
-import { GLOBAL_WATERMARK, MODULE_METADATA, MODULE_WATERMARK } from './constants';
+import { MODULE_METADATA, MODULE_WATERMARK } from './constants';
 import { DependencyGraph, Extractor, LifecycleMethods, ModuleWrapper } from './injector';
 import { ApplicationConfig } from './interfaces';
 import { ForwardReference } from './utils';
@@ -21,7 +21,6 @@ import { ForwardReference } from './utils';
  */
 
 export class ShadowApplication {
-  private readonly globalModuleType?: Class<unknown>;
   private readonly modules = new Map<Class<unknown>, ModuleWrapper>();
   private readonly main: ModuleWrapper;
   private readonly logger: Logger;
@@ -30,7 +29,6 @@ export class ShadowApplication {
   constructor(module: Class<unknown>, config: ApplicationConfig = {}) {
     this.logger = Logger.getLogger('shadow-app');
     this.config = { ...config };
-    this.globalModuleType = this.scanForGlobalModule(module);
     this.main = this.scanForModules(module);
     this.logger.debug('Modules scanned successfully');
   }
@@ -45,28 +43,13 @@ export class ShadowApplication {
     return imports.map(m => ('forwardRef' in m ? m.forwardRef() : m));
   }
 
-  private scanForGlobalModule(module: Class<unknown>): Class<unknown> | undefined {
-    const imports = this.getImports(module);
-    const [globalModule, ...others] = imports.filter(m => Reflect.getMetadata(GLOBAL_WATERMARK, m) ?? false);
-    if (!globalModule) return;
-    if (others.length > 0) throw new InternalError('There can only be one global module');
-
-    const moduleInstance = new ModuleWrapper(globalModule, []);
-    this.modules.set(globalModule, moduleInstance);
-    return globalModule;
-  }
-
   private scanForModules(module: Class<unknown>): ModuleWrapper {
     if (this.modules.has(module)) return this.modules.get(module) as ModuleWrapper;
 
     const isModule = Reflect.getMetadata(MODULE_WATERMARK, module) ?? false;
     if (!isModule) throw new InternalError(`Class '${module.name}' is not a module`);
-    const isGlobal = Reflect.getMetadata(GLOBAL_WATERMARK, module) ?? false;
-    if (isGlobal) throw new InternalError(`Global module '${module.name}' can only be imported in main module`);
 
     const dependencies = this.getImports(module);
-    if (this.globalModuleType && !dependencies.includes(this.globalModuleType)) dependencies.unshift(this.globalModuleType);
-
     const dependentModules = dependencies.map(m => this.scanForModules(m));
     const moduleInstance = new ModuleWrapper(module, dependentModules);
     this.modules.set(module, moduleInstance);
