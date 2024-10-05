@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
 import { InternalError } from '@shadow-library/common';
 
 /**
@@ -18,47 +18,50 @@ import { DependencyGraph } from '@shadow-library/app/injector';
  */
 
 describe('DependencyGraph', () => {
+  let graph: DependencyGraph<string>;
+
+  beforeEach(() => {
+    graph = new DependencyGraph<string>();
+  });
+
   it('should add a node to the graph', () => {
-    const graph = new DependencyGraph<string>().addNode('A');
+    graph.addNode('A');
     expect(graph.getNodes()).toEqual(['A']);
   });
 
   it('should add a dependency between two nodes', () => {
-    const graph = new DependencyGraph<string>();
     graph.addDependency('A', 'B');
     expect(graph.getDependencies('A')).toContain('B');
     expect(graph.getDependencies('C')).toBeInstanceOf(Set);
   });
 
   it('should return the sorted nodes in topological order', () => {
-    const graph = new DependencyGraph<string>();
     graph.addNode('A').addNode('B').addNode('C').addNode('D');
     graph.addDependency('A', 'B');
     graph.addDependency('B', 'C');
     graph.addDependency('B', 'D');
     graph.addDependency('C', 'D');
-    expect(graph.getSortedNodes()).toEqual(['D', 'C', 'B', 'A']);
+    expect(graph.getInitOrder()).toEqual(['D', 'C', 'B', 'A']);
   });
 
-  it('should throw an error when a circular dependency is detected', () => {
-    const graph = new DependencyGraph<string>();
+  it('should throw an error if a circular dependency is detected', () => {
     graph.addNode('A').addNode('B').addNode('C').addNode('D');
     graph.addDependency('A', 'B');
     graph.addDependency('B', 'C');
-    graph.addDependency('C', 'D');
-    graph.addDependency('D', 'B');
-
-    expect(() => graph.getSortedNodes()).toThrowError(InternalError);
+    graph.addDependency('C', 'A');
+    expect(() => graph.getInitOrder()).toThrowError(InternalError);
   });
 
-  it(`should not throw an error when a circular dependency is detected and 'allowCircularDeps' is true`, () => {
-    const graph = new DependencyGraph<string>();
+  it('should return the circular dependencies', () => {
     graph.addNode('A').addNode('B').addNode('C').addNode('D');
     graph.addDependency('A', 'B');
     graph.addDependency('B', 'C');
+    graph.addDependency('C', 'B');
+    graph.addDependency('C', 'A');
     graph.addDependency('C', 'D');
-    graph.addDependency('D', 'B');
-
-    expect(() => graph.getSortedNodes(true)).not.toThrowError();
+    expect(graph.determineCircularDependencies()).toEqual([
+      ['B', 'C', 'B'],
+      ['A', 'B', 'C', 'A'],
+    ]);
   });
 });
