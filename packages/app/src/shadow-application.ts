@@ -72,7 +72,7 @@ export class ShadowApplication {
       const dependencies = this.getImports(module);
       for (const dependency of dependencies) dependencyGraph.addDependency(module, dependency);
     }
-    const sortedModules = dependencyGraph.getSortedNodes();
+    const sortedModules = dependencyGraph.getInitOrder();
 
     const router = this.config.router;
     const routers = Array.isArray(router) ? router : router !== undefined ? [router] : [];

@@ -8,8 +8,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { ControllerWrapper } from './controller-wrapper';
-import { DependencyGraph } from './dependency-graph';
-import { Extractor, Parser } from './helpers';
+import { DependencyGraph, Extractor, Parser } from './helpers';
 import { MODULE_METADATA, PARAMTYPES_METADATA } from '../constants';
 import { InjectionToken, Provider } from '../interfaces';
 
@@ -123,7 +122,7 @@ export class ModuleWrapper {
         dependencyGraph.addDependency(provider.name, injection.name);
       }
     }
-    const initOrder = dependencyGraph.getSortedNodes();
+    const initOrder = dependencyGraph.getInitOrder();
 
     /** Initializing the providers */
     for (const providerName of initOrder) {

@@ -15,9 +15,12 @@ import { InternalError } from '@shadow-library/common';
  * Declaring the constants
  */
 
-export function getCircularDependencyError(paths: string[]): Error {
-  const message = `A circular dependency has been detected at the following path: \n\n  ${paths.join(' -> ')}\n\nPlease, make sure that each side of a bidirectional relationships are decorated with "forwardRef()". Note that circular relationships between custom providers (e.g., factories) are not supported since functions cannot be called more than once.`;
-  return new InternalError(message);
-}
-
-export const errors = { getCircularDependencyError };
+export const errors = {
+  getCircularDependencyError(paths: string[][]): InternalError {
+    let message = `A circular dependency has been detected at the following path:\n\n`;
+    message += paths.map(path => `  ${path.join(' -> ')}\n`);
+    message += `\n\nPlease, make sure that each side of a bidirectional relationships are decorated with "forwardRef()".`;
+    message += `\nNote that circular relationships between custom providers (e.g., factories) are not supported since functions cannot be called more than once.`;
+    return new InternalError(message);
+  },
+} satisfies Record<string, (...args: any) => InternalError>;
