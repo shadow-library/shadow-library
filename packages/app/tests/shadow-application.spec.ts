@@ -7,7 +7,7 @@ import { InternalError } from '@shadow-library/common';
 /**
  * Importing user defined packages
  */
-import { Controller, Executable, GlobalModule, Inject, Injectable, Module, Route, Router, ShadowApplication, forwardRef } from '@shadow-library/app';
+import { Controller, Executable, Inject, Injectable, Module, Route, Router, ShadowApplication, forwardRef } from '@shadow-library/app';
 
 /**
  * Defining types
@@ -39,13 +39,13 @@ describe('ShadowApplication', () => {
     method() {}
   }
 
-  @Module({ providers: [ProviderOne], exports: [ProviderOne], controllers: [ControllerOne] })
+  @Module({ providers: [globalProvider], exports: [globalProvider.token] })
   class DependencyOne {}
 
-  @GlobalModule({ providers: [globalProvider], exports: [globalProvider.token] })
-  class GlobalDependency {}
+  @Module({ imports: [DependencyOne], providers: [ProviderOne], exports: [ProviderOne], controllers: [ControllerOne] })
+  class DependencyTwo {}
 
-  @Module({ imports: [DependencyOne, forwardRef(() => GlobalDependency)] })
+  @Module({ imports: [DependencyTwo, forwardRef(() => DependencyOne)] })
   class AppModule implements Executable {
     execute = executable;
   }
@@ -59,33 +59,7 @@ describe('ShadowApplication', () => {
     it('should throw an error if the module import is undefined', () => {
       @Module({ imports: [undefined as any] })
       class InvalidModule {}
-      @Module({ imports: [DependencyOne, InvalidModule] })
-      class AppModule {}
-
-      expect(() => new ShadowApplication(AppModule)).toThrowError(InternalError);
-    });
-
-    it('should throw error if there are more than one global modules', () => {
-      @GlobalModule()
-      class GlobalModuleOne {}
-
-      @GlobalModule()
-      class GlobalModuleTwo {}
-
-      @Module({ imports: [GlobalModuleOne, GlobalModuleTwo] })
-      class AppModule {}
-
-      expect(() => new ShadowApplication(AppModule)).toThrowError(InternalError);
-    });
-
-    it('should throw error if a global module is imported in a non-main module', () => {
-      @GlobalModule({})
-      class GlobalTestModule {}
-
-      @Module({ imports: [GlobalTestModule] })
-      class TestModule {}
-
-      @Module({ imports: [TestModule] })
+      @Module({ imports: [DependencyTwo, InvalidModule] })
       class AppModule {}
 
       expect(() => new ShadowApplication(AppModule)).toThrowError(InternalError);
