@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { errors } from './errors';
+import { DIErrors } from './di-errors';
 import { InjectionToken } from '../../interfaces';
 
 /**
@@ -136,7 +136,7 @@ export class DependencyGraph<T extends InjectionToken> {
     if (nodes.length !== this.nodeMap.size) {
       const circularDeps = this.determineCircularDependencies();
       const circularDepNames = circularDeps.map(deps => deps.map(dep => dep.toString()));
-      throw errors.getCircularDependencyError(circularDepNames);
+      return DIErrors.circularDependency(circularDepNames);
     }
 
     const getDistance = (node: T) => (metadata.get(node) as NodeMetadata).distance;

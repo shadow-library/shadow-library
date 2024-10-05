@@ -8,7 +8,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { ControllerWrapper } from './controller-wrapper';
-import { DependencyGraph, Extractor, Parser } from './helpers';
+import { DIErrors, DependencyGraph, Extractor, Parser } from './helpers';
 import { MODULE_METADATA, PARAMTYPES_METADATA } from '../constants';
 import { InjectionToken, Provider } from '../interfaces';
 
@@ -139,6 +139,11 @@ export class ModuleWrapper {
       const providerInstance = await provider.useFactory(...instances);
       this.providers.set(provider.name, providerInstance);
       this.logger.debug(`Provider '${Extractor.getProviderName(providerName)}' initialized`);
+    }
+
+    for (const provider of this.exports) {
+      const instance = this.getProvider(provider, true);
+      if (!instance) return DIErrors.unknownExport(provider, this.metatype);
     }
 
     /** Initializing the controllers */

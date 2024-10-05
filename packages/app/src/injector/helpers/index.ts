@@ -3,5 +3,5 @@ export * from './parser.helper';
 export * from './validator.helper';
 
 export * from './dependency-graph';
-export * from './errors';
+export * from './di-errors';
 export * from './provider-classifier';
