@@ -5,20 +5,23 @@
 /**
  * Importing user defined packages
  */
-import { CONTROLLER_WATERMARK, ROUTE_METADATA } from '../constants';
-import { RouteMetdata } from '../interfaces';
+import { CONTROLLER_METADATA, CONTROLLER_WATERMARK } from '../constants';
 
 /**
  * Defining types
  */
 
+export interface ControllerMetdata extends Record<string | symbol, any> {
+  router?: boolean;
+}
+
 /**
  * Declaring the constants
  */
 
-export function Controller(metadata: RouteMetdata = {}): ClassDecorator {
+export function Controller(metadata: ControllerMetdata = {}): ClassDecorator {
   return target => {
     Reflect.defineMetadata(CONTROLLER_WATERMARK, true, target);
-    Reflect.defineMetadata(ROUTE_METADATA, metadata, target);
+    Reflect.defineMetadata(CONTROLLER_METADATA, metadata, target);
   };
 }

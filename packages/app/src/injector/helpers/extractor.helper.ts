@@ -6,7 +6,7 @@ import { Class } from 'type-fest';
 /**
  * Importing user defined packages
  */
-import { ROUTE_METADATA } from '../../constants';
+import { CONTROLLER_METADATA, ROUTE_METADATA } from '../../constants';
 import { InjectionToken } from '../../interfaces';
 
 /**
@@ -29,6 +29,10 @@ class ExtractorStatic {
 
   getRouteMetadata(method: object): Record<string, any> {
     return Reflect.getMetadata(ROUTE_METADATA, method);
+  }
+
+  getControllerMetadata(target: object): Record<string, any> {
+    return Reflect.getMetadata(CONTROLLER_METADATA, target);
   }
 }
 

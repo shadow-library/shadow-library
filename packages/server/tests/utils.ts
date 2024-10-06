@@ -26,6 +26,10 @@ class UtilsStatic {
     return this.getSymbolMetadata('route:metadata', target);
   }
 
+  getControllerMetadata(target: object): Record<string, any> {
+    return this.getSymbolMetadata('controller:metadata', target);
+  }
+
   getParamMetadata(target: object, method: string): Record<string, any> {
     return Reflect.getMetadata(PARAMTYPES_METADATA, target, method);
   }

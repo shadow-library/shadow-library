@@ -26,6 +26,7 @@ export const INJECTABLE_WATERMARK = Symbol('injectable');
 export const MODULE_WATERMARK = Symbol('module');
 export const ROUTE_WATERMARK = Symbol('route');
 
+export const CONTROLLER_METADATA = Symbol('controller:metadata');
 export const ROUTE_METADATA = Symbol('route:metadata');
 
 export const TRANSIENT_METADATA = Symbol('transient');

@@ -35,7 +35,7 @@ describe('@Middleware', () => {
 
   it('should mark the class as middleware', () => {
     const middleware = new ValidMiddleware();
-    const metadata = Utils.getRouteMetadata(ValidMiddleware);
+    const metadata = Utils.getControllerMetadata(ValidMiddleware);
     const routeMetadata = Utils.getRouteMetadata(middleware.generate);
 
     expect(routeMetadata).toStrictEqual({});
