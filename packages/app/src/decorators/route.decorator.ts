@@ -7,11 +7,12 @@ import merge from 'deepmerge';
  * Importing user defined packages
  */
 import { ROUTE_METADATA, ROUTE_WATERMARK } from '../constants';
-import { RouteMetdata } from '../interfaces';
 
 /**
  * Defining types
  */
+
+export interface RouteMetdata extends Record<string | symbol, any> {}
 
 /**
  * Declaring the constants

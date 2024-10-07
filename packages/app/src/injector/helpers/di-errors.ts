@@ -13,20 +13,6 @@ import { InjectionToken } from '../../interfaces';
  * Defining types
  */
 
-export interface InjectorDependencyContext {
-  token?: InjectionToken;
-
-  /**
-   * The index of the dependency which gets injected
-   * from the dependencies array
-   */
-  index?: number;
-  /**
-   * The dependency array which gets injected
-   */
-  dependencies?: InjectionToken[];
-}
-
 /**
  * Declaring the constants
  */

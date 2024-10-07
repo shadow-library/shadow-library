@@ -1,14 +1,14 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { InternalError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
  */
-import { Controller, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, Route } from '@shadow-library/app';
-import { ControllerWrapper } from '@shadow-library/app/injector';
+import { Controller, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, Route, RouteMetdata } from '@shadow-library/app';
+import { ControllerWrapper, RouteController } from '@shadow-library/app/injector';
 
 /**
  * Defining types
@@ -22,6 +22,8 @@ describe('ControllerWrapper', () => {
   const controllerMetadata = { isPrivate: true };
   const routeMetadata = { op: 'POST', path: '/test' };
   const mock = jest.fn();
+  let routes: RouteController<RouteMetdata>[];
+
   @Controller(controllerMetadata)
   class TestController {
     mock = mock;
@@ -34,8 +36,12 @@ describe('ControllerWrapper', () => {
     @Route({ op: 'GET', path: '/test' })
     noParams(): void {}
   }
-  const controller = new ControllerWrapper(TestController, []);
-  const routes = controller.getRoutes();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    const controller = new ControllerWrapper(TestController, []);
+    routes = controller.getRoutes();
+  });
 
   it('should throw an error if the class is not a controller', () => {
     class Test {}

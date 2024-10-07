@@ -9,8 +9,8 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { Extractor, Validator } from './helpers';
-import { CONTROLLER_WATERMARK, PARAMTYPES_METADATA } from '../constants';
-import { RouteMetdata } from '../interfaces';
+import { CONTROLLER_WATERMARK, PARAMTYPES_METADATA, RETURN_TYPE_METADATA } from '../constants';
+import { RouteMetdata } from '../decorators';
 
 /**
  * Defining types
@@ -53,11 +53,11 @@ export class ControllerWrapper {
 
     /* Extracting the route metadata from the route methods */
     const routes: RouteController<T>[] = [];
-    const controllerMetadata = Extractor.getRouteMetadata(this.type);
+    const controllerMetadata = Extractor.getControllerMetadata(this.type);
     for (const method of methods) {
       const routeMetadata = Extractor.getRouteMetadata(method);
       const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, this.instance, method.name) as string[];
-      const returnType = Reflect.getMetadata('design:returntype', this.instance, method.name);
+      const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, this.instance, method.name);
       const metadata = merge(controllerMetadata, routeMetadata) as T;
       routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });
     }

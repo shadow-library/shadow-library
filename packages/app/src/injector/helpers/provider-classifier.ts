@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 
-import { ClassProvider, FactoryProvider, Provider, ValueProvider } from '@shadow-library/app/interfaces';
+import { ClassProvider, FactoryProvider, Provider, ValueProvider } from '../../interfaces';
 
 /**
  * Importing user defined packages
