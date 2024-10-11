@@ -33,6 +33,16 @@ interface ParsedProvider {
  */
 
 class ParserStatic {
+  private getInjectedToken(injectMetadata: InjectMetadata): FactoryDependency {
+    /* istanbul ignore next */
+    if (typeof injectMetadata.token === 'object' && 'forwardRef' in injectMetadata.token) {
+      const token = injectMetadata.token.forwardRef();
+      return { token, optional: false };
+    }
+
+    return { token: injectMetadata.token, optional: false };
+  }
+
   parseInjection(injection: FactoryDependency | InjectionToken): ParsedInjection {
     if (typeof injection === 'object' && 'token' in injection) return { name: injection.token, optional: injection.optional };
     return { name: injection, optional: true };
@@ -54,7 +64,7 @@ class ParserStatic {
     const selfDependencies: InjectMetadata[] = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, Class) ?? [];
     const optionalDependencies: number[] = Reflect.getMetadata(OPTIONAL_DEPS_METADATA, Class) ?? [];
     for (const dependency of paramtypes) dependencies.push({ token: dependency, optional: false });
-    for (const dependency of selfDependencies) dependencies[dependency.index] = { token: dependency.token, optional: false };
+    for (const dependency of selfDependencies) dependencies[dependency.index] = this.getInjectedToken(dependency);
     for (const index of optionalDependencies) dependencies[index]!.optional = true;
 
     const inject = dependencies.map(d => this.parseInjection(d));
