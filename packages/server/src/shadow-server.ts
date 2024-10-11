@@ -105,7 +105,7 @@ export class ShadowServer {
 
   private async generateRouteHandler(route: RouteController<ServerMetadata>): Promise<RouteHandler> {
     const metadata = route.metadata;
-    const statusCode = metadata.status ?? metadata.method === HttpMethod.POST ? 201 : 200;
+    const statusCode = (metadata.status ?? metadata.method === HttpMethod.POST) ? 201 : 200;
     const argsOrder = route.paramtypes.map(p => (typeof p === 'string' ? p : null)) as (keyof RequestContext | null)[];
 
     return async (request, response) => {
