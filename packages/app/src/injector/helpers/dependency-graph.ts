@@ -135,8 +135,7 @@ export class DependencyGraph<T extends InjectionToken> {
     /** If all nodes are not present, then there's a cycle (circular dependency) */
     if (nodes.length !== this.nodeMap.size) {
       const circularDeps = this.determineCircularDependencies();
-      const circularDepNames = circularDeps.map(deps => deps.map(dep => dep.toString()));
-      return DIErrors.circularDependency(circularDepNames);
+      return DIErrors.circularDependency(circularDeps);
     }
 
     const getDistance = (node: T) => (metadata.get(node) as NodeMetadata).distance;

@@ -142,26 +142,13 @@ describe('InstanceWrapper', () => {
         constructor(@Inject(forwardRef(() => ProviderOne)) public readonly providerOne: object) {}
       }
 
-      @Injectable()
-      class Provider {
-        constructor(
-          public readonly providerOne: ProviderOne,
-          public readonly providerTwo: ProviderTwo,
-        ) {}
-      }
-
-      const instanceWrapper = new InstanceWrapper(Provider);
       const providerOneWrapper = new InstanceWrapper(ProviderOne);
       const providerTwoWrapper = new InstanceWrapper(ProviderTwo);
-      instanceWrapper.setDependency(0, providerOneWrapper);
-      instanceWrapper.setDependency(1, providerTwoWrapper);
       providerOneWrapper.setDependency(0, providerTwoWrapper);
-      providerTwoWrapper.setDependency(0, providerOneWrapper);
 
-      const instance = await instanceWrapper.loadInstance();
+      const instance = await providerOneWrapper.loadInstance();
 
-      expect(instance).toBeInstanceOf(Provider);
-      expect(instance.providerOne).toBeInstanceOf(ProviderOne);
+      expect(instance).toBeInstanceOf(ProviderOne);
       expect(instance.providerTwo).toBeInstanceOf(ProviderTwo);
     });
   });
@@ -200,7 +187,6 @@ describe('InstanceWrapper', () => {
 
     it('should load the instance', async () => {
       instanceWrapper.setDependency(0, new InstanceWrapper({ token: 'DEPENDENCY', useValue: 'DEPENDENCY_VALUE' }));
-      instanceWrapper.setDependency(1, undefined);
       const instance = await instanceWrapper.loadInstance();
       expect(instance).toBe('CONFIG_VALUE' + 'DEPENDENCY_VALUE' + undefined);
     });
@@ -239,10 +225,33 @@ describe('InstanceWrapper', () => {
     });
 
     it('should load the instance', async () => {
-      const instance = await instanceWrapper.loadInstance();
+      const instance = await instanceWrapper.loadInstance(createContextId());
       expect(instance).toBeInstanceOf(TransientProvider);
       expect(instance.provider).toBeInstanceOf(Provider);
       expect(instance.transientProvider).toBeInstanceOf(TransientProviderOne);
+    });
+
+    it('should load all the transient instances', async () => {
+      @Injectable()
+      class Provider {
+        constructor(@Inject(forwardRef(() => TransientProvider)) public readonly transientProvider: object) {}
+      }
+
+      @Injectable({ transient: true })
+      class TransientProvider {
+        constructor(public readonly provider: Provider) {}
+      }
+
+      const providerWrapper = new InstanceWrapper(Provider);
+      const transientProviderWrapper = new InstanceWrapper(TransientProvider);
+      providerWrapper.setDependency(0, transientProviderWrapper);
+      await providerWrapper.loadInstance();
+      transientProviderWrapper.setDependency(0, providerWrapper);
+
+      await transientProviderWrapper.loadAllInstances();
+
+      const instances = Array.from(transientProviderWrapper['instances'].values());
+      expect(instances).toStrictEqual([{ instance: expect.any(TransientProvider), resolved: true }]);
     });
 
     it('should create a new instance for each context', async () => {
