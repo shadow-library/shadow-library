@@ -18,7 +18,13 @@ import { InjectionToken } from '../../interfaces';
  */
 
 export class DIErrorsStatic {
-  circularDependency(paths: string[][]): never {
+  unexpectedError(message: string): never {
+    message += `\n\nThis is most likely a bug. Please, report it to the Shadow Library team.`;
+    throw new InternalError(message);
+  }
+
+  circularDependency(circularDeps: InjectionToken[][]): never {
+    const paths = circularDeps.map(deps => deps.map(dep => dep.toString()));
     let message = `A circular dependency has been detected at the following path:\n\n`;
     message += paths.map(path => `  ${path.join(' -> ')}\n`);
     message += `\n\nPlease, make sure that each side of a bidirectional relationships are decorated with "forwardRef()".`;
