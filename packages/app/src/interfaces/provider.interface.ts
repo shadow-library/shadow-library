@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { Class } from 'type-fest';
+import { AbstractClass, Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -10,8 +10,9 @@ import { Class } from 'type-fest';
 /**
  * Defining types
  */
+export type ClassToken<T = unknown> = Class<T> | AbstractClass<T>;
 
-export type InjectionToken = string | symbol | Class<unknown>;
+export type InjectionToken = string | symbol | ClassToken;
 
 export type FactoryDependency = {
   token: InjectionToken;
