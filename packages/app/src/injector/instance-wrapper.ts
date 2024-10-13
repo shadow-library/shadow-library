@@ -46,7 +46,7 @@ export class InstanceWrapper<T extends object = any> {
   private readonly transient: boolean = false;
   private readonly isFactory: boolean = false;
 
-  constructor(provider: Provider) {
+  constructor(provider: Provider, injectable?: boolean) {
     if (isValueProvider(provider)) {
       this.inject = [];
       this.dependecies = [];
@@ -66,8 +66,10 @@ export class InstanceWrapper<T extends object = any> {
     }
 
     const { token, useClass: Class } = isClassProvider(provider) ? provider : { token: provider, useClass: provider };
-    const injectable = Reflect.hasMetadata(INJECTABLE_WATERMARK, Class);
-    if (!injectable) throw new InternalError(`Class '${Class.name}' is not an injectable provider`);
+    if (injectable) {
+      const injectable = Reflect.hasMetadata(INJECTABLE_WATERMARK, Class);
+      if (!injectable) throw new InternalError(`Class '${Class.name}' is not an injectable provider`);
+    }
 
     this.token = token;
     this.metatype = Class;
@@ -140,6 +142,17 @@ export class InstanceWrapper<T extends object = any> {
     return true;
   }
 
+  isResolved(contextId?: ContextId): boolean {
+    if (contextId) {
+      const instancePerContext = this.instances.get(contextId);
+      return instancePerContext?.resolved ?? false;
+    }
+
+    const instances = Array.from(this.instances.values());
+    if (instances.length === 0) return false;
+    return instances.every(i => i.resolved);
+  }
+
   getInstance(contextId: ContextId = STATIC_CONTEXT): T {
     const instancePerContext = this.instances.get(contextId);
     if (!instancePerContext) throw new InternalError(`Instance of '${this.getTokenName()}' not found`);
@@ -164,12 +177,17 @@ export class InstanceWrapper<T extends object = any> {
 
     if (!dependency) {
       if (metadata.optional) return;
-      return DIErrors.unexpectedError(`The dependency at index ${index} of '${this.getTokenName()}' is undefined`);
+      return DIErrors.unexpected(`The dependency at index ${index} of '${this.getTokenName()}' is undefined`);
     }
 
     if (dependency.isTransient()) metadata.contextId = createContextId();
     if (!dependency.isResolvable()) return await dependency.loadPrototype(metadata.contextId);
     return await dependency.loadInstance(metadata.contextId);
+  }
+
+  getAllInstances(): T[] {
+    const instanceContexts = Array.from(this.instances.values());
+    return instanceContexts.map(i => i.instance);
   }
 
   async loadAllInstances(): Promise<T[]> {

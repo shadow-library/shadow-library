@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { InternalError } from '@shadow-library/common';
+import { InternalError, NeverError } from '@shadow-library/common';
 
 /**
  * Importing user defined packages
@@ -49,7 +49,7 @@ describe('InstanceWrapper', () => {
 
     it('should throw an error if the class is not injectable', () => {
       class InvalidClassProvider {}
-      expect(() => new InstanceWrapper(InvalidClassProvider)).toThrowError(InternalError);
+      expect(() => new InstanceWrapper(InvalidClassProvider, true)).toThrowError(InternalError);
     });
 
     it('should create an prototype instance during initialization', () => {
@@ -199,11 +199,13 @@ describe('InstanceWrapper', () => {
   });
 
   describe('Transient Provider', () => {
-    @Injectable()
-    class Provider {}
-
     @Injectable({ transient: true })
     class TransientProviderOne {}
+
+    @Injectable()
+    class Provider {
+      constructor(public readonly transientProvider: TransientProviderOne) {}
+    }
 
     @Injectable({ transient: true })
     class TransientProvider {
@@ -215,8 +217,11 @@ describe('InstanceWrapper', () => {
 
     beforeEach(() => {
       instanceWrapper = new InstanceWrapper(TransientProvider);
-      instanceWrapper.setDependency(0, new InstanceWrapper(Provider));
-      instanceWrapper.setDependency(1, new InstanceWrapper(TransientProviderOne));
+      const providerWrapper = new InstanceWrapper(Provider);
+      const transientProviderWrapper = new InstanceWrapper(TransientProviderOne);
+      instanceWrapper.setDependency(0, providerWrapper);
+      instanceWrapper.setDependency(1, transientProviderWrapper);
+      providerWrapper.setDependency(0, transientProviderWrapper);
     });
 
     it('should return true for isTransient and false for isFactory', () => {
@@ -252,6 +257,12 @@ describe('InstanceWrapper', () => {
 
       const instances = Array.from(transientProviderWrapper['instances'].values());
       expect(instances).toStrictEqual([{ instance: expect.any(TransientProvider), resolved: true }]);
+    });
+
+    it('should return all the instances', async () => {
+      await instanceWrapper.loadInstance();
+      const instances = instanceWrapper['dependecies'][1]?.getAllInstances();
+      expect(instances).toHaveLength(2);
     });
 
     it('should create a new instance for each context', async () => {
@@ -291,12 +302,23 @@ describe('InstanceWrapper', () => {
       expect(instance).toBeInstanceOf(Provider);
     });
 
+    it('should get the resolved status', async () => {
+      const factoryProvider = new InstanceWrapper({ token: 'factory', useFactory: () => 'CONFIG_VALUE' });
+
+      expect(factoryProvider.isResolved()).toBe(false);
+      expect(instanceWrapper.isResolved()).toBe(false);
+      expect(instanceWrapper.isResolved(createContextId())).toBe(false);
+      instanceWrapper.setDependency(0, new InstanceWrapper({ token: 'DEPENDENCY', useValue: 'DEPENDENCY_VALUE' }));
+      await instanceWrapper.loadInstance();
+      expect(instanceWrapper.isResolved()).toBe(true);
+    });
+
     it('should throw an error if the instance is not found', () => {
       expect(() => instanceWrapper.getInstance(createContextId())).toThrowError(InternalError);
     });
 
     it('should throw an error if the dependencies are not set', async () => {
-      await expect(() => instanceWrapper.loadInstance()).rejects.toThrowError(InternalError);
+      await expect(() => instanceWrapper.loadInstance()).rejects.toThrowError(NeverError);
     });
 
     it('should load a transient prototype of the instance', () => {
