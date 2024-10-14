@@ -287,6 +287,7 @@ describe('InstanceWrapper', () => {
 
     beforeEach(() => {
       instanceWrapper = new InstanceWrapper(Provider);
+      instanceWrapper.setDependency(0, new InstanceWrapper({ token: 'DEPENDENCY', useValue: 'DEPENDENCY_VALUE' }));
     });
 
     it('should return the token', () => {
@@ -318,6 +319,7 @@ describe('InstanceWrapper', () => {
     });
 
     it('should throw an error if the dependencies are not set', async () => {
+      instanceWrapper['dependecies'].pop();
       await expect(() => instanceWrapper.loadInstance()).rejects.toThrowError(NeverError);
     });
 
@@ -325,6 +327,19 @@ describe('InstanceWrapper', () => {
       const contextId = createContextId();
       const prototype = instanceWrapper.loadPrototype(contextId);
       expect(prototype).toBeInstanceOf(Provider);
+    });
+
+    it('should clear the instance', () => {
+      instanceWrapper.clearInstance();
+      expect(instanceWrapper['instances']).toHaveProperty('size', 0);
+    });
+
+    it('should clear the instance for a specific context', async () => {
+      const contextId = createContextId();
+      await instanceWrapper.loadInstance();
+      await instanceWrapper.loadInstance(contextId);
+      instanceWrapper.clearInstance(contextId);
+      expect(instanceWrapper['instances']).toHaveProperty('size', 1);
     });
   });
 });

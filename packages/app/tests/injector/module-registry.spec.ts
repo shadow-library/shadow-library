@@ -7,7 +7,7 @@ import { InternalError } from '@shadow-library/common';
 /**
  * Importing user defined packages
  */
-import { Controller, Executable, Injectable, Module, Route, forwardRef } from '@shadow-library/app';
+import { Controller, Injectable, Module, Route, forwardRef } from '@shadow-library/app';
 import { ModuleRegistry } from '@shadow-library/app/injector';
 
 /**
@@ -19,7 +19,6 @@ import { ModuleRegistry } from '@shadow-library/app/injector';
  */
 
 describe('ModuleRegistry', () => {
-  const executable = jest.fn(() => {});
   let moduleRegistry: ModuleRegistry;
 
   @Injectable()
@@ -57,9 +56,7 @@ describe('ModuleRegistry', () => {
   class AnimalModule {}
 
   @Module({ imports: [AnimalModule] })
-  class AppModule implements Executable {
-    execute = executable;
-  }
+  class AppModule {}
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -86,14 +83,27 @@ describe('ModuleRegistry', () => {
     });
   });
 
-  describe('initiation', () => {
+  describe('initiation and termination', () => {
     it('should initialize the modules', async () => {
       const mock = jest.fn() as any;
-      Array.from(moduleRegistry['modules'].values()).forEach(m => (m.init = mock));
+      const hook = jest.fn() as any;
+      Array.from(moduleRegistry['modules'].values()).forEach(m => ((m.init = mock), (m.callHook = hook)));
 
       await moduleRegistry.init();
 
       expect(mock).toBeCalledTimes(5);
+      expect(hook).toBeCalledTimes(5);
+      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, 'onApplicationReady'));
+    });
+
+    it('should terminate the modules', async () => {
+      const hook = jest.fn(async () => {});
+      Array.from(moduleRegistry['modules'].values()).forEach(m => (m.callHook = hook));
+
+      await moduleRegistry.terminate();
+
+      expect(hook).toBeCalledTimes(5);
+      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, 'onApplicationShutdown'));
     });
   });
 });
