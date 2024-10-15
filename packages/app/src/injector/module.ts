@@ -10,7 +10,7 @@ import { Class } from 'type-fest';
 import { DIErrors, DependencyGraph } from './helpers';
 import { InstanceWrapper } from './instance-wrapper';
 import { ModuleRef } from './module-ref';
-import { CONTROLLER_METADATA, MODULE_METADATA } from '../constants';
+import { CONTROLLER_WATERMARK, MODULE_METADATA } from '../constants';
 import { InjectionToken, Provider, ValueProvider } from '../interfaces';
 import { ContextId, createContextId } from '../utils';
 
@@ -79,6 +79,7 @@ export class Module {
     for (const provider of providers) {
       const instance = new InstanceWrapper<Provider>(provider, true);
       const token = instance.getToken();
+      if (providerMap.has(token)) throw new InternalError(`Duplicate provider '${token.toString()}' in module '${this.metatype.name}'`);
       providerMap.set(token, instance);
       graph.addNode(token);
     }
@@ -102,7 +103,7 @@ export class Module {
   private loadControllers() {
     const controllers: Controller[] = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, this.metatype) ?? [];
     for (const controller of controllers) {
-      const isController = Reflect.hasMetadata(CONTROLLER_METADATA, controller);
+      const isController = Reflect.hasMetadata(CONTROLLER_WATERMARK, controller);
       if (!isController) throw new InternalError(`Class '${controller.name}' is not a controller`);
       const instance = new InstanceWrapper<Controller>(controller);
       this.controllers.add(instance);
@@ -210,11 +211,22 @@ export class Module {
     this.loadExports(true);
 
     this.logger.debug(`Module '${this.metatype.name}' initialized`);
+    this.callHook(HookTypes.ON_MODULE_INIT);
+  }
+
+  async terminate(): Promise<void> {
+    this.logger.debug(`Terminating module '${this.metatype.name}'`);
+    for (const provider of this.getAllInstances().reverse()) {
+      const instance = provider.getAllInstances();
+      const promises = instance.map(instance => typeof instance.onModuleDestroy === 'function' && instance.onModuleDestroy());
+      await Promise.all(promises);
+      provider.clearInstance();
+    }
+    this.logger.debug(`Module '${this.metatype.name}' terminated`);
   }
 
   async callHook(method: HookTypes): Promise<void> {
     const instances = this.getAllInstances().flatMap(instance => instance.getAllInstances());
-
     for (const instance of instances) {
       const methodFn = instance[method];
       if (typeof methodFn === 'function') await methodFn.call(instance);

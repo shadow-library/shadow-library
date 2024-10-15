@@ -8,7 +8,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { DIErrors, DependencyGraph } from './helpers';
-import { Module } from './module';
+import { HookTypes, Module } from './module';
 import { MODULE_METADATA, MODULE_WATERMARK } from '../constants';
 import { ForwardReference } from '../utils';
 
@@ -82,10 +82,23 @@ export class ModuleRegistry {
   }
 
   async init(): Promise<void> {
-    const modules = this.modules.values();
-
     this.logger.debug('Initializing the modules');
+    const modules = Array.from(this.modules.values());
     for (const module of modules) await module.init();
+    /** @Todo Register the routes */
+    const promises = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_READY));
+    await Promise.all(promises);
+
     this.logger.debug('Modules initialized');
+  }
+
+  async terminate(): Promise<void> {
+    this.logger.debug('Terminating the modules');
+    const modules = Array.from(this.modules.values());
+    const promises = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_READY));
+    await Promise.all(promises);
+    /** @Todo Stop the router */
+    for (const module of modules) await module.terminate();
+    this.logger.debug('Modules terminated');
   }
 }

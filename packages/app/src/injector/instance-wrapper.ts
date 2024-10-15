@@ -142,6 +142,11 @@ export class InstanceWrapper<T extends object = any> {
     return true;
   }
 
+  clearInstance(contextId?: ContextId): void {
+    if (contextId) this.instances.delete(contextId);
+    else this.instances.clear();
+  }
+
   isResolved(contextId?: ContextId): boolean {
     if (contextId) {
       const instancePerContext = this.instances.get(contextId);
@@ -151,6 +156,11 @@ export class InstanceWrapper<T extends object = any> {
     const instances = Array.from(this.instances.values());
     if (instances.length === 0) return false;
     return instances.every(i => i.resolved);
+  }
+
+  getAllInstances(): T[] {
+    const instanceContexts = Array.from(this.instances.values());
+    return instanceContexts.map(i => i.instance);
   }
 
   getInstance(contextId: ContextId = STATIC_CONTEXT): T {
@@ -183,11 +193,6 @@ export class InstanceWrapper<T extends object = any> {
     if (dependency.isTransient()) metadata.contextId = createContextId();
     if (!dependency.isResolvable()) return await dependency.loadPrototype(metadata.contextId);
     return await dependency.loadInstance(metadata.contextId);
-  }
-
-  getAllInstances(): T[] {
-    const instanceContexts = Array.from(this.instances.values());
-    return instanceContexts.map(i => i.instance);
   }
 
   async loadAllInstances(): Promise<T[]> {

@@ -79,6 +79,13 @@ describe('Module', () => {
       expect(() => new ModuleWrapper(InvalidModule)).toThrow(InternalError);
     });
 
+    it('should throw an error for duplicate providers', () => {
+      @Module({ providers: [MockCatService, { token: MockCatService, useClass: CatSubService }] })
+      class DuplicateModule {}
+
+      expect(() => new ModuleWrapper(DuplicateModule)).toThrow(InternalError);
+    });
+
     it('should detect circular dependencies', async () => {
       @Injectable()
       class ServiceA {
@@ -217,7 +224,7 @@ describe('Module', () => {
     });
   });
 
-  describe('Initialization', () => {
+  describe('Initialization and termination', () => {
     it('should initialize the module', async () => {
       await module.init();
       const isProvidersResolved = Array.from(module['providers'].values()).every(provider => provider.isResolved());
@@ -267,13 +274,18 @@ describe('Module', () => {
       const module = new ModuleWrapper(InvalidModule);
       await expect(module.init()).rejects.toThrowError(InternalError);
     });
+
+    it('should terminate the module', async () => {
+      await module.init();
+      await module.terminate();
+      expect(onModuleDestroyMock).toBeCalledTimes(1);
+    });
   });
 
   describe('Hooks', () => {
     beforeEach(() => module.init());
 
     it('should execute the hook for static instance', async () => {
-      await module.callHook(HookTypes.ON_MODULE_INIT);
       expect(onModuleInitMock).toBeCalledTimes(2);
     });
 
