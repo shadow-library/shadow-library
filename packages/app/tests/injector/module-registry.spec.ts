@@ -106,4 +106,22 @@ describe('ModuleRegistry', () => {
       new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, 'onApplicationShutdown'));
     });
   });
+
+  describe('General', () => {
+    beforeEach(() => moduleRegistry.init());
+
+    it('should list all the modules', () => {
+      const modules = moduleRegistry.get().map(m => m.getMetatype());
+      expect(modules).toStrictEqual([SheepModule, CatModule, DogModule, AnimalModule, AppModule]);
+    });
+
+    it('should throw an error if the module is not found', () => {
+      expect(() => moduleRegistry.get(class InvalidModule {})).toThrow(InternalError);
+    });
+
+    it('should get the module', () => {
+      const module = moduleRegistry.get(DogModule);
+      expect(module.getMetatype()).toBe(DogModule);
+    });
+  });
 });

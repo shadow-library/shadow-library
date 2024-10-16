@@ -85,7 +85,7 @@ export class ModuleRegistry {
     this.logger.debug('Initializing the modules');
     const modules = Array.from(this.modules.values());
     for (const module of modules) await module.init();
-    /** @Todo Register the routes */
+    for (const module of modules) await module.registerRoutes();
     const promises = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_READY));
     await Promise.all(promises);
 
@@ -100,5 +100,14 @@ export class ModuleRegistry {
     /** @Todo Stop the router */
     for (const module of modules) await module.terminate();
     this.logger.debug('Modules terminated');
+  }
+
+  get(): Module[];
+  get(module: TModule): Module;
+  get(module?: TModule): Module | Module[] {
+    if (!module) return Array.from(this.modules.values());
+    const mod = this.modules.get(module);
+    if (!mod) throw new InternalError(`Module '${module.name}' not found`);
+    return mod;
   }
 }
