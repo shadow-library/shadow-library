@@ -294,6 +294,10 @@ describe('InstanceWrapper', () => {
       expect(instanceWrapper.getToken()).toBe(Provider);
     });
 
+    it('should return the metatype', () => {
+      expect(instanceWrapper.getMetatype()).toBe(Provider);
+    });
+
     it('should return the dependencies', () => {
       expect(instanceWrapper.getDependencies()).toStrictEqual([{ token: 'DEPENDENCY', optional: false }]);
     });

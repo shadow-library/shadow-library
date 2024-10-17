@@ -10,7 +10,8 @@ import { Class } from 'type-fest';
 import { DIErrors, DependencyGraph } from './helpers';
 import { InstanceWrapper } from './instance-wrapper';
 import { ModuleRef } from './module-ref';
-import { CONTROLLER_WATERMARK, MODULE_METADATA } from '../constants';
+import { ControllerRouteMetadata, Router } from '../classes';
+import { CONTROLLER_METADATA, CONTROLLER_WATERMARK, MODULE_METADATA, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, ROUTE_METADATA, ROUTE_WATERMARK } from '../constants';
 import { InjectionToken, Provider, ValueProvider } from '../interfaces';
 import { ContextId, createContextId } from '../utils';
 
@@ -18,7 +19,7 @@ import { ContextId, createContextId } from '../utils';
  * Defining types
  */
 
-type Controller = Class<unknown>;
+type Controller = Record<string, any>;
 
 export enum HookTypes {
   ON_MODULE_INIT = 'onModuleInit',
@@ -101,7 +102,7 @@ export class Module {
   }
 
   private loadControllers() {
-    const controllers: Controller[] = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, this.metatype) ?? [];
+    const controllers: Class<Controller>[] = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, this.metatype) ?? [];
     for (const controller of controllers) {
       const isController = Reflect.hasMetadata(CONTROLLER_WATERMARK, controller);
       if (!isController) throw new InternalError(`Class '${controller.name}' is not a controller`);
@@ -121,14 +122,26 @@ export class Module {
     }
   }
 
+  private getChildModules(): Set<Module> {
+    const modules = new Set<Module>();
+    const scanModules = (module: Module) => {
+      if (modules.has(module)) return;
+      modules.add(module);
+      module.imports.forEach(importModule => scanModules(importModule));
+    };
+
+    this.imports.forEach(scanModules);
+    return modules;
+  }
+
   private getInternalProvider(token: InjectionToken): InstanceWrapper<Provider>;
   private getInternalProvider(token: InjectionToken, optional: boolean): InstanceWrapper<Provider> | undefined;
   private getInternalProvider(token: InjectionToken, optional?: boolean): InstanceWrapper<Provider> | undefined {
     const provider = this.providers.get(token);
     if (provider) return provider;
 
-    for (const module of this.imports) {
-      const provider = module.getInternalProvider(token);
+    for (const module of this.getChildModules()) {
+      const provider = module.getProvider(token, true);
       if (provider) return provider;
     }
 
@@ -185,6 +198,11 @@ export class Module {
     return instances;
   }
 
+  private getRouter(): Router | undefined {
+    const router = this.providers.get(Router) as InstanceWrapper<Router> | undefined;
+    return router?.getInstance();
+  }
+
   async init(): Promise<void> {
     this.logger.debug(`Initializing module '${this.metatype.name}'`);
     this.detectCircularTransients();
@@ -212,6 +230,57 @@ export class Module {
 
     this.logger.debug(`Module '${this.metatype.name}' initialized`);
     this.callHook(HookTypes.ON_MODULE_INIT);
+  }
+
+  private getControllerRouteMetadata(controller: InstanceWrapper<Controller>): ControllerRouteMetadata {
+    /* Extracting the route methods present in the instance */
+    const methods = new Set<() => any>();
+    const instance = controller.getInstance();
+    let prototype = instance;
+    do {
+      for (const propertyName of Object.getOwnPropertyNames(prototype)) {
+        const method = instance[propertyName];
+        const isRouteMethod = typeof method === 'function' && Reflect.hasMetadata(ROUTE_WATERMARK, method);
+        if (isRouteMethod) methods.add(method);
+      }
+    } while ((prototype = Object.getPrototypeOf(prototype)));
+
+    /* Extracting the route metadata from the route methods */
+    const routes: ControllerRouteMetadata['routes'] = [];
+    for (const method of methods) {
+      const metadata = Reflect.getMetadata(ROUTE_METADATA, method);
+      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, instance, method.name) as string[];
+      const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, this.instance, method.name);
+      routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });
+    }
+
+    const metatype = controller.getMetatype() as Class<Controller>;
+    const metadata = Reflect.getMetadata(CONTROLLER_METADATA, metatype);
+    return { metadata, metatype, routes };
+  }
+
+  async registerRoutes(): Promise<void> {
+    const router = this.getRouter();
+    if (!router) return;
+
+    const modules = this.getChildModules();
+    const controllers = new Set(this.controllers);
+    modules.forEach(module => module.controllers.forEach(controller => controllers.add(controller)));
+
+    for (const controller of controllers) {
+      const metadata = this.getControllerRouteMetadata(controller);
+      await router.register(metadata);
+    }
+  }
+
+  async start(): Promise<void> {
+    const router = this.getRouter();
+    if (router) await router.start();
+  }
+
+  async stop(): Promise<void> {
+    const router = this.getRouter();
+    if (router) await router.stop();
   }
 
   async terminate(): Promise<void> {

@@ -114,6 +114,10 @@ export class InstanceWrapper<T extends object = any> {
     return this.token;
   }
 
+  getMetatype(): Class<T> | Factory<T> | undefined {
+    return this.metatype;
+  }
+
   getTokenName(): string {
     const token = this.token as any;
     return token.name ?? token.toString();

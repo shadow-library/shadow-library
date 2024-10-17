@@ -7,6 +7,7 @@ import { InternalError } from '@shadow-library/common';
 /**
  * Importing user defined packages
  */
+import '@shadow-library/app';
 import { DependencyGraph } from '@shadow-library/app/injector';
 
 /**
