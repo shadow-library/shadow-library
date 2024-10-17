@@ -7,6 +7,7 @@ import 'reflect-metadata';
  * exporting modules
  */
 export * from './decorators';
+export { ModuleRef } from './injector';
 export * from './interfaces';
 export * from './utils';
 

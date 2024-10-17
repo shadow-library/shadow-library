@@ -8,7 +8,7 @@ import { InternalError } from '@shadow-library/common';
  * Importing user defined packages
  */
 import { Controller, Injectable, Module, Route, forwardRef } from '@shadow-library/app';
-import { ModuleRegistry } from '@shadow-library/app/injector';
+import { HookTypes, ModuleRegistry } from '@shadow-library/app/injector';
 
 /**
  * Defining types
@@ -92,8 +92,9 @@ describe('ModuleRegistry', () => {
       await moduleRegistry.init();
 
       expect(mock).toBeCalledTimes(5);
-      expect(hook).toBeCalledTimes(5);
-      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, 'onApplicationReady'));
+      expect(hook).toBeCalledTimes(10);
+      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, HookTypes.ON_MODULE_INIT));
+      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 6, HookTypes.ON_APPLICATION_READY));
     });
 
     it('should terminate the modules', async () => {
@@ -102,8 +103,9 @@ describe('ModuleRegistry', () => {
 
       await moduleRegistry.terminate();
 
-      expect(hook).toBeCalledTimes(5);
-      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, 'onApplicationShutdown'));
+      expect(hook).toBeCalledTimes(10);
+      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 1, HookTypes.ON_APPLICATION_STOP));
+      new Array(5).forEach((_, index) => expect(hook).toHaveBeenNthCalledWith(index + 6, HookTypes.ON_MODULE_DESTROY));
     });
   });
 

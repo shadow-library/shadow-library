@@ -229,7 +229,6 @@ export class Module {
     this.loadExports(true);
 
     this.logger.debug(`Module '${this.metatype.name}' initialized`);
-    this.callHook(HookTypes.ON_MODULE_INIT);
   }
 
   private getControllerRouteMetadata(controller: InstanceWrapper<Controller>): ControllerRouteMetadata {
@@ -263,6 +262,7 @@ export class Module {
     const router = this.getRouter();
     if (!router) return;
 
+    this.logger.debug(`Registering routes in module '${this.metatype.name}'`);
     const modules = this.getChildModules();
     const controllers = new Set(this.controllers);
     modules.forEach(module => module.controllers.forEach(controller => controllers.add(controller)));
@@ -270,7 +270,9 @@ export class Module {
     for (const controller of controllers) {
       const metadata = this.getControllerRouteMetadata(controller);
       await router.register(metadata);
+      this.logger.debug(`Registered controller '${metadata.metatype.name}'`);
     }
+    this.logger.debug(`Routes registered in module '${this.metatype.name}'`);
   }
 
   async start(): Promise<void> {

@@ -24,12 +24,10 @@ jest.mock('@shadow-library/app/shadow-application', () => ({
 describe('ShadowFactory', () => {
   describe('create', () => {
     it('should create and init the application', async () => {
-      const router = jest.fn() as any;
       class AppModule {}
+      const app = await ShadowFactory.create(AppModule);
 
-      const app = await ShadowFactory.create(AppModule, { router });
-
-      expect(ShadowApplication).toBeCalledWith(AppModule, { router });
+      expect(ShadowApplication).toBeCalledWith(AppModule);
       expect(app.init).toBeCalledTimes(1);
     });
   });
