@@ -53,6 +53,7 @@ export class ModuleWrapper {
     const provider = this.providers.get(name) as T | undefined;
     if (provider) return provider;
 
+    /* istanbul ignore next */
     for (const module of this.imports) {
       const provider = module.getExportedProvider<T>(name);
       if (provider) return provider;

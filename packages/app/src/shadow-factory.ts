@@ -6,7 +6,6 @@ import { Class } from 'type-fest';
 /**
  * Importing user defined packages
  */
-import { ApplicationConfig } from './interfaces';
 import { ShadowApplication } from './shadow-application';
 
 /**
@@ -18,8 +17,8 @@ import { ShadowApplication } from './shadow-application';
  */
 
 export class ShadowFactoryStatic {
-  async create(module: Class<unknown>, options?: ApplicationConfig): Promise<ShadowApplication> {
-    const app = new ShadowApplication(module, options);
+  async create(module: Class<unknown>): Promise<ShadowApplication> {
+    const app = new ShadowApplication(module);
     return await app.init();
   }
 }

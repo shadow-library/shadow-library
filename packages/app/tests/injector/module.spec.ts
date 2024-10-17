@@ -299,6 +299,7 @@ describe('Module', () => {
     beforeEach(() => module.init());
 
     it('should execute the hook for static instance', async () => {
+      await module.callHook(HookTypes.ON_MODULE_INIT);
       expect(onModuleInitMock).toBeCalledTimes(2);
     });
 
