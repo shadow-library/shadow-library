@@ -1,8 +1,8 @@
 {
-  "name": "@shadow-library/server",
+  "name": "@shadow-library/fastify",
   "type": "module",
   "version": "0.1.6",
-  "description": "A TypeScript package for building efficient Node.js servers with Fastify, featuring AJV validation, decorator-based routing, unified authentication, and response formatting with fast-json-stringify",
+  "description": "A Fastify wrapper featuring decorator-based routing, middleware and error handling",
   "author": "Leander Paul",
   "homepage": "https://github.com/shadow-library/shadow-library#readme",
   "license": "MIT",
@@ -13,24 +13,25 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shadow-library/shadow-library.git",
-    "directory": "packages/server"
+    "directory": "packages/fastify"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.33.10",
     "fastify": "^5.0.0",
-    "reflect-metadata": "^0.2.2",
     "type-fest": "^4.26.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@fastify/view": "^10.0.0",
     "@shadow-library/app": "workspace:*",
-    "@shadow-library/common": "workspace:*"
+    "@shadow-library/common": "workspace:*",
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
     "@fastify/view": "^10.0.0",
     "@shadow-library/app": "workspace:*",
-    "@shadow-library/common": "workspace:*"
+    "@shadow-library/common": "workspace:*",
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependenciesMeta": {
     "@fastify/view": {

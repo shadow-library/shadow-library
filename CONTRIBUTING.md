@@ -61,7 +61,7 @@ The following is the list of supported scopes:
 
 - **app**: for changes made on `packages/app` directory
 - **common**: for changes made on `packages/common` directory
-- **server**: for changes made on `packages/server` directory
+- **fastify**: for changes made on `packages/fastify` directory
 
 If your change affect more than one package, separate the scopes with a comma (e.g. `common,errors`).
 

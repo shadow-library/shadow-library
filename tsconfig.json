@@ -29,8 +29,8 @@
       "@shadow-library/app/*": ["packages/app/src/*"],
       "@shadow-library/common": ["packages/common/src/index.ts"],
       "@shadow-library/common/*": ["packages/common/src/*"],
-      "@shadow-library/server": ["packages/server/src/index.ts"],
-      "@shadow-library/server/*": ["packages/server/src/*"]
+      "@shadow-library/fastify": ["packages/fastify/src/index.ts"],
+      "@shadow-library/fastify/*": ["packages/fastify/src/*"]
     },
     "resolveJsonModule": true,
 
