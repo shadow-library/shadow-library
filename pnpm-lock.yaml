@@ -115,17 +115,14 @@ importers:
         specifier: ^4.7.0
         version: 4.7.0
 
-  packages/server:
+  packages/fastify:
     dependencies:
       '@sinclair/typebox':
         specifier: ^0.33.10
-        version: 0.33.10
+        version: 0.33.16
       fastify:
         specifier: ^5.0.0
         version: 5.0.0
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
       type-fest:
         specifier: ^4.26.1
         version: 4.26.1
@@ -142,6 +139,9 @@ importers:
       '@shadow-library/common':
         specifier: workspace:*
         version: link:../common
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
 
 packages:
 
@@ -1072,9 +1072,6 @@ packages:
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
-
-  '@sinclair/typebox@0.33.10':
-    resolution: {integrity: sha512-gUOpbHRWwYGzWI6qb+ffHFUdGRYL+yZk01dpC6JzIiRCwHeJKyVrki3Mtn6idscTWlwi4RoWbLhTzW0vUxpl8A==}
 
   '@sinclair/typebox@0.33.16':
     resolution: {integrity: sha512-jsz4f3LxXGh217hJE3MAOB+i3pzgr9wLGUBiCRNWaG/rRcVoS4+dzQok9SeZLtwNdmY44oGYQWlJCjIJxeLKEw==}
@@ -6098,8 +6095,6 @@ snapshots:
       '@sigstore/protobuf-specs': 0.3.2
 
   '@sinclair/typebox@0.27.8': {}
-
-  '@sinclair/typebox@0.33.10': {}
 
   '@sinclair/typebox@0.33.16': {}
 

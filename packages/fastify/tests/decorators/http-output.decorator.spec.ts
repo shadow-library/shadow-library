@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { Header, HttpStatus, Redirect, Render } from '@shadow-library/server';
+import { Header, HttpStatus, Redirect, Render } from '@shadow-library/fastify';
 
 import { Utils } from '../utils';
 

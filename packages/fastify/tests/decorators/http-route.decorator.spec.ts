@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { All, Delete, Get, Head, HttpMethod, HttpRoute, Options, Patch, Post, Put } from '@shadow-library/server';
+import { All, Delete, Get, Head, HttpMethod, HttpRoute, Options, Patch, Post, Put } from '@shadow-library/fastify';
 
 import { Utils } from '../utils';
 

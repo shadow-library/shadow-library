@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { Body, HttpInput, Params, Query, Req, Res, RouteInputType } from '@shadow-library/server';
+import { Body, HttpInput, Params, Query, Req, Res, RouteInputType } from '@shadow-library/fastify';
 
 import { Utils } from '../utils';
 

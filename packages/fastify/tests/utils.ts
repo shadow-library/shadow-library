@@ -1,11 +1,11 @@
 /**
  * Importing npm packages
  */
-import { PARAMTYPES_METADATA } from '@shadow-library/app';
 
 /**
  * Importing user defined packages
  */
+import { PARAMTYPES_METADATA } from '@shadow-library/fastify/constants';
 
 /**
  * Defining types

@@ -11,9 +11,7 @@ import { CONTROLLER_METADATA, CONTROLLER_WATERMARK } from '../constants';
  * Defining types
  */
 
-export interface ControllerMetdata extends Record<string | symbol, any> {
-  router?: boolean;
-}
+export interface ControllerMetdata extends Record<string | symbol, any> {}
 
 /**
  * Declaring the constants

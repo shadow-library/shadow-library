@@ -1,6 +1,8 @@
 # Shadow Server
 
-This TypeScript package is a powerful Node.js server implementation built as a wrapper around the Fastify package. It offers features such as body, query, and URL parameter validation using AJV for speed, response formatting with fast-json-stringify, and a unified approach to authentication and authorization. The package uses decorators to define controller classes and HTTP methods, and includes a render decorator for templating engine support.
+This TypeScript package is a powerful Node.js server implementation built as a wrapper around the Fastify package. It offers features such as body, query,
+and URL parameter validation using AJV for speed, response formatting with fast-json-stringify, and a unified approach to authentication and authorization.
+The package uses decorators to define controller classes and HTTP methods, and includes a render decorator for templating engine support.
 
 ## Features
 

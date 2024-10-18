@@ -7,7 +7,7 @@ import { InternalError } from '@shadow-library/common';
 /**
  * Importing user defined packages
  */
-import { Context } from '@shadow-library/server';
+import { Context } from '@shadow-library/fastify';
 
 /**
  * Defining types

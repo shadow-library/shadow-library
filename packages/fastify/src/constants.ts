@@ -13,7 +13,5 @@
 /**
  * Declaring the constants
  */
-
-export const MIDDLEWARE_WATERMARK = Symbol('middleware');
-
-export const HTTP_ROUTE = Symbol('http-route');
+export const RETURN_TYPE_METADATA = 'design:returntype';
+export const PARAMTYPES_METADATA = 'design:paramtypes';

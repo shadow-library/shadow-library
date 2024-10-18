@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { HttpController } from '@shadow-library/server';
+import { HttpController } from '@shadow-library/fastify';
 
 import { Utils } from '../utils';
 
@@ -23,13 +23,13 @@ describe('@HttpController', () => {
     @HttpController('/test')
     class TestController {}
     const metadata = Utils.getControllerMetadata(TestController);
-    expect(metadata).toStrictEqual({ basePath: '/test' });
+    expect(metadata).toStrictEqual({ path: '/test' });
   });
 
   it(`should enhance the class with the default path metadata`, () => {
     @HttpController()
     class TestController {}
     const metadata = Utils.getControllerMetadata(TestController);
-    expect(metadata).toStrictEqual({ basePath: '' });
+    expect(metadata).toStrictEqual({ path: '' });
   });
 });
