@@ -28,8 +28,8 @@ export class ModuleRegistry {
   private readonly logger = Logger.getLogger(ModuleRegistry.name);
   private readonly modules = new Map<TModule, Module>();
 
-  constructor(private readonly main: TModule) {
-    const modules = this.scan(main);
+  constructor(root: TModule) {
+    const modules = this.scan(root);
     for (const module of modules) this.modules.set(module.getMetatype(), module);
   }
 
@@ -85,19 +85,30 @@ export class ModuleRegistry {
     this.logger.debug('Initializing the modules');
     const modules = Array.from(this.modules.values());
     for (const module of modules) await module.init();
-    for (const module of modules) await module.registerRoutes();
-    const promises = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_READY));
-    await Promise.all(promises);
-
+    const onModuleInit = modules.map(module => module.callHook(HookTypes.ON_MODULE_INIT));
+    await Promise.all(onModuleInit);
     this.logger.debug('Modules initialized');
+
+    const registerRoutes = modules.map(module => module.registerRoutes());
+    await Promise.all(registerRoutes);
+    this.logger.debug('Routes registered');
+
+    const onApplicationReady = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_READY));
+    await Promise.all(onApplicationReady);
+    this.logger.debug('Application ready');
   }
 
   async terminate(): Promise<void> {
     this.logger.debug('Terminating the modules');
     const modules = Array.from(this.modules.values());
-    const promises = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_READY));
-    await Promise.all(promises);
-    /** @Todo Stop the router */
+    const onApplicationStop = modules.map(module => module.callHook(HookTypes.ON_APPLICATION_STOP));
+    await Promise.all(onApplicationStop);
+
+    const stopRoutes = modules.map(module => module.stop());
+    await Promise.all(stopRoutes);
+    this.logger.debug('Routes stopped');
+
+    for (const module of modules) await module.callHook(HookTypes.ON_MODULE_DESTROY);
     for (const module of modules) await module.terminate();
     this.logger.debug('Modules terminated');
   }
