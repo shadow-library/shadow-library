@@ -86,9 +86,6 @@ importers:
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
       type-fest:
         specifier: ^4.26.1
         version: 4.26.1
@@ -96,6 +93,9 @@ importers:
       '@shadow-library/common':
         specifier: workspace:*
         version: link:../common
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
 
   packages/common:
     dependencies:
