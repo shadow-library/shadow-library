@@ -265,13 +265,15 @@ export class Module {
     this.logger.debug(`Registering routes in module '${this.metatype.name}'`);
     const modules = this.getChildModules();
     const controllers = new Set(this.controllers);
+    const controllerRouteMetadata: ControllerRouteMetadata[] = [];
     modules.forEach(module => module.controllers.forEach(controller => controllers.add(controller)));
 
     for (const controller of controllers) {
       const metadata = this.getControllerRouteMetadata(controller);
-      await router.register(metadata);
-      this.logger.debug(`Registered controller '${metadata.metatype.name}'`);
+      controllerRouteMetadata.push(metadata);
     }
+
+    await router.register(controllerRouteMetadata);
     this.logger.debug(`Routes registered in module '${this.metatype.name}'`);
   }
 
