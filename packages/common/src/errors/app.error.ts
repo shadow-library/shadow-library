@@ -5,6 +5,7 @@
 /**
  * Importing user defined packages
  */
+import { utils } from '../utils';
 import { type ErrorCode, type ErrorType } from './error-code.error';
 
 /**
@@ -22,8 +23,13 @@ export interface AppErrorObject {
  */
 
 export class AppError<TErrorCode extends ErrorCode = ErrorCode> extends Error {
-  constructor(protected readonly error: TErrorCode) {
-    super(error.getMessage());
+  constructor(
+    protected readonly error: TErrorCode,
+    protected readonly data?: Record<string, any>,
+  ) {
+    let message = error.getMessage();
+    if (data) message = utils.string.interpolate(message, data);
+    super(message);
     this.name = this.constructor.name;
   }
 
@@ -36,7 +42,11 @@ export class AppError<TErrorCode extends ErrorCode = ErrorCode> extends Error {
   }
 
   getMessage(): string {
-    return this.error.getMessage();
+    return this.message;
+  }
+
+  getData(): Record<string, any> | undefined {
+    return this.data;
   }
 
   toObject(): AppErrorObject {
