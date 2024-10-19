@@ -40,11 +40,22 @@ describe('AppError', () => {
   });
 
   it('should return the error message', () => {
+    /* @ts-expect-error private contructor access */
+    const customErrorCode = new ErrorCode('CUSTOM_ERROR', ErrorType.SERVER_ERROR, 'Custom error: {message}');
     const errorOne = new AppError(ErrorCode.UNKNOWN);
-    const errorTwo = new AppError(ErrorCode.VALIDATION_ERROR);
+    const errorTwo = new AppError(customErrorCode, { message: 'unauthorized' });
 
     expect(errorOne.getMessage()).toBe('Unknown Error');
-    expect(errorTwo.getMessage()).toBe('Validation Error');
+    expect(errorTwo.getMessage()).toBe('Custom error: unauthorized');
+  });
+
+  it('should return the error data', () => {
+    const data = { message: 'Custom Error Message' };
+    const errorOne = new AppError(ErrorCode.UNKNOWN, data);
+    const errorTwo = new AppError(ErrorCode.VALIDATION_ERROR);
+
+    expect(errorOne.getData()).toBe(data);
+    expect(errorTwo.getData()).toBeUndefined();
   });
 
   it('should return the error object', () => {
