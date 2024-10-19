@@ -338,12 +338,13 @@ describe('Module', () => {
       jest.spyOn(module as any, 'getRouter').mockReturnValue(router);
       await module.registerRoutes();
 
-      expect(router.register).toBeCalledTimes(1);
-      expect(router.register).toHaveBeenCalledWith({
-        metadata: {},
-        metatype: CatController,
-        routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
-      });
+      expect(router.register).toHaveBeenCalledWith([
+        {
+          metadata: {},
+          metatype: CatController,
+          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+        },
+      ]);
     });
 
     it('should register the routes for all the controllers', async () => {
@@ -354,7 +355,18 @@ describe('Module', () => {
       await dogModule.init();
       await dogModule.registerRoutes();
 
-      expect(router.register).toBeCalledTimes(2);
+      expect(router.register).toBeCalledWith([
+        {
+          metadata: {},
+          metatype: DogController,
+          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+        },
+        {
+          metadata: {},
+          metatype: CatController,
+          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+        },
+      ]);
     });
 
     it('should register controllers only once for cyclic dependent modules', async () => {
@@ -367,7 +379,18 @@ describe('Module', () => {
       await dogModule.init();
       await dogModule.registerRoutes();
 
-      expect(router.register).toBeCalledTimes(2);
+      expect(router.register).toBeCalledWith([
+        {
+          metadata: {},
+          metatype: DogController,
+          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+        },
+        {
+          metadata: {},
+          metatype: CatController,
+          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+        },
+      ]);
     });
 
     it('should start the router', async () => {

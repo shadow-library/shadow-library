@@ -31,9 +31,21 @@ export interface ControllerRouteMetadata {
 
 @Injectable()
 export abstract class Router {
-  abstract register(controller: ControllerRouteMetadata): any | Promise<any>;
+  /**
+   * Method that will be called to register the controllers.
+   * In terms of server, this method should register the controllers to the router.
+   */
+  abstract register(controller: ControllerRouteMetadata[]): any | Promise<any>;
 
+  /**
+   * Method that will be called to start the router.
+   * In terms of server, this method should listen to requests in a particular port.
+   */
   abstract start(): any | Promise<any>;
 
+  /**
+   * Method that will be called to stop the router.
+   * In terms of server, this method should stop listening to requests and close the server.
+   */
   abstract stop(): any | Promise<any>;
 }
