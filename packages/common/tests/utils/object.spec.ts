@@ -42,4 +42,24 @@ describe('Object Utils', () => {
       expect(utils.object.getByPath(data, 'address.country')).toBeUndefined();
     });
   });
+
+  describe('pickKeys', () => {
+    it('should return a new object with the needed fields', () => {
+      const data = { name: 'John Doe', age: 30, email: 'john-doe@email.com' };
+      const result = utils.object.pickKeys(data, ['name', 'email']);
+
+      expect(result).not.toBe(data);
+      expect(result).toStrictEqual({ name: data.name, email: data.email });
+    });
+  });
+
+  describe('omitKeys', () => {
+    it('should return a new object after removing the unneeded keys', () => {
+      const data = { name: 'John Doe', age: 30, email: 'john-doe@email.com' };
+      const result = utils.object.omitKeys(data, ['age']);
+
+      expect(result).not.toBe(data);
+      expect(result).toStrictEqual({ name: data.name, email: data.email });
+    });
+  });
 });
