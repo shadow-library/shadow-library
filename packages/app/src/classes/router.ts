@@ -22,6 +22,7 @@ export interface RouteController {
 export interface ControllerRouteMetadata {
   metatype: Class<unknown>;
   metadata: ControllerMetdata;
+  instance: object;
   routes: RouteController[];
 }
 

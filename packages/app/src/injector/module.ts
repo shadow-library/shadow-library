@@ -249,13 +249,13 @@ export class Module {
     for (const method of methods) {
       const metadata = Reflect.getMetadata(ROUTE_METADATA, method);
       const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, instance, method.name) as string[];
-      const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, this.instance, method.name);
-      routes.push({ metadata, handler: method.bind(this.instance), paramtypes, returnType });
+      const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, instance, method.name);
+      routes.push({ metadata, handler: method.bind(instance), paramtypes, returnType });
     }
 
     const metatype = controller.getMetatype() as Class<Controller>;
     const metadata = Reflect.getMetadata(CONTROLLER_METADATA, metatype);
-    return { metadata, metatype, routes };
+    return { metadata, metatype, routes, instance };
   }
 
   async registerRoutes(): Promise<void> {
