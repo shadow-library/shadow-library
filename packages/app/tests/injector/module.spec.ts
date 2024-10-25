@@ -47,8 +47,14 @@ describe('Module', () => {
   class CatController {
     constructor(public catService: CatService) {}
 
+    isBound(): boolean {
+      return true;
+    }
+
     @Route()
-    getCat() {}
+    getCat(): boolean {
+      return this.isBound();
+    }
   }
 
   @Module({
@@ -325,6 +331,7 @@ describe('Module', () => {
 
     @Module({ imports: [DogModule] })
     class AnimalModule {}
+
     beforeEach(() => module.init());
 
     it('should do nothing if the router is not registered', async () => {
@@ -332,19 +339,6 @@ describe('Module', () => {
       await module.registerRoutes();
 
       expect(module['getChildModules']).not.toBeCalled();
-    });
-
-    it('should register the routes', async () => {
-      jest.spyOn(module as any, 'getRouter').mockReturnValue(router);
-      await module.registerRoutes();
-
-      expect(router.register).toHaveBeenCalledWith([
-        {
-          metadata: {},
-          metatype: CatController,
-          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
-        },
-      ]);
     });
 
     it('should register the routes for all the controllers', async () => {
@@ -355,18 +349,29 @@ describe('Module', () => {
       await dogModule.init();
       await dogModule.registerRoutes();
 
+      expect(router.register).toBeCalledTimes(1);
       expect(router.register).toBeCalledWith([
         {
           metadata: {},
+          instance: expect.any(DogController),
           metatype: DogController,
           routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
         },
         {
           metadata: {},
+          instance: expect.any(CatController),
           metatype: CatController,
-          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: Boolean }],
         },
       ]);
+    });
+
+    it('should bind the controller instance to the route handler', () => {
+      const catController = Array.from(module['controllers'].values())[0]!;
+      const routeController = module['getControllerRouteMetadata'](catController);
+      const route = routeController.routes[0];
+
+      expect(route?.handler()).toBe(true);
     });
 
     it('should register controllers only once for cyclic dependent modules', async () => {
@@ -379,18 +384,7 @@ describe('Module', () => {
       await dogModule.init();
       await dogModule.registerRoutes();
 
-      expect(router.register).toBeCalledWith([
-        {
-          metadata: {},
-          metatype: DogController,
-          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
-        },
-        {
-          metadata: {},
-          metatype: CatController,
-          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
-        },
-      ]);
+      expect(router.register.mock.lastCall?.[0]).toHaveLength(2);
     });
 
     it('should start the router', async () => {

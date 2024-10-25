@@ -52,7 +52,7 @@ export class InstanceWrapper<T extends object = any> {
       this.dependecies = [];
       this.token = provider.token;
       this.instances.set(STATIC_CONTEXT, { instance: provider.useValue, resolved: true });
-      this.logger.debug(`Instance '${this.token.toString()}' created`);
+      this.logger.debug(`Instance '${this.getTokenName()}' created`);
       return;
     }
 
