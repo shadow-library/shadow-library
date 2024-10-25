@@ -26,7 +26,8 @@ export interface FileTransportOptions {
 export class FileTransport extends transports.File {
   constructor(options: FileTransportOptions) {
     FileTransport.rotateLogFiles(options.dirname, options.filename);
-    super(options);
+    const filename = `${options.dirname}/${options.filename}-0.log`;
+    super({ filename });
   }
 
   private static getFileIndex(filename: string): number {

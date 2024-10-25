@@ -34,9 +34,9 @@ declare module 'winston' {
 let timestamp: number;
 
 function padLevel(level: string) {
-  level = level.toUpperCase();
-  const padding = '   '.substring(0, 5 - (level?.length ?? 0));
-  return level + padding;
+  const rawLevel = level.slice(5, -5);
+  const padding = '   '.substring(0, 5 - rawLevel.length);
+  return level.replace(rawLevel, rawLevel.toUpperCase() + padding);
 }
 
 format.brief = function (opts: BriefFormatOptions = {}) {
