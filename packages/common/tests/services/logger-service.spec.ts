@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 /**
  * Importing user defined packages
@@ -17,7 +17,12 @@ import { ConsoleTransport, Logger } from '@shadow-library/common';
  */
 
 describe('Logger Service', () => {
+  const winstonLogger = Logger['getInstance']();
   const maskedValue = '****';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   it('should mask sensitive data', () => {
     const redactor = Logger.getRedactor(['password']);
@@ -38,21 +43,25 @@ describe('Logger Service', () => {
   });
 
   it('should return the logger', () => {
-    const logger = Logger.getLogger('test');
+    const fn = jest.spyOn(winstonLogger, 'child');
+    Logger.getLogger('test');
+    expect(fn).toBeCalledWith({ label: 'test' });
+  });
 
-    const methods = ['info', 'http', 'error', 'warn', 'debug'] as const;
-    methods.forEach(method => expect(logger[method]).toBeInstanceOf(Function));
+  it('should return the logger with metadata', () => {
+    const fn = jest.spyOn(winstonLogger, 'child');
+    Logger.getLogger({ name: 'test' });
+    expect(fn).toBeCalledWith({ name: 'test' });
   });
 
   it('should add a dummy transport if no transport is provided', () => {
-    const logger = Logger['getInstance']();
-    expect(logger.transports).toHaveLength(1);
+    expect(winstonLogger.transports).toHaveLength(1);
   });
 
   it('should add a transport and remove dummy transports', () => {
     const transport = new ConsoleTransport();
-    const instance = Logger.addTransport(transport)['getInstance']();
+    Logger.addTransport(transport);
 
-    expect(instance.transports).toHaveLength(1);
+    expect(winstonLogger.transports).toHaveLength(1);
   });
 });

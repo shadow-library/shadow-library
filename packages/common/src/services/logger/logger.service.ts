@@ -56,7 +56,7 @@ class LoggerStatic {
   /** Returns a child logger with the provided metadata */
   getLogger(metadata: string | object): Logger {
     if (logger.transports.length === 0) this.addTransport(noop);
-    return logger.child(metadata);
+    return logger.child(typeof metadata === 'string' ? { label: metadata } : metadata);
   }
 
   /* istanbul ignore next */
