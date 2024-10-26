@@ -31,3 +31,9 @@ export function tryCatch<TError extends Error, TResult>(fn: () => TResult | Prom
     return { success: false, error };
   }
 }
+
+export function withThis<T, A extends any[], R>(fn: (context: T, ...args: A) => R) {
+  return function (this: T, ...args: A): R {
+    return fn(this, ...args);
+  };
+}
