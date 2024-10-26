@@ -11,7 +11,8 @@ import { DIErrors, DependencyGraph } from './helpers';
 import { InstanceWrapper } from './instance-wrapper';
 import { ModuleRef } from './module-ref';
 import { ControllerRouteMetadata, Router } from '../classes';
-import { CONTROLLER_METADATA, CONTROLLER_WATERMARK, MODULE_METADATA, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, ROUTE_METADATA, ROUTE_WATERMARK } from '../constants';
+import { CONTROLLER_METADATA, MODULE_METADATA, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, ROUTE_METADATA } from '../constants';
+import { ModuleMetadata } from '../decorators';
 import { InjectionToken, Provider, ValueProvider } from '../interfaces';
 import { ContextId, createContextId } from '../utils';
 
@@ -39,10 +40,14 @@ export class Module {
   private readonly controllers = new Set<InstanceWrapper<Controller>>();
   private readonly providers = new Map<InjectionToken, InstanceWrapper<Provider>>();
   private readonly exports = new Set<InjectionToken>();
+
   private readonly instance: InstanceWrapper;
+  private readonly metadata: ModuleMetadata;
 
   constructor(private readonly metatype: Class<unknown>) {
     this.instance = new InstanceWrapper(metatype);
+    this.metadata = Reflect.getMetadata(MODULE_METADATA, metatype);
+
     this.addModuleRef();
     this.loadProviders();
     this.loadControllers();
@@ -72,7 +77,7 @@ export class Module {
   }
 
   private loadProviders() {
-    const providers: Provider[] = Reflect.getMetadata(MODULE_METADATA.PROVIDERS, this.metatype) ?? [];
+    const providers = this.metadata.providers ?? [];
     const providerMap = new Map<InjectionToken, InstanceWrapper<Provider>>();
     const graph = new DependencyGraph();
 
@@ -102,9 +107,9 @@ export class Module {
   }
 
   private loadControllers() {
-    const controllers: Class<Controller>[] = Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, this.metatype) ?? [];
+    const controllers = this.metadata.controllers ?? [];
     for (const controller of controllers) {
-      const isController = Reflect.hasMetadata(CONTROLLER_WATERMARK, controller);
+      const isController = Reflect.hasMetadata(CONTROLLER_METADATA, controller);
       if (!isController) throw new InternalError(`Class '${controller.name}' is not a controller`);
       const instance = new InstanceWrapper<Controller>(controller);
       this.controllers.add(instance);
@@ -112,7 +117,7 @@ export class Module {
   }
 
   private loadExports(verify: boolean) {
-    const exports: InjectionToken[] = Reflect.getMetadata(MODULE_METADATA.EXPORTS, this.metatype) ?? [];
+    const exports = this.metadata.exports ?? [];
     for (const token of exports) {
       if (verify) {
         const provider = this.getInternalProvider(token, true);
@@ -239,7 +244,7 @@ export class Module {
     do {
       for (const propertyName of Object.getOwnPropertyNames(prototype)) {
         const method = instance[propertyName];
-        const isRouteMethod = typeof method === 'function' && Reflect.hasMetadata(ROUTE_WATERMARK, method);
+        const isRouteMethod = typeof method === 'function' && Reflect.hasMetadata(ROUTE_METADATA, method);
         if (isRouteMethod) methods.add(method);
       }
     } while ((prototype = Object.getPrototypeOf(prototype)));

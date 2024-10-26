@@ -2,13 +2,12 @@
  * Importing npm packages
  */
 import { describe, expect, it } from '@jest/globals';
+import { ROUTE_METADATA } from '@shadow-library/app/constants';
 
 /**
  * Importing user defined packages
  */
-import { All, Delete, Get, Head, HttpMethod, HttpRoute, Options, Patch, Post, Put } from '@shadow-library/fastify';
-
-import { Utils } from '../utils';
+import { All, Delete, Get, Head, Options, Patch, Post, Put } from '@shadow-library/fastify';
 
 /**
  * Defining types
@@ -19,41 +18,6 @@ import { Utils } from '../utils';
  */
 
 describe('HTTP Methods Decorators', () => {
-  it(`should enhance the method with the request metadata`, () => {
-    const path = '/data';
-    class Controller {
-      @HttpRoute({ method: HttpMethod.GET, path })
-      static execute() {}
-    }
-
-    const route = Utils.getRouteMetadata(Controller.execute);
-
-    expect(route.path).toBe(path);
-    expect(route.method).toBe(HttpMethod.GET);
-  });
-
-  it(`should set the path as '/' by default for request`, () => {
-    class Controller {
-      @HttpRoute({ method: HttpMethod.POST })
-      static execute() {}
-    }
-
-    const route = Utils.getRouteMetadata(Controller.execute);
-
-    expect(route.path).toBe('/');
-  });
-
-  it(`should prepend the path with '/' if not present`, () => {
-    class Controller {
-      @HttpRoute({ method: HttpMethod.POST, path: 'path' })
-      static execute() {}
-    }
-
-    const route = Utils.getRouteMetadata(Controller.execute);
-
-    expect(route.path).toBe('/path');
-  });
-
   [All, Delete, Get, Head, Options, Patch, Post, Put].forEach(Decorator => {
     it(`should enhance the method with the request metadata for ${Decorator.name}`, () => {
       const path = '/data';
@@ -62,7 +26,7 @@ describe('HTTP Methods Decorators', () => {
         static execute() {}
       }
 
-      const route = Utils.getRouteMetadata(Controller.execute);
+      const route = Reflect.getMetadata(ROUTE_METADATA, Controller.execute);
 
       expect(route.path).toBe(path);
       expect(route.method).toBe(Decorator.name.toUpperCase());

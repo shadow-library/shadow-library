@@ -1,13 +1,12 @@
 /**
  * Importing npm packages
  */
-import { InternalError } from '@shadow-library/common';
 import { Class } from 'type-fest';
 
 /**
  * Importing user defined packages
  */
-import { MODULE_METADATA, MODULE_WATERMARK } from '../constants';
+import { MODULE_METADATA } from '../constants';
 import { InjectionToken, Provider } from '../interfaces';
 import { ForwardReference } from '../utils';
 
@@ -41,20 +40,7 @@ export interface ModuleMetadata {
 /**
  * Declaring the constants
  */
-const validMetadataKeys = Object.values(MODULE_METADATA) as string[];
 
 export function Module(metadata: ModuleMetadata): ClassDecorator {
-  const properties = Object.keys(metadata);
-  for (const property of properties) {
-    const validKey = validMetadataKeys.includes(property);
-    if (!validKey) throw new InternalError(`Invalid property '${property}' passed into the @Module() decorator.`);
-  }
-
-  return target => {
-    Reflect.defineMetadata(MODULE_WATERMARK, true, target);
-    for (const metadataKey of validMetadataKeys) {
-      const value = metadata[metadataKey as keyof ModuleMetadata];
-      if (value) Reflect.defineMetadata(metadataKey, value, target);
-    }
-  };
+  return target => Reflect.defineMetadata(MODULE_METADATA, metadata, target);
 }

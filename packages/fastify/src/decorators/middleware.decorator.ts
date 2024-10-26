@@ -8,18 +8,13 @@ import { Controller } from '@shadow-library/app';
 /**
  * Importing user defined packages
  */
+import { HTTP_CONTROLLER_TYPE } from '../constants';
 
 /**
  * Defining types
  */
 
 export type MiddlewareType = 'onRequest' | 'preParsing' | 'preValidation' | 'preHandler' | 'preSerialization' | 'onSend' | 'onResponse' | 'onError';
-
-export interface MiddlewareMetadata {
-  middleware: true;
-  options: MiddlewareOptions;
-  generates: boolean;
-}
 
 export interface MiddlewareOptions {
   /**
@@ -30,6 +25,11 @@ export interface MiddlewareOptions {
 
   /** Denotes the execution order, the higher value gets executed first */
   weight: number;
+}
+
+export interface MiddlewareMetadata extends MiddlewareOptions {
+  [HTTP_CONTROLLER_TYPE]: 'middleware';
+  generates: boolean;
 }
 
 /**
@@ -44,6 +44,6 @@ export function Middleware(options: Partial<MiddlewareOptions> = {}): ClassDecor
   return target => {
     const key = propertyKeys.find(key => key in target.prototype);
     assert(key, `Cannot apply @Middleware to a class without a 'generate()' or 'use()' method`);
-    Controller({ middleware: true, options, generates: key === 'generate' })(target);
+    Controller({ ...options, [HTTP_CONTROLLER_TYPE]: 'middleware', generates: key === 'generate' })(target);
   };
 }

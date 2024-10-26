@@ -2,13 +2,12 @@
  * Importing npm packages
  */
 import { describe, expect, it } from '@jest/globals';
+import { ROUTE_METADATA } from '@shadow-library/app/constants';
 
 /**
  * Importing user defined packages
  */
 import { Header, HttpStatus, Redirect, Render } from '@shadow-library/fastify';
-
-import { Utils } from '../utils';
 
 /**
  * Defining types
@@ -25,7 +24,7 @@ describe('HTTP Output Decorators', () => {
       static single() {}
     }
 
-    const metadata = Utils.getRouteMetadata(Controller.single);
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
     expect(metadata).toStrictEqual({ status: 200 });
   });
 
@@ -35,7 +34,7 @@ describe('HTTP Output Decorators', () => {
       static single() {}
     }
 
-    const metadata = Utils.getRouteMetadata(Controller.single);
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
     expect(metadata).toStrictEqual({ headers: { 'Content-Type': 'application/json' } });
   });
 
@@ -45,7 +44,7 @@ describe('HTTP Output Decorators', () => {
       static single() {}
     }
 
-    const metadata = Utils.getRouteMetadata(Controller.single);
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
     expect(metadata).toStrictEqual({ redirect: '/redirect', status: 301 });
   });
 
@@ -55,7 +54,7 @@ describe('HTTP Output Decorators', () => {
       static single() {}
     }
 
-    const metadata = Utils.getRouteMetadata(Controller.single);
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
     expect(metadata).toStrictEqual({ render: 'view' });
   });
 
@@ -65,7 +64,7 @@ describe('HTTP Output Decorators', () => {
       static single() {}
     }
 
-    const metadata = Utils.getRouteMetadata(Controller.single);
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
     expect(metadata).toStrictEqual({ render: true });
   });
 });

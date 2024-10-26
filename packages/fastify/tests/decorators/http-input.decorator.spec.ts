@@ -2,13 +2,12 @@
  * Importing npm packages
  */
 import { describe, expect, it } from '@jest/globals';
+import { PARAMTYPES_METADATA, ROUTE_METADATA } from '@shadow-library/app/constants';
 
 /**
  * Importing user defined packages
  */
 import { Body, HttpInput, Params, Query, Req, Res, RouteInputType } from '@shadow-library/fastify';
-
-import { Utils } from '../utils';
 
 /**
  * Defining types
@@ -44,44 +43,44 @@ describe('HTTP Input Decorators', () => {
   }
 
   it(`should enhance the method with the request input metadata`, () => {
-    const metadata = Utils.getRouteMetadata(Controller.single);
-    const paramtypes = Utils.getParamMetadata(Controller, 'single');
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'single');
 
     expect(metadata).toStrictEqual({ schemas: { body: schema } });
     expect(paramtypes).toStrictEqual(['body']);
   });
 
   it(`should enhance the method with the Body input metadata`, () => {
-    const paramtypes = Utils.getParamMetadata(Controller, 'body');
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'body');
     expect(paramtypes).toStrictEqual([String, 'body']);
   });
 
   it(`should enhance the method with the Params input metadata`, () => {
-    const paramtypes = Utils.getParamMetadata(Controller, 'params');
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'params');
     expect(paramtypes).toStrictEqual(['params']);
   });
 
   it(`should enhance the method with the Query input metadata`, () => {
-    const metadata = Utils.getRouteMetadata(Controller.query);
-    const paramtypes = Utils.getParamMetadata(Controller, 'query');
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.query);
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'query');
 
     expect(metadata).toStrictEqual({ schemas: { query: schema } });
     expect(paramtypes).toStrictEqual(['query']);
   });
 
   it(`should enhance the method with the request input metadata`, () => {
-    const paramtypes = Utils.getParamMetadata(Controller, 'req');
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'req');
     expect(paramtypes).toStrictEqual(['request']);
   });
 
   it(`should enhance the method with the response input metadata`, () => {
-    const paramtypes = Utils.getParamMetadata(Controller, 'res');
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'res');
     expect(paramtypes).toStrictEqual(['response']);
   });
 
   it(`should enhance the method with the multiple request input metadata`, () => {
-    const metadata = Utils.getRouteMetadata(Controller.multiple);
-    const paramtypes = Utils.getParamMetadata(Controller, 'multiple');
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.multiple);
+    const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, Controller, 'multiple');
 
     expect(metadata).toStrictEqual({ schemas: { params: schema } });
     expect(paramtypes).toStrictEqual(['body', String, 'params']);

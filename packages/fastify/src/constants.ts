@@ -13,8 +13,7 @@
 /**
  * Declaring the constants
  */
-export const RETURN_TYPE_METADATA = 'design:returntype';
-export const PARAMTYPES_METADATA = 'design:paramtypes';
-
 export const FASTIFY_CONFIG = Symbol('fastify-config');
 export const FASTIFY_INSTANCE = Symbol('fastify-instance');
+
+export const HTTP_CONTROLLER_TYPE = Symbol('http-controller-type');
