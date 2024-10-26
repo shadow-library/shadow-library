@@ -12,6 +12,7 @@ type Project = string | { name: string; config: Config };
  * Declaring the constants.
  */
 const projects: Project[] = ['app', 'common', 'fastify'];
+const moduleNameMapper = projects.reduce((acc, project) => ({ ...acc, [`@shadow-library/${project}/(.*)`]: `<rootDir>/../${project}/src/$1` }), {});
 const generateProjectConfig = (project: Project): Config => {
   if (typeof project === 'string') project = { name: project, config: {} };
   const configs: Config = { displayName: project.name };
@@ -19,7 +20,7 @@ const generateProjectConfig = (project: Project): Config => {
   /** Setting up the test configs */
   configs.rootDir = `packages/${project.name}`;
   configs.transform = { '^.+\\.ts$': ['ts-jest', { isolatedModules: false }] };
-  configs.moduleNameMapper = { [`@shadow-library/${project.name}/(.*)`]: `<rootDir>/src/$1` };
+  configs.moduleNameMapper = { ...moduleNameMapper, [`@shadow-library/${project.name}/(.*)`]: `<rootDir>/src/$1` };
 
   return Object.assign(configs, project.config);
 };

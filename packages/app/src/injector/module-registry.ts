@@ -9,7 +9,8 @@ import { Class } from 'type-fest';
  */
 import { DIErrors, DependencyGraph } from './helpers';
 import { HookTypes, Module } from './module';
-import { MODULE_METADATA, MODULE_WATERMARK } from '../constants';
+import { MODULE_METADATA } from '../constants';
+import { ModuleMetadata } from '../decorators';
 import { ForwardReference } from '../utils';
 
 /**
@@ -34,13 +35,14 @@ export class ModuleRegistry {
   }
 
   private reflectImports(module: TModule): Import[] {
-    const imports: Import[] = Reflect.getMetadata(MODULE_METADATA.IMPORTS, module) ?? [];
+    const metadata: ModuleMetadata = Reflect.getMetadata(MODULE_METADATA, module);
+    const imports = metadata.imports ?? [];
     const index = imports.findIndex(m => m === undefined);
     if (index !== -1) return DIErrors.undefinedDependency(module, index);
 
     const modules = imports.map(m => ('forwardRef' in m ? m.forwardRef() : m));
     for (const mod of modules) {
-      const isModule = Reflect.hasMetadata(MODULE_WATERMARK, mod);
+      const isModule = Reflect.hasMetadata(MODULE_METADATA, mod);
       if (!isModule) throw new InternalError(`Class '${mod.name}' is not a module, but is imported by '${module.name}'`);
     }
 

@@ -2,13 +2,13 @@
  * Importing npm packages
  */
 import { describe, expect, it } from '@jest/globals';
+import { CONTROLLER_METADATA } from '@shadow-library/app/constants';
 
 /**
  * Importing user defined packages
  */
 import { Middleware } from '@shadow-library/fastify';
-
-import { Utils } from '../utils';
+import { HTTP_CONTROLLER_TYPE } from '@shadow-library/fastify/constants';
 
 /**
  * Defining types
@@ -33,7 +33,7 @@ describe('@Middleware', () => {
   });
 
   it('should mark the class as middleware', () => {
-    const metadata = Utils.getControllerMetadata(ValidMiddleware);
-    expect(metadata).toStrictEqual({ middleware: true, generates: true, options: { type: 'preHandler', weight: 0 } });
+    const metadata = Reflect.getMetadata(CONTROLLER_METADATA, ValidMiddleware);
+    expect(metadata).toStrictEqual({ [HTTP_CONTROLLER_TYPE]: 'middleware', generates: true, type: 'preHandler', weight: 0 });
   });
 });

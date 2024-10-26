@@ -6,6 +6,7 @@ import { Controller } from '@shadow-library/app';
 /**
  * Importing user defined packages
  */
+import { HTTP_CONTROLLER_TYPE } from '../constants';
 
 /**
  * Defining types
@@ -16,5 +17,5 @@ import { Controller } from '@shadow-library/app';
  */
 
 export function HttpController(path: string = ''): ClassDecorator {
-  return target => Controller({ path })(target);
+  return target => Controller({ [HTTP_CONTROLLER_TYPE]: 'router', path })(target);
 }

@@ -5,7 +5,7 @@
 /**
  * Importing user defined packages
  */
-import { INJECTABLE_WATERMARK, TRANSIENT_METADATA } from '../constants';
+import { INJECTABLE_METADATA } from '../constants';
 
 /**
  * Defining types
@@ -22,11 +22,6 @@ export interface InjectableOptions {
  * Declaring the constants
  */
 
-export function Injectable(options?: InjectableOptions): ClassDecorator {
-  const transient = options?.transient;
-
-  return target => {
-    Reflect.defineMetadata(INJECTABLE_WATERMARK, true, target);
-    Reflect.defineMetadata(TRANSIENT_METADATA, transient, target);
-  };
+export function Injectable(options: InjectableOptions = {}): ClassDecorator {
+  return target => Reflect.defineMetadata(INJECTABLE_METADATA, options, target);
 }

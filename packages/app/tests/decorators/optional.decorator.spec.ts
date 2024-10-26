@@ -21,8 +21,8 @@ describe('@Optional', () => {
   class Token {}
   class Test {
     constructor(
-      private param: string,
-      @Optional() private token: Token,
+      public param: string,
+      @Optional() public token: Token,
     ) {}
   }
 

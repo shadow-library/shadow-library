@@ -4,6 +4,7 @@
 import { Module, ModuleMetadata, Router } from '@shadow-library/app';
 import { InternalError, utils } from '@shadow-library/common';
 import { Type } from '@sinclair/typebox';
+import { Class } from 'type-fest';
 import { v4 as uuid } from 'uuid';
 
 /**
@@ -26,7 +27,7 @@ const metadata: Required<ModuleMetadata> = {
   imports: [],
   controllers: [],
   providers: [{ token: Router, useClass: FastifyRouter }],
-  exports: [Router, FASTIFY_CONFIG],
+  exports: [Router],
 };
 
 @Module(metadata)
@@ -38,8 +39,8 @@ export class FastifyModule {
     const errorResponseSchema = Type.Object({ code: Type.String(), type: Type.String(), message: Type.String(), fields });
 
     return {
-      host: '127.0.0.1',
-      port: 3000,
+      host: 'localhost',
+      port: 8080,
       responseSchema: { '4xx': errorResponseSchema, '5xx': errorResponseSchema },
       errorHandler: new DefaultErrorHandler(),
 
@@ -50,12 +51,12 @@ export class FastifyModule {
     };
   }
 
-  static forRoot(options: FastifyModuleOptions): FastifyModule {
+  static forRoot(options: FastifyModuleOptions): Class<FastifyModule> {
     const config = Object.assign({}, this.getDefaultConfig(), utils.object.omitKeys(options, ['imports', 'fastifyFactory']));
     return this.forRootAsync({ imports: options.imports, useFactory: () => config, fastifyFactory: options.fastifyFactory });
   }
 
-  static forRootAsync(options: FastifyModuleAsyncOptions): FastifyModule {
+  static forRootAsync(options: FastifyModuleAsyncOptions): Class<FastifyModule> {
     if (this.registered) throw new InternalError('FastifyModule is already registered');
     this.registered = true;
 

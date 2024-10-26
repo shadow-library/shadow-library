@@ -8,7 +8,7 @@ import { Class } from 'type-fest';
  * Importing user defined packages
  */
 import { DIErrors, isClassProvider, isFactoryProvider, isValueProvider } from './helpers';
-import { INJECTABLE_WATERMARK, OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA, TRANSIENT_METADATA } from '../constants';
+import { INJECTABLE_METADATA, OPTIONAL_DEPS_METADATA, PARAMTYPES_METADATA, SELF_DECLARED_DEPS_METADATA } from '../constants';
 import { InjectMetadata } from '../decorators';
 import { FactoryDependency, FactoryProvider, InjectionToken, Provider } from '../interfaces';
 import { ContextId, createContextId } from '../utils';
@@ -67,7 +67,7 @@ export class InstanceWrapper<T extends object = any> {
 
     const { token, useClass: Class } = isClassProvider(provider) ? provider : { token: provider, useClass: provider };
     if (injectable) {
-      const injectable = Reflect.hasMetadata(INJECTABLE_WATERMARK, Class);
+      const injectable = Reflect.hasMetadata(INJECTABLE_METADATA, Class);
       if (!injectable) throw new InternalError(`Class '${Class.name}' is not an injectable provider`);
     }
 
@@ -75,7 +75,7 @@ export class InstanceWrapper<T extends object = any> {
     this.metatype = Class;
     this.inject = this.getClassDependencies(Class);
     this.dependecies = new Array(this.inject.length);
-    this.transient = Reflect.getMetadata(TRANSIENT_METADATA, Class) ?? false;
+    this.transient = Reflect.getMetadata(INJECTABLE_METADATA, Class)?.transient ?? false;
     if (!this.transient) {
       const instance = Object.create(Class.prototype);
       this.instances.set(STATIC_CONTEXT, { instance, resolved: false });
