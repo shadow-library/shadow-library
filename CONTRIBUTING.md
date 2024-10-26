@@ -94,8 +94,8 @@ reference GitHub issues that this commit **Closes**.
 A detailed explanation can be found in this [document][commit-message-format].
 
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
-[github]: https://github.com/leanderpaul/shadow-library
+[github]: https://github.com/shadow-library/shadow-library
 [ts-style-guide]: https://ts.dev/style
-[new_issue]: https://github.com/leanderpaul/shadow-library/issues/new
-[gh_prs]: https://github.com/leanderpaul/shadow-library/pulls
-[commits_samples]: https://github.com/leanderpaul/shadow-library/commits/master
+[new_issue]: https://github.com/shadow-library/shadow-library/issues/new
+[gh_prs]: https://github.com/shadow-library/shadow-library/pulls
+[commits_samples]: https://github.com/shadow-library/shadow-library/commits/main
