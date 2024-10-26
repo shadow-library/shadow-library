@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 /**
  * Importing user defined packages
  */
-import { throwError, tryCatch } from '@shadow-library/common/shorthands';
+import { throwError, tryCatch, withThis } from '@shadow-library/common/shorthands';
 
 /**
  * Defining types
@@ -45,6 +45,24 @@ describe('Shorthands', () => {
       const error = new Error('Test error');
       const result = await tryCatch(() => new Promise((_, reject) => setTimeout(() => reject(error), 10)));
       expect(result).toStrictEqual({ success: false, error });
+    });
+  });
+
+  describe('withThis', () => {
+    class Person {
+      constructor(public name: string) {}
+      greetWithMessage = withThis((context: Person, message: string) => `${message}, I am ${context.name}`);
+      greet = withThis((context: Person) => `Hello, ${context.name}!`);
+    }
+
+    it('calls function with context as the first argument', () => {
+      const person = new Person('Alice');
+      expect(person.greet()).toBe('Hello, Alice!');
+    });
+
+    it('maintains additional arguments passed to the function', () => {
+      const person = new Person('Bob');
+      expect(person.greetWithMessage('Yolo')).toBe('Yolo, I am Bob');
     });
   });
 });
