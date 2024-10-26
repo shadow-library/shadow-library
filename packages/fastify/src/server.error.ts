@@ -39,7 +39,7 @@ export class ServerError extends AppError<ServerErrorCode> {
 export class ServerErrorCode extends ErrorCode {
   private readonly statusCode: number;
 
-  private constructor(code: string, type: ErrorType, msg: string, statusCode?: number) {
+  protected constructor(code: string, type: ErrorType, msg: string, statusCode?: number) {
     super(code, type, msg);
     this.statusCode = statusCode ?? ERROR_STATUS_CODES[type];
   }
