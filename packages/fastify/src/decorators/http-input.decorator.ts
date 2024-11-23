@@ -4,12 +4,12 @@
 import assert from 'assert';
 
 import { Route } from '@shadow-library/app';
-import { PARAMTYPES_METADATA } from '@shadow-library/app/constants';
 import { TObject } from '@sinclair/typebox';
 
 /**
  * Importing user defined packages
  */
+import { PARAMTYPES_METADATA } from '../constants';
 
 /**
  * Defining types
