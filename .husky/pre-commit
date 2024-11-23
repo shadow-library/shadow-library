@@ -1,5 +1,5 @@
-pnpm run lint
+bun lint
 
-pnpm type-check
+bun type-check
 
-pnpm test
+bun run test

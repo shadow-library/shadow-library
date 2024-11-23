@@ -55,7 +55,7 @@ format.brief = function (opts: BriefFormatOptions = {}) {
 
     const message = [padLevel(level)];
     if (printLabel) message.push(colors.yellow(`[${info.label || '-'}]`));
-    message.push(info.message);
+    message.push(info.message as string);
     if (printTimestamp) message.push(timeTaken);
     if (printStack) message.push(stack);
     return message.join(' ');

@@ -58,8 +58,8 @@ async function buildPackage(name: string): Promise<void> {
   /** Building typescript files */
   const tsc = ['tsc', '--outDir', distDir, '--project', 'tsconfig.build.json'];
   const tscAlias = ['tsc-alias', '--outDir', distDir, '--project', 'tsconfig.build.json'];
-  let result = spawnSync('pnpm', tsc, { cwd: packageDir, stdio: 'inherit' });
-  if (result.status === 0) result = spawnSync('pnpm', tscAlias, { cwd: packageDir, stdio: 'inherit' });
+  let result = spawnSync('bun', tsc, { cwd: packageDir, stdio: 'inherit' });
+  if (result.status === 0) result = spawnSync('bun', tscAlias, { cwd: packageDir, stdio: 'inherit' });
   if (result.status !== 0) return error(`Build failed for package '@shadow-library/${name}'`);
 
   /** Removing temporary files */

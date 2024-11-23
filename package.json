@@ -2,24 +2,26 @@
   "name": "root",
   "type": "module",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "prepare": "husky",
     "clean": "rm -rf dist logs coverage CHANGELOG.md packages/**/CHANGELOG.md",
-    "lint": "tsx scripts/lint.ts",
-    "build": "tsx scripts/build.ts",
+    "lint": "bun run scripts/lint.ts",
+    "build": "bun run scripts/build.ts",
     "type-check": "tsc",
     "test": "jest",
-    "test:integration": "jest --config integration/jest.config.ts",
-    "prepublishOnly": "pnpm run build"
+    "test:integration": "jest --config integration/jest.config.ts"
   },
-  "dependencies": {
+  "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@commitlint/types": "^19.5.0",
     "@jest/globals": "^29.7.0",
     "@sinclair/typebox": "^0.33.16",
     "@types/fast-redact": "^3.0.4",
-    "@types/node": "^20.16.11",
+    "@types/node": "^22.9.3",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -34,14 +36,6 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.10",
-    "tslib": "^2.7.0",
-    "tsx": "^4.19.1",
-    "typescript": "^5.5.4"
-  },
-  "engines": {
-    "node": ">= 20",
-    "pnpm": ">= 9",
-    "yarn": "please-use-pnpm",
-    "npm": "please-use-pnpm"
+    "typescript": "5.5.4"
   }
 }

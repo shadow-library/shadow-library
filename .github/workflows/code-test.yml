@@ -13,25 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Set up Node.js version
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'pnpm'
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: pnpm install
+        run: bun install --frozen-lockfile
 
       - name: Lint code
-        run: pnpm lint
+        run: bun lint
 
-      - name: Type check
-        run: pnpm type-check
+      - name: Build the code
+        run: bun run build
 
       - name: Test the code
-        run: pnpm test
+        run: bun run test
