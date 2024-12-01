@@ -33,6 +33,7 @@
       "@shadow-library/fastify/*": ["packages/fastify/src/*"]
     },
     "resolveJsonModule": true,
+    "types": ["node"],
 
     /** Emit */
     "noEmit": true,

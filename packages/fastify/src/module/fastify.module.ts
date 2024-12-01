@@ -2,8 +2,8 @@
  * Importing npm packages
  */
 import { Module, ModuleMetadata, Router } from '@shadow-library/app';
+import { ClassSchema } from '@shadow-library/class-schema';
 import { InternalError, utils } from '@shadow-library/common';
-import { Type } from '@sinclair/typebox';
 import { Class } from 'type-fest';
 import { v4 as uuid } from 'uuid';
 
@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
  */
 import { DefaultErrorHandler } from '../classes';
 import { FASTIFY_CONFIG, FASTIFY_INSTANCE } from '../constants';
+import { ErrorResponseDto } from './error-response.dto';
 import { FastifyConfig, FastifyModuleAsyncOptions, FastifyModuleOptions } from './fastify-module.interface';
 import { FastifyRouter } from './fastify-router';
 import { createFastifyInstance } from './fastify.utils';
@@ -35,8 +36,7 @@ export class FastifyModule {
   private static registered = false;
 
   private static getDefaultConfig(): FastifyConfig {
-    const fields = Type.Optional(Type.Array(Type.Object({ field: Type.String(), msg: Type.String() })));
-    const errorResponseSchema = Type.Object({ code: Type.String(), type: Type.String(), message: Type.String(), fields });
+    const errorResponseSchema = ClassSchema.generate(ErrorResponseDto);
 
     return {
       host: 'localhost',
