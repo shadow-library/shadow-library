@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import { Route } from '@shadow-library/app';
-import { TObject } from '@sinclair/typebox';
+import { JSONSchema } from '@shadow-library/class-schema';
 
 /**
  * Importing user defined packages
@@ -23,7 +23,7 @@ export enum RouteInputType {
   RESPONSE = 'response',
 }
 
-export type RouteInputSchemas = Partial<Record<'body' | 'params' | 'query', TObject>>;
+export type RouteInputSchemas = Partial<Record<'body' | 'params' | 'query', JSONSchema>>;
 
 /**
  * Declaring the constants
@@ -43,11 +43,11 @@ export function HttpInput<TObject>(type: RouteInputType, schema?: TObject): Para
   };
 }
 
-export const Body = <TObject>(schema?: TObject): ParameterDecorator => HttpInput(RouteInputType.BODY, schema);
+export const Body = (schema?: JSONSchema): ParameterDecorator => HttpInput(RouteInputType.BODY, schema);
 
-export const Params = <TObject>(schema?: TObject): ParameterDecorator => HttpInput(RouteInputType.PARAMS, schema);
+export const Params = (schema?: JSONSchema): ParameterDecorator => HttpInput(RouteInputType.PARAMS, schema);
 
-export const Query = <TObject>(schema?: TObject): ParameterDecorator => HttpInput(RouteInputType.QUERY, schema);
+export const Query = (schema?: JSONSchema): ParameterDecorator => HttpInput(RouteInputType.QUERY, schema);
 
 export const Request = (): ParameterDecorator => HttpInput(RouteInputType.REQUEST);
 export const Req = Request;

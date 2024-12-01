@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { FactoryProvider, ModuleMetadata } from '@shadow-library/app';
-import { TObject } from '@sinclair/typebox';
+import { JSONSchema } from '@shadow-library/class-schema';
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
 import { Promisable } from 'type-fest';
 
@@ -38,7 +38,7 @@ export interface FastifyConfig extends FastifyServerOptions {
    * The schema to be used to validate the response of the Fastify instance
    * @default { '4xx': errorResponseSchema, '5xx': errorResponseSchema }
    */
-  responseSchema?: Record<string | number, TObject>;
+  responseSchema?: Record<string | number, JSONSchema>;
 }
 
 export interface FastifyModuleOptions extends Partial<FastifyConfig> {

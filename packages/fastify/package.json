@@ -16,7 +16,7 @@
     "directory": "packages/fastify"
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.33.10",
+    "@shadow-library/class-schema": "^0.0.4",
     "fastify": "^5.0.0",
     "type-fest": "^4.26.1",
     "uuid": "^10.0.0"

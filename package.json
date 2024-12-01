@@ -19,7 +19,6 @@
     "@commitlint/config-conventional": "^19.5.0",
     "@commitlint/types": "^19.5.0",
     "@jest/globals": "^29.7.0",
-    "@sinclair/typebox": "^0.33.16",
     "@types/fast-redact": "^3.0.4",
     "@types/node": "^22.9.3",
     "@types/uuid": "^10.0.0",
