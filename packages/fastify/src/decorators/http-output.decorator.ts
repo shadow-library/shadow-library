@@ -24,7 +24,7 @@ export interface DynamicRender<T extends JsonObject> {
 
 export const HttpStatus = (status: number): MethodDecorator => Route({ status });
 
-export const Header = (headers: Record<string, string | (() => string)>): MethodDecorator => Route({ headers });
+export const Header = (name: string, value: string | (() => string)): MethodDecorator => Route({ headers: { [name]: value } });
 
 export const Redirect = (redirect: string, status = 301): MethodDecorator => Route({ redirect, status });
 
