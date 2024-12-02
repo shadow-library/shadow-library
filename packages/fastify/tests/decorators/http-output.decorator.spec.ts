@@ -29,13 +29,15 @@ describe('HTTP Output Decorators', () => {
   });
 
   it(`should enhance the method with the headers metadata`, () => {
+    const getContentLength = () => '20';
     class Controller {
-      @Header({ 'Content-Type': 'application/json' })
+      @Header('Content-Type', 'application/json')
+      @Header('Content-Length', getContentLength)
       static single() {}
     }
 
     const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
-    expect(metadata).toStrictEqual({ headers: { 'Content-Type': 'application/json' } });
+    expect(metadata).toStrictEqual({ headers: { 'Content-Type': 'application/json', 'Content-Length': getContentLength } });
   });
 
   it(`should enhance the method with the redirect metadata`, () => {

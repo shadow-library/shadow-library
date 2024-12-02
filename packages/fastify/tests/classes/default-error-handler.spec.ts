@@ -3,6 +3,7 @@
  */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { AppError, ValidationError } from '@shadow-library/common';
+import { errorCodes } from 'fastify';
 
 /**
  * Importing user defined packages
@@ -25,6 +26,7 @@ describe('DefaultErrorHandler', () => {
 
   beforeEach(() => {
     errorHandler = new DefaultErrorHandler();
+    jest.clearAllMocks();
   });
 
   it('should handle server error', () => {
@@ -54,6 +56,26 @@ describe('DefaultErrorHandler', () => {
 
     expect(response.status).toHaveBeenCalledWith(500);
     expect(response.send).toHaveBeenCalledWith(body);
+  });
+
+  it('should handle fastify error', () => {
+    const error = errorCodes.FST_ERR_CTP_INVALID_MEDIA_TYPE('application/unknown');
+    errorHandler.handle(error, request, response);
+
+    expect(response.status).toHaveBeenCalledWith(415);
+    expect(response.send).toHaveBeenCalledWith({
+      type: 'CLIENT_ERROR',
+      code: 'FST_ERR_CTP_INVALID_MEDIA_TYPE',
+      message: 'Unsupported Media Type: application/unknown',
+    });
+  });
+
+  it('should handle fastify server error', () => {
+    const error = errorCodes.FST_ERR_HOOK_TIMEOUT();
+    errorHandler.handle(error, request, response);
+
+    expect(response.status).toHaveBeenCalledWith(500);
+    expect(response.send).toHaveBeenCalledWith({ code: 'S001', message: 'Unexpected Server Error', type: 'SERVER_ERROR' });
   });
 
   it('should handle unknown error of type Error', () => {
