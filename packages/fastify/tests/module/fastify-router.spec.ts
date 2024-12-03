@@ -233,7 +233,7 @@ describe('FastifyRouter', () => {
         handler: expect.any(Function),
         method: ['GET'],
         url: '/',
-        schema: {},
+        schema: { response: {} },
       });
     });
 
@@ -285,36 +285,19 @@ describe('FastifyRouter', () => {
     it('should apply the body schema', async () => {
       route.metadata.schemas = { body: { type: 'object' } as any };
       await router.register([]);
-      expect(instance.route).toBeCalledWith(expect.objectContaining({ schema: { body: { type: 'object' } } }));
+      expect(instance.route).toBeCalledWith(expect.objectContaining({ schema: { body: { type: 'object' }, response: {} } }));
     });
 
     it('should apply the params schema', async () => {
       route.metadata.schemas = { params: { type: 'object' } as any };
       await router.register([]);
-      expect(instance.route).toBeCalledWith(expect.objectContaining({ schema: { params: { type: 'object' } } }));
+      expect(instance.route).toBeCalledWith(expect.objectContaining({ schema: { params: { type: 'object' }, response: {} } }));
     });
 
     it('should apply the query schema', async () => {
       route.metadata.schemas = { query: { type: 'object' } as any };
       await router.register([]);
-      expect(instance.route).toBeCalledWith(expect.objectContaining({ schema: { querystring: { type: 'object' } } }));
+      expect(instance.route).toBeCalledWith(expect.objectContaining({ schema: { querystring: { type: 'object' }, response: {} } }));
     });
   });
-
-  // describe('routing', () => {
-  //   const body = { search: 'test' };
-  //   const data = { template: 'sample', data: { msg: 'Hello World' } };
-  //   const error = new ServerError(ServerErrorCode.S001);
-
-  //   const renderer = jest.fn();
-  //   const handler = jest.fn(async () => data);
-  //   const middlewares = { before: jest.fn<MiddlewareHandler>(async () => {}), after: jest.fn<MiddlewareHandler>(async () => {}) };
-
-  //   beforeEach(() => {
-  //     const metatype = class {};
-  //     const instance = {};
-
-  //     router.register([{ metadata: { path: '/api' }, instance, metatype, routes: [{}] }]);
-  //   });
-  // });
 });

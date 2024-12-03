@@ -4,12 +4,12 @@
 import assert from 'assert';
 
 import { Route } from '@shadow-library/app';
-import { JSONSchema } from '@shadow-library/class-schema';
+import { ClassSchema, JSONSchema } from '@shadow-library/class-schema';
 
 /**
  * Importing user defined packages
  */
-import { PARAMTYPES_METADATA } from '../constants';
+import { HTTP_CONTROLLER_INPUTS, PARAMTYPES_METADATA } from '../constants';
 
 /**
  * Defining types
@@ -29,17 +29,22 @@ export type RouteInputSchemas = Partial<Record<'body' | 'params' | 'query', JSON
  * Declaring the constants
  */
 
-export function HttpInput<TObject>(type: RouteInputType, schema?: TObject): ParameterDecorator {
+export function HttpInput(type: RouteInputType, schema?: JSONSchema): ParameterDecorator {
   return (target, propertyKey, index) => {
     assert(propertyKey, 'Cannot apply decorator to a constructor parameter');
-    const paramTypes = Reflect.getMetadata(PARAMTYPES_METADATA, target, propertyKey);
-    paramTypes[index] = type;
 
-    if (schema) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey);
-      assert(descriptor, 'Cannot apply decorator to a non-method');
-      Route({ schemas: { [type]: schema } })(target, propertyKey, descriptor);
+    const inputs = Reflect.getMetadata(HTTP_CONTROLLER_INPUTS, target, propertyKey) ?? [];
+    Reflect.defineMetadata(HTTP_CONTROLLER_INPUTS, inputs, target, propertyKey);
+    inputs[index] = type;
+
+    if (!schema) {
+      const paramTypes = Reflect.getMetadata(PARAMTYPES_METADATA, target, propertyKey);
+      schema = ClassSchema.generate(paramTypes[index]);
     }
+
+    const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey);
+    assert(descriptor, 'Cannot apply decorator to a non-method');
+    Route({ schemas: { [type]: schema } })(target, propertyKey, descriptor);
   };
 }
 

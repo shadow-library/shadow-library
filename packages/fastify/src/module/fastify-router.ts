@@ -5,6 +5,7 @@ import assert from 'assert';
 
 import { ControllerRouteMetadata, Inject, Injectable, RouteController, Router } from '@shadow-library/app';
 import { InternalError, Logger, utils } from '@shadow-library/common';
+import merge from 'deepmerge';
 import { type FastifyInstance, RouteOptions } from 'fastify';
 import { Chain as MockRequestChain, InjectOptions as MockRequestOptions, Response as MockResponse } from 'light-my-request';
 import { Class, JsonObject } from 'type-fest';
@@ -161,6 +162,7 @@ export class FastifyRouter extends Router {
 
   async register(controllers: ControllerRouteMetadata[]): Promise<void> {
     const { middlewares, routes } = this.parseControllers(controllers);
+    const defaultResponseSchemas = this.config.responseSchema ?? {};
 
     const hasRawBody = routes.some(r => r.metadata.rawBody);
     if (hasRawBody) this.registerRawBody();
@@ -192,7 +194,7 @@ export class FastifyRouter extends Router {
 
       routeOptions.schema = {};
       routeOptions.attachValidation = metadata.silentValidation ?? false;
-      if (this.config.responseSchema) routeOptions.schema.response = this.config.responseSchema;
+      routeOptions.schema.response = merge(metadata.schema?.response ?? {}, defaultResponseSchemas);
       if (metadata.schemas?.body) routeOptions.schema.body = metadata.schemas.body;
       if (metadata.schemas?.params) routeOptions.schema.params = metadata.schemas.params;
       if (metadata.schemas?.query) routeOptions.schema.querystring = metadata.schemas.query;

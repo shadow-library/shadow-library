@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { RouteMetdata } from '@shadow-library/app';
+import { JSONSchema } from '@shadow-library/class-schema';
 import { RouteShorthandOptions } from 'fastify';
 
 /**
@@ -18,7 +19,7 @@ declare module '@shadow-library/app' {
   export interface RouteMetdata extends Omit<RouteShorthandOptions, 'config'> {
     method?: HttpMethod;
     path?: string;
-    schemas?: RouteInputSchemas;
+    schemas?: RouteInputSchemas & { response?: Record<number | string, JSONSchema> };
 
     rawBody?: boolean;
 
