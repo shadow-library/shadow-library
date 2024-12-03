@@ -3,11 +3,12 @@
  */
 import { describe, expect, it } from '@jest/globals';
 import { ROUTE_METADATA } from '@shadow-library/app/constants';
+import { Field, Schema } from '@shadow-library/class-schema';
 
 /**
  * Importing user defined packages
  */
-import { Header, HttpStatus, Redirect, Render } from '@shadow-library/fastify';
+import { Header, HttpStatus, Redirect, Render, RespondFor } from '@shadow-library/fastify';
 
 /**
  * Defining types
@@ -18,6 +19,12 @@ import { Header, HttpStatus, Redirect, Render } from '@shadow-library/fastify';
  */
 
 describe('HTTP Output Decorators', () => {
+  @Schema()
+  class Input {
+    @Field()
+    name: string;
+  }
+
   it(`should enhance the method with the status metadata`, () => {
     class Controller {
       @HttpStatus(200)
@@ -68,5 +75,49 @@ describe('HTTP Output Decorators', () => {
 
     const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
     expect(metadata).toStrictEqual({ render: true });
+  });
+
+  it('should enhace the method with response schema metadata', () => {
+    class Controller {
+      @RespondFor(200, Input)
+      static single() {}
+    }
+
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
+    expect(metadata).toStrictEqual({
+      schemas: {
+        response: {
+          200: {
+            $id: expect.stringContaining(Input.name),
+            type: 'object',
+            required: ['name'],
+            properties: { name: { type: 'string' } },
+          },
+        },
+      },
+    });
+  });
+
+  it('should enhace the method with multiple response schema metadata', () => {
+    class Controller {
+      @RespondFor(200, Input)
+      @RespondFor(201, { type: 'object' })
+      static single() {}
+    }
+
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, Controller.single);
+    expect(metadata).toStrictEqual({
+      schemas: {
+        response: {
+          200: {
+            $id: expect.stringContaining(Input.name),
+            type: 'object',
+            required: ['name'],
+            properties: { name: { type: 'string' } },
+          },
+          201: { type: 'object' },
+        },
+      },
+    });
   });
 });

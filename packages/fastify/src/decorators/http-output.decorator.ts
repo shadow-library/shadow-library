@@ -3,6 +3,7 @@
  */
 
 import { Route } from '@shadow-library/app';
+import { ClassSchema, JSONSchema, SchemaClass } from '@shadow-library/class-schema';
 import { JsonObject } from 'type-fest';
 
 /**
@@ -21,6 +22,7 @@ export interface DynamicRender<T extends JsonObject> {
 /**
  * Declaring the constants
  */
+const isClass = (schema: SchemaClass | JSONSchema): schema is SchemaClass => schema.toString().startsWith('class ');
 
 export const HttpStatus = (status: number): MethodDecorator => Route({ status });
 
@@ -29,3 +31,8 @@ export const Header = (name: string, value: string | (() => string)): MethodDeco
 export const Redirect = (redirect: string, status = 301): MethodDecorator => Route({ redirect, status });
 
 export const Render = (render?: string): MethodDecorator => Route({ render: render ?? true });
+
+export function RespondFor(statusCode: number, schema: SchemaClass | JSONSchema): MethodDecorator {
+  if (isClass(schema)) schema = ClassSchema.generate(schema);
+  return Route({ schemas: { response: { [statusCode]: schema } } });
+}
