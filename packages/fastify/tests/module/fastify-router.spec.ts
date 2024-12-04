@@ -2,14 +2,14 @@
  * Importing npm packages
  */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { ControllerRouteMetadata, RouteController } from '@shadow-library/app';
+import { ControllerRouteMetadata } from '@shadow-library/app';
 import { InternalError, withThis } from '@shadow-library/common';
 import { FastifyInstance, fastify } from 'fastify';
 
 /**
  * Importing user defined packages
  */
-import { FastifyModule, FastifyRouter, HttpMethod } from '@shadow-library/fastify';
+import { FastifyModule, FastifyRouter, HttpMethod, ServerMetadata } from '@shadow-library/fastify';
 import { HTTP_CONTROLLER_TYPE } from '@shadow-library/fastify/constants';
 
 /**
@@ -27,6 +27,7 @@ describe('FastifyRouter', () => {
   const Class = class {};
   const classInstance = new Class();
   const handler = jest.fn();
+  const handlerName = handler.name;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -97,16 +98,18 @@ describe('FastifyRouter', () => {
 
     it('should parse router controller', () => {
       const metadata = { [HTTP_CONTROLLER_TYPE]: 'router', path: '/api' } as const;
-      const parsedControllers = parseControllers([{ metadata, metatype: Class, instance: classInstance, routes: [{ metadata: { path: '/single' }, handler, paramtypes: [] }] }]);
+      const parsedControllers = parseControllers([
+        { metadata, metatype: Class, instance: classInstance, routes: [{ metadata: { path: '/single' }, handler, handlerName, paramtypes: [] }] },
+      ]);
 
       expect(parsedControllers.routes).toHaveLength(1);
       expect(parsedControllers.middlewares).toHaveLength(0);
-      expect(parsedControllers.routes[0]).toStrictEqual({ metatype: Class, instance: classInstance, paramtypes: [], handler, metadata: { path: '/api/single' } });
+      expect(parsedControllers.routes[0]).toStrictEqual({ metatype: Class, instance: classInstance, paramtypes: [], handler, handlerName, metadata: { path: '/api/single' } });
     });
 
     it('should add default path if path is not provided', () => {
       const metadata = { [HTTP_CONTROLLER_TYPE]: 'router' } as const;
-      const parsedControllers = parseControllers([{ metadata, metatype: Class, instance: classInstance, routes: [{ metadata: {}, handler, paramtypes: [] }] }]);
+      const parsedControllers = parseControllers([{ metadata, metatype: Class, instance: classInstance, routes: [{ metadata: {}, handler, handlerName, paramtypes: [] }] }]);
 
       expect(parsedControllers.routes[0]?.metadata).toStrictEqual({ path: '/' });
     });
@@ -116,10 +119,17 @@ describe('FastifyRouter', () => {
       const parsedControllers = parseControllers([{ metadata, metatype: Middleware, instance: middleware, routes: [] }]);
       parsedControllers.middlewares[0]?.handler();
 
+      expect(middleware.use).toBeCalled();
       expect(parsedControllers.routes).toHaveLength(0);
       expect(parsedControllers.middlewares).toHaveLength(1);
-      expect(parsedControllers.middlewares[0]).toStrictEqual({ metatype: Middleware, instance: middleware, paramtypes: [], handler: expect.any(Function), metadata });
-      expect(middleware.use).toBeCalled();
+      expect(parsedControllers.middlewares[0]).toStrictEqual({
+        metatype: Middleware,
+        instance: middleware,
+        paramtypes: [],
+        handler: expect.any(Function),
+        handlerName: 'generate',
+        metadata,
+      });
     });
 
     it('should parse use middleware controller', () => {
@@ -127,10 +137,17 @@ describe('FastifyRouter', () => {
       const parsedControllers = parseControllers([{ metadata, metatype: Middleware, instance: middleware, routes: [] }]);
       parsedControllers.middlewares[0]?.handler();
 
+      expect(middleware.generate).not.toBeCalled();
       expect(parsedControllers.routes).toHaveLength(0);
       expect(parsedControllers.middlewares).toHaveLength(1);
-      expect(parsedControllers.middlewares[0]).toStrictEqual({ metatype: Middleware, instance: middleware, paramtypes: [], handler: expect.any(Function), metadata });
-      expect(middleware.generate).not.toBeCalled();
+      expect(parsedControllers.middlewares[0]).toStrictEqual({
+        metatype: Middleware,
+        instance: middleware,
+        paramtypes: [],
+        handler: expect.any(Function),
+        handlerName: 'use',
+        metadata,
+      });
     });
 
     it('should sort middlewares by weight', () => {
@@ -152,41 +169,51 @@ describe('FastifyRouter', () => {
     const mockFn = () => jest.fn().mockReturnThis();
     const request = { params: {}, query: {}, body: {} } as any;
     const response = { sent: false, status: mockFn(), send: mockFn(), header: mockFn(), redirect: mockFn(), viewAsync: mockFn() } as any;
-    const paramtypes = ['params', 'request', class {}, 'query', Object, 'response', 'body'];
-    const generateRouteHandler = (route: RouteController) => router['generateRouteHandler'](route);
+    const generateRouteHandler = (metadata: ServerMetadata) =>
+      router['generateRouteHandler']({ metatype: Class, instance: classInstance, metadata, handler, handlerName, paramtypes: [] });
+
+    beforeEach(() => {
+      Reflect.getMetadata = jest.fn().mockReturnValue(['params', 'request', class {}, 'query', Object, 'response', 'body']);
+    });
 
     it('should set the provided status code', async () => {
-      const routeHandler = generateRouteHandler({ metadata: { status: 204, method: HttpMethod.POST }, handler, paramtypes });
+      const routeHandler = generateRouteHandler({ status: 204, method: HttpMethod.POST });
       await routeHandler(request, response);
       expect(response.status).toBeCalledWith(204);
     });
 
+    it('should set the status code from the response schema if there is only one exact schema match', async () => {
+      const routeHandler = generateRouteHandler({ schemas: { response: { 200: {} } }, method: HttpMethod.GET });
+      await routeHandler(request, response);
+      expect(response.status).toBeCalledWith(200);
+    });
+
     it('should set the default status code', async () => {
-      const getHandler = generateRouteHandler({ metadata: { method: HttpMethod.GET }, handler, paramtypes });
+      const getHandler = generateRouteHandler({ method: HttpMethod.GET, schemas: { response: { 201: {}, 202: {} } } });
       await getHandler(request, response);
       expect(response.status).toBeCalledWith(200);
 
-      const postHandler = generateRouteHandler({ metadata: { method: HttpMethod.POST }, handler, paramtypes });
+      const postHandler = generateRouteHandler({ method: HttpMethod.POST });
       await postHandler(request, response);
       expect(response.status).toBeCalledWith(201);
     });
 
     it('should set the provided headers', async () => {
       const headers = { 'Content-Type': 'application/json', 'X-Test': () => 'test' };
-      const routeHandler = generateRouteHandler({ metadata: { headers }, handler, paramtypes });
+      const routeHandler = generateRouteHandler({ headers });
       await routeHandler(request, response);
       expect(response.header).toHaveBeenNthCalledWith(1, 'Content-Type', 'application/json');
       expect(response.header).toHaveBeenNthCalledWith(2, 'X-Test', 'test');
     });
 
     it('should call the handler with the correct arguments', async () => {
-      const routeHandler = generateRouteHandler({ metadata: {}, handler, paramtypes });
+      const routeHandler = generateRouteHandler({});
       await routeHandler(request, response);
-      expect(handler).toBeCalledWith(request.params, request, null, request.query, null, response, request.body);
+      expect(handler).toBeCalledWith(request.params, request, undefined, request.query, undefined, response, request.body);
     });
 
     it('should redirect if redirect is provided', async () => {
-      const routeHandler = generateRouteHandler({ metadata: { redirect: '/redirect' }, handler, paramtypes });
+      const routeHandler = generateRouteHandler({ redirect: '/redirect' });
       await routeHandler(request, response);
       expect(response.status).toBeCalledWith(301);
       expect(response.redirect).toBeCalledWith('/redirect');
@@ -195,7 +222,7 @@ describe('FastifyRouter', () => {
     it('should render the static template', async () => {
       const data = { msg: 'Hello World' };
       handler.mockReturnValue(data);
-      const routeHandler = generateRouteHandler({ metadata: { render: 'template' }, handler, paramtypes });
+      const routeHandler = generateRouteHandler({ render: 'template' });
       await routeHandler(request, response);
       expect(response.viewAsync).toBeCalledWith('template', data);
     });
@@ -203,7 +230,7 @@ describe('FastifyRouter', () => {
     it('should render the dynamic template', async () => {
       const data = { template: 'sample', data: { msg: 'Hello World' } };
       handler.mockReturnValue(data);
-      const routeHandler = generateRouteHandler({ metadata: { render: true }, handler, paramtypes });
+      const routeHandler = generateRouteHandler({ render: true });
       await routeHandler(request, response);
       expect(response.viewAsync).toBeCalledWith('sample', data.data);
     });

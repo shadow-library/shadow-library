@@ -355,13 +355,13 @@ describe('Module', () => {
           metadata: {},
           instance: expect.any(DogController),
           metatype: DogController,
-          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: undefined }],
+          routes: [{ metadata: {}, handler: expect.any(Function), handlerName: DogController.prototype.getDog.name, paramtypes: [], returnType: undefined }],
         },
         {
           metadata: {},
           instance: expect.any(CatController),
           metatype: CatController,
-          routes: [{ metadata: {}, handler: expect.any(Function), paramtypes: [], returnType: Boolean }],
+          routes: [{ metadata: {}, handler: expect.any(Function), handlerName: CatController.prototype.getCat.name, paramtypes: [], returnType: Boolean }],
         },
       ]);
     });

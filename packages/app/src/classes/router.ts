@@ -14,8 +14,9 @@ import { ControllerMetdata, Injectable, RouteMetdata } from '../decorators';
 
 export interface RouteController {
   metadata: RouteMetdata;
+  handlerName: string;
   handler: (...args: any[]) => any | Promise<any>;
-  paramtypes: (string | Class<unknown>)[];
+  paramtypes: Class<unknown>[];
   returnType?: Class<unknown>;
 }
 

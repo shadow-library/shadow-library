@@ -3,7 +3,7 @@
  */
 import assert from 'assert';
 
-import { ControllerRouteMetadata, Inject, Injectable, RouteController, Router } from '@shadow-library/app';
+import { ControllerRouteMetadata, Inject, Injectable, Router } from '@shadow-library/app';
 import { InternalError, Logger, utils } from '@shadow-library/common';
 import merge from 'deepmerge';
 import { type FastifyInstance, RouteOptions } from 'fastify';
@@ -13,7 +13,7 @@ import { Class, JsonObject } from 'type-fest';
 /**
  * Importing user defined packages
  */
-import { FASTIFY_CONFIG, FASTIFY_INSTANCE, HTTP_CONTROLLER_TYPE } from '../constants';
+import { FASTIFY_CONFIG, FASTIFY_INSTANCE, HTTP_CONTROLLER_INPUTS, HTTP_CONTROLLER_TYPE } from '../constants';
 import { HttpMethod, MiddlewareMetadata } from '../decorators';
 import { HttpRequest, HttpResponse, RouteHandler, ServerMetadata } from '../interfaces';
 import { type FastifyConfig } from './fastify-module.interface';
@@ -48,6 +48,7 @@ interface ParsedController<T> {
 
   metadata: T;
   handler: (...args: any[]) => any | Promise<any>;
+  handlerName: string;
 }
 
 interface ParsedControllers {
@@ -107,7 +108,7 @@ export class FastifyRouter extends Router {
           const { instance, metatype } = controller;
           const method = metadata.generates ? 'generate' : 'use';
           const handler = (controller.instance as any)[method].bind(instance);
-          parsedControllers.middlewares.push({ metadata, handler, paramtypes: [], instance, metatype });
+          parsedControllers.middlewares.push({ metadata, handler, paramtypes: [], instance, metatype, handlerName: method });
           break;
         }
 
@@ -122,10 +123,18 @@ export class FastifyRouter extends Router {
     return parsedControllers;
   }
 
-  private generateRouteHandler(route: RouteController): RouteHandler {
+  private getStatusCode(metadata: ServerMetadata): number {
+    if (metadata.status) return metadata.status;
+    const responseStatusCodes = Object.keys(metadata.schemas?.response ?? {}).map(n => parseInt(n));
+    const statusCodes = responseStatusCodes.filter(code => code >= 200 && code < 600);
+    if (statusCodes.length === 1) return statusCodes[0] as number;
+    return metadata.method === HttpMethod.POST ? 201 : 200;
+  }
+
+  private generateRouteHandler(route: ParsedController<ServerMetadata>): RouteHandler {
     const metadata = route.metadata;
-    const statusCode = metadata.status ?? (metadata.method === HttpMethod.POST ? 201 : 200);
-    const argsOrder = route.paramtypes.map(p => (typeof p === 'string' ? p : null)) as (keyof RequestContext | null)[];
+    const statusCode = this.getStatusCode(metadata);
+    const argsOrder = Reflect.getMetadata(HTTP_CONTROLLER_INPUTS, route.instance, route.handlerName) as (keyof RequestContext | undefined)[];
 
     return async (request, response) => {
       const params = request.params as Record<string, string>;
@@ -194,7 +203,7 @@ export class FastifyRouter extends Router {
 
       routeOptions.schema = {};
       routeOptions.attachValidation = metadata.silentValidation ?? false;
-      routeOptions.schema.response = merge(metadata.schema?.response ?? {}, defaultResponseSchemas);
+      routeOptions.schema.response = merge(metadata.schemas?.response ?? {}, defaultResponseSchemas);
       if (metadata.schemas?.body) routeOptions.schema.body = metadata.schemas.body;
       if (metadata.schemas?.params) routeOptions.schema.params = metadata.schemas.params;
       if (metadata.schemas?.query) routeOptions.schema.querystring = metadata.schemas.query;

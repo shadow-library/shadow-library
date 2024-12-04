@@ -83,7 +83,7 @@ describe('DefaultErrorHandler', () => {
     errorHandler.handle(error, request, response);
 
     expect(response.status).toHaveBeenCalledWith(500);
-    expect(response.send).toHaveBeenCalledWith({ message: 'Test Error' });
+    expect(response.send).toHaveBeenCalledWith({ code: 'S001', message: 'Unexpected Server Error', type: 'SERVER_ERROR' });
   });
 
   it('should handle unknown error of type unknown', () => {
@@ -91,6 +91,6 @@ describe('DefaultErrorHandler', () => {
     errorHandler.handle(error, request, response);
 
     expect(response.status).toHaveBeenCalledWith(500);
-    expect(response.send).toHaveBeenCalledWith({ message: 'Internal Server Error' });
+    expect(response.send).toHaveBeenCalledWith({ code: 'S001', message: 'Unexpected Server Error', type: 'SERVER_ERROR' });
   });
 });
