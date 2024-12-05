@@ -252,10 +252,11 @@ export class Module {
     /* Extracting the route metadata from the route methods */
     const routes: ControllerRouteMetadata['routes'] = [];
     for (const method of methods) {
+      const handlerName = method.name;
       const metadata = Reflect.getMetadata(ROUTE_METADATA, method);
-      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, instance, method.name) as string[];
-      const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, instance, method.name);
-      routes.push({ metadata, handler: method.bind(instance), paramtypes, returnType });
+      const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, instance, handlerName);
+      const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, instance, handlerName);
+      routes.push({ metadata, handler: method.bind(instance), paramtypes, returnType, handlerName });
     }
 
     const metatype = controller.getMetatype() as Class<Controller>;

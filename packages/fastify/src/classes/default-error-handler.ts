@@ -1,7 +1,7 @@
 /**
  * Importing npm packages
  */
-import { AppError, AppErrorObject, ErrorType, ValidationError } from '@shadow-library/common';
+import { AppError, AppErrorObject, ErrorType, Logger, ValidationError } from '@shadow-library/common';
 import { FastifyError } from 'fastify';
 
 /**
@@ -25,6 +25,8 @@ export interface ParsedFastifyError {
 const unexpectedError = new ServerError(ServerErrorCode.S001);
 
 export class DefaultErrorHandler implements ErrorHandler {
+  private readonly logger = Logger.getLogger(DefaultErrorHandler.name);
+
   protected parseFastifyError(err: FastifyError): ParsedFastifyError {
     if (err.statusCode === 500) return { statusCode: 500, error: unexpectedError.toObject() };
 
@@ -39,6 +41,7 @@ export class DefaultErrorHandler implements ErrorHandler {
   }
 
   handle(err: Error, _req: HttpRequest, res: HttpResponse): HttpResponse {
+    this.logger.warn('Handling error', err);
     if (err instanceof ServerError) return res.status(err.getStatusCode()).send(err.toObject());
     else if (err instanceof ValidationError) return res.status(400).send(err.toObject());
     else if (err instanceof AppError) return res.status(500).send(err.toObject());
@@ -47,6 +50,7 @@ export class DefaultErrorHandler implements ErrorHandler {
       return res.status(statusCode).send(error);
     }
 
-    return res.status(500).send({ message: err.message ?? 'Internal Server Error' });
+    this.logger.error('Unhandler error has occurred:', err);
+    return res.status(500).send(unexpectedError.toObject());
   }
 }
