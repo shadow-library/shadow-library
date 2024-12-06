@@ -43,7 +43,7 @@ describe('DefaultErrorHandler', () => {
 
     expect(response.status).toHaveBeenCalledWith(400);
     expect(response.send).toHaveBeenCalledWith({
-      code: 'VALIDATION_ERROR',
+      code: 'S003',
       type: 'VALIDATION_ERROR',
       message: 'Validation Error',
       fields: [{ field: 'name', msg: 'Invalid Name' }],
@@ -76,6 +76,13 @@ describe('DefaultErrorHandler', () => {
 
     expect(response.status).toHaveBeenCalledWith(500);
     expect(response.send).toHaveBeenCalledWith({ code: 'S001', message: 'Unexpected Server Error', type: 'SERVER_ERROR' });
+  });
+
+  it('should log the cause of the error', () => {
+    const error = new AppError(ServerErrorCode.S001).setCause(new Error('Test Cause'));
+    const fn = jest.spyOn(errorHandler['logger'], 'warn');
+    errorHandler.handle(error, request, response);
+    expect(fn).toHaveBeenCalledWith('Caused by:', error.getCause());
   });
 
   it('should handle unknown error of type Error', () => {

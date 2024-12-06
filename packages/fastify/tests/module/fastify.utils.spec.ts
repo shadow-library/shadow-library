@@ -66,13 +66,18 @@ describe('Create Fastify Instance', () => {
   });
 
   it('should format the schema errors', () => {
-    const errors = [{ instancePath: '', message: "must have property 'password'" }, { instancePath: '/email' }];
+    const errors = [
+      { instancePath: '', message: "must have required property 'password'", keyword: 'required', params: { missingProperty: 'rand' } },
+      { instancePath: '/email', params: {} },
+      { instancePath: '/gender', message: 'must be one of', keyword: 'enum', params: { allowedValues: ['Male', 'Female'] } },
+    ];
     const formattedError = formatSchemaErrors(errors as any, 'body');
 
     expect(formattedError).toBeInstanceOf(ValidationError);
     expect(formattedError.getErrors()).toStrictEqual([
-      { field: 'body', msg: `must have property 'password'` },
+      { field: 'body', msg: `must have required property 'password'` },
       { field: 'body.email', msg: 'Field validation failed' },
+      { field: 'body.gender', msg: 'must be one of: Male, Female' },
     ]);
   });
 });

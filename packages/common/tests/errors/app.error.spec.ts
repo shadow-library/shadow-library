@@ -58,6 +58,14 @@ describe('AppError', () => {
     expect(errorTwo.getData()).toBeUndefined();
   });
 
+  it('should set and get the error cause', () => {
+    const error = new AppError(ErrorCode.UNKNOWN);
+    const causedByError = new AppError(ErrorCode.VALIDATION_ERROR);
+
+    expect(error.setCause(causedByError)).toBe(error);
+    expect(error.getCause()).toBe(causedByError);
+  });
+
   it('should return the error object', () => {
     const errorOne = new AppError(ErrorCode.UNKNOWN);
     const errorTwo = new AppError(ErrorCode.VALIDATION_ERROR);

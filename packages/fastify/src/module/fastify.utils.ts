@@ -28,8 +28,10 @@ export function formatSchemaErrors(errors: FastifySchemaValidationError[], dataV
   const validationError = new ValidationError();
   for (const error of errors) {
     let key = dataVar;
+    let message = error.message ?? 'Field validation failed';
     if (error.instancePath) key += error.instancePath.replaceAll('/', '.');
-    validationError.addFieldError(key, error.message ?? 'Field validation failed');
+    if (Array.isArray(error.params.allowedValues)) message += `: ${error.params.allowedValues.join(', ')}`;
+    validationError.addFieldError(key, message);
   }
   return validationError;
 }
