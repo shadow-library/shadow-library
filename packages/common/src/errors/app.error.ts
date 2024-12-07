@@ -33,6 +33,15 @@ export class AppError<TErrorCode extends ErrorCode = ErrorCode> extends Error {
     this.name = this.constructor.name;
   }
 
+  getCause(): Error | undefined {
+    return this.cause as Error;
+  }
+
+  setCause(cause: Error): this {
+    this.cause = cause;
+    return this;
+  }
+
   getType(): ErrorType {
     return this.error.getType();
   }
