@@ -172,10 +172,6 @@ describe('FastifyRouter', () => {
     const generateRouteHandler = (metadata: ServerMetadata) =>
       router['generateRouteHandler']({ metatype: Class, instance: classInstance, metadata, handler, handlerName, paramtypes: [] });
 
-    beforeEach(() => {
-      Reflect.getMetadata = jest.fn().mockReturnValue(['params', 'request', class {}, 'query', Object, 'response', 'body']);
-    });
-
     it('should set the provided status code', async () => {
       const routeHandler = generateRouteHandler({ status: 204, method: HttpMethod.POST });
       await routeHandler(request, response);
@@ -207,6 +203,7 @@ describe('FastifyRouter', () => {
     });
 
     it('should call the handler with the correct arguments', async () => {
+      Reflect.getMetadata = jest.fn().mockReturnValue(['params', 'request', class {}, 'query', Object, 'response', 'body']);
       const routeHandler = generateRouteHandler({});
       await routeHandler(request, response);
       expect(handler).toBeCalledWith(request.params, request, undefined, request.query, undefined, response, request.body);
