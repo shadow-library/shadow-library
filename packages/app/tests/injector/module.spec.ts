@@ -319,10 +319,11 @@ describe('Module', () => {
     const router = { register: jest.fn() };
 
     @Controller()
+    @Route({ type: 'controller', isController: true })
     class DogController {
       constructor(public catService: CatService) {}
 
-      @Route()
+      @Route({ type: 'route', isRoute: true })
       getDog() {}
     }
 
@@ -355,7 +356,15 @@ describe('Module', () => {
           metadata: {},
           instance: expect.any(DogController),
           metatype: DogController,
-          routes: [{ metadata: {}, handler: expect.any(Function), handlerName: DogController.prototype.getDog.name, paramtypes: [], returnType: undefined }],
+          routes: [
+            {
+              metadata: { type: 'route', isController: true, isRoute: true },
+              handler: expect.any(Function),
+              handlerName: DogController.prototype.getDog.name,
+              paramtypes: [],
+              returnType: undefined,
+            },
+          ],
         },
         {
           metadata: {},

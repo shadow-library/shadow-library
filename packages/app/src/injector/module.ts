@@ -2,6 +2,7 @@
  * Importing npm packages
  */
 import { InternalError, Logger } from '@shadow-library/common';
+import merge from 'deepmerge';
 import { Class } from 'type-fest';
 
 /**
@@ -12,7 +13,7 @@ import { InstanceWrapper } from './instance-wrapper';
 import { ModuleRef } from './module-ref';
 import { ControllerRouteMetadata, Router } from '../classes';
 import { CONTROLLER_METADATA, MODULE_METADATA, PARAMTYPES_METADATA, RETURN_TYPE_METADATA, ROUTE_METADATA } from '../constants';
-import { ModuleMetadata } from '../decorators';
+import { ModuleMetadata, RouteMetdata } from '../decorators';
 import { InjectionToken, Provider, ValueProvider } from '../interfaces';
 import { ContextId, createContextId } from '../utils';
 
@@ -244,23 +245,25 @@ export class Module {
     do {
       for (const propertyName of Object.getOwnPropertyNames(prototype)) {
         const method = instance[propertyName];
-        const isRouteMethod = typeof method === 'function' && Reflect.hasMetadata(ROUTE_METADATA, method);
+        const isRouteMethod = typeof method === 'function' && Reflect.hasMetadata(ROUTE_METADATA, method) && method !== instance.constructor;
         if (isRouteMethod) methods.add(method);
       }
     } while ((prototype = Object.getPrototypeOf(prototype)));
 
     /* Extracting the route metadata from the route methods */
+    const metatype = controller.getMetatype() as Class<Controller>;
+    const metadata = Reflect.getMetadata(CONTROLLER_METADATA, metatype);
+    const controllerRouteMetadata = Reflect.getMetadata(ROUTE_METADATA, metatype);
     const routes: ControllerRouteMetadata['routes'] = [];
     for (const method of methods) {
       const handlerName = method.name;
-      const metadata = Reflect.getMetadata(ROUTE_METADATA, method);
+      const routeMetadata = Reflect.getMetadata(ROUTE_METADATA, method);
+      const metadata = merge<RouteMetdata>(controllerRouteMetadata, routeMetadata);
       const paramtypes = Reflect.getMetadata(PARAMTYPES_METADATA, instance, handlerName);
       const returnType = Reflect.getMetadata(RETURN_TYPE_METADATA, instance, handlerName);
       routes.push({ metadata, handler: method.bind(instance), paramtypes, returnType, handlerName });
     }
 
-    const metatype = controller.getMetatype() as Class<Controller>;
-    const metadata = Reflect.getMetadata(CONTROLLER_METADATA, metatype);
     return { metadata, metatype, routes, instance };
   }
 

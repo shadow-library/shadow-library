@@ -20,6 +20,9 @@ import { ROUTE_METADATA } from '@shadow-library/app/constants';
 describe('RouteDecorator', () => {
   const routeMetadataOne = { op: 'GET', auth: { jwt: true } };
   const routeMetadataTwo = { path: '/users', auth: { oauth: true } };
+  const routeMetadataThree = { auth: { jwt: false } };
+
+  @Route(routeMetadataThree)
   class CatController {
     @Route(routeMetadataOne)
     methodOne() {}
@@ -34,9 +37,14 @@ describe('RouteDecorator', () => {
 
   const controller = new CatController();
 
-  it('should set route metadata', () => {
+  it('should set route metadata for method', () => {
     const metadata = Reflect.getMetadata(ROUTE_METADATA, controller.methodOne);
     expect(metadata).toEqual(routeMetadataOne);
+  });
+
+  it('should set route metadata for class', () => {
+    const metadata = Reflect.getMetadata(ROUTE_METADATA, CatController);
+    expect(metadata).toStrictEqual(routeMetadataThree);
   });
 
   it('should set default route metadata', () => {
