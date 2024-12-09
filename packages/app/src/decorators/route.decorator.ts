@@ -1,6 +1,8 @@
 /**
  * Importing npm packages
  */
+import assert from 'assert';
+
 import merge from 'deepmerge';
 
 /**
@@ -18,12 +20,13 @@ export interface RouteMetdata extends Record<string | symbol, any> {}
  * Declaring the constants
  */
 
-export function Route(metadata: RouteMetdata = {}): MethodDecorator {
-  return (_target, _propertyKey, descriptor) => {
-    const oldMetadata = Reflect.getMetadata(ROUTE_METADATA, descriptor.value as object) ?? {};
-    const newMetadata = merge(oldMetadata, metadata);
-    Reflect.defineMetadata(ROUTE_METADATA, newMetadata, descriptor.value as object);
+export function Route(metadata: RouteMetdata = {}): ClassDecorator & MethodDecorator {
+  return (target: object, _propertyKey?: string | symbol, descriptor?: TypedPropertyDescriptor<any>): void => {
+    const object = descriptor ? descriptor.value : target;
+    assert(object, 'Route decorator can only be applied to class or method');
 
-    return descriptor;
+    const oldMetadata = Reflect.getMetadata(ROUTE_METADATA, object) ?? {};
+    const newMetadata = merge(oldMetadata, metadata);
+    Reflect.defineMetadata(ROUTE_METADATA, newMetadata, object);
   };
 }
