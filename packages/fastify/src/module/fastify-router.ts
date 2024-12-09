@@ -134,7 +134,7 @@ export class FastifyRouter extends Router {
   private generateRouteHandler(route: ParsedController<ServerMetadata>): RouteHandler {
     const metadata = route.metadata;
     const statusCode = this.getStatusCode(metadata);
-    const argsOrder = Reflect.getMetadata(HTTP_CONTROLLER_INPUTS, route.instance, route.handlerName) as (keyof RequestContext | undefined)[];
+    const argsOrder = (Reflect.getMetadata(HTTP_CONTROLLER_INPUTS, route.instance, route.handlerName) as (keyof RequestContext | undefined)[]) ?? [];
 
     return async (request, response) => {
       const params = request.params as Record<string, string>;
