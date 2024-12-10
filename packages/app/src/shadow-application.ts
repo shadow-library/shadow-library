@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { InternalError, Logger, tryCatch } from '@shadow-library/common';
-import { Class } from 'type-fest';
+import { AbstractClass, Class } from 'type-fest';
 
 /**
  * Importing user defined packages
@@ -63,7 +63,7 @@ export class ShadowApplication {
     return moduleRef.getInstance();
   }
 
-  get<TInput = any, TResult = TInput>(provider: Class<TInput> | string | symbol): TResult {
+  get<TInput = any, TResult = TInput>(provider: Class<TInput> | AbstractClass<TInput> | string | symbol): TResult {
     if (!this.isInited()) throw new InternalError(`Application not yet initialized`);
     const modules = this.registry.get();
     for (const module of modules) {
