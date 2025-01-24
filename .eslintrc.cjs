@@ -1,7 +1,7 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: 'tsconfig.json',
+    project: ['tsconfig.json', 'integration/tsconfig.json'],
     tsconfigRootDir: '.',
     sourceType: 'module',
   },
@@ -32,7 +32,7 @@ module.exports = {
   settings: {
     'import/resolver': {
       typescript: {
-        project: 'tsconfig.json',
+        project: ['tsconfig.json', 'integration/tsconfig.json'],
       },
     },
   },

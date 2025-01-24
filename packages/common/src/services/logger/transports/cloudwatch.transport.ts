@@ -46,7 +46,7 @@ export class CloudWatchTransport extends Transport {
 
   private add(log: any): void {
     this.logEvents.push({ timestamp: Date.now(), ...log });
-    if (!this.timeout) this.timeout = setTimeout(() => this.flush(), this.uploadRate);
+    if (!this.timeout) this.timeout = setTimeout(() => this.flush(), this.uploadRate) as NodeJS.Timeout;
     if (this.logEvents.length >= this.bufferSize) this.flush();
   }
 
