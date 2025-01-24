@@ -12,13 +12,14 @@
     "build": "bun run scripts/build.ts",
     "type-check": "tsc",
     "test": "jest",
-    "test:integration": "jest --config integration/jest.config.ts"
+    "test:integration": "bun test"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@commitlint/types": "^19.5.0",
     "@jest/globals": "^29.7.0",
+    "@shadow-library/class-schema": "^0.0.5",
     "@types/fast-redact": "^3.0.4",
     "@types/node": "^22.9.3",
     "@types/uuid": "^10.0.0",
@@ -32,6 +33,7 @@
     "lerna": "^8.1.8",
     "light-my-request": "^6.1.0",
     "prettier": "^3.3.3",
+    "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.10",

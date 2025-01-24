@@ -3,3 +3,5 @@ bun lint
 bun type-check
 
 bun run test
+
+bun test
